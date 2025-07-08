@@ -206,7 +206,7 @@ export default function WorkoutCalendar() {
   return (
     <div className="relative">
       {/* Botón Hoy reposicionado para evitar overlap con navegación */}
-      <div className="absolute top-2 right-2 z-20">
+      <div className="absolute top-1 right-2 z-20">
         <Button
           onClick={goToToday}
           size="sm"
