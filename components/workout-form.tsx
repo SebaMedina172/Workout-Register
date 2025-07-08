@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Trash2, Settings, Search, Eye, EyeOff, Dumbbell, X } from "lucide-react"
+import { Plus, Trash2, Settings, Search, Eye, EyeOff, Dumbbell, X, GripVertical } from "lucide-react"
 import ExerciseManager from "./exercise-manager"
 
 // Ejercicios predefinidos básicos
@@ -82,6 +84,9 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   const [message, setMessage] = useState("")
   const [showExerciseManager, setShowExerciseManager] = useState(false)
   const [loadingCustomData, setLoadingCustomData] = useState(false)
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -397,6 +402,66 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   // Columnas activas ordenadas
   const activeColumns = customColumns.filter((col) => col.is_active).sort((a, b) => a.display_order - b.display_order)
 
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = "move"
+    e.dataTransfer.setData("text/html", "")
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+    setDragOverIndex(index)
+  }
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null)
+      setDragOverIndex(null)
+      return
+    }
+
+    const newExercises = [...exercises]
+    const draggedExercise = newExercises[draggedIndex]
+
+    // Remove the dragged exercise
+    newExercises.splice(draggedIndex, 1)
+
+    // Insert at new position
+    newExercises.splice(dropIndex, 0, draggedExercise)
+
+    setExercises(newExercises)
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+
+    // Clear search states for reordered exercises
+    const newSearches: Record<string, string> = {}
+    newExercises.forEach((ex, index) => {
+      const oldSearch = exerciseSearches[ex.id]
+      if (oldSearch) {
+        newSearches[ex.id] = oldSearch
+      }
+    })
+    setExerciseSearches(newSearches)
+
+    console.log(
+      "✅ Ejercicios reordenados:",
+      newExercises.map((ex) => ex.exercise_name),
+    )
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
@@ -526,9 +591,10 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                 <div
                   className="grid gap-4 p-4 font-bold text-sm text-gray-800"
                   style={{
-                    gridTemplateColumns: `2fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 80px`,
+                    gridTemplateColumns: `40px 2fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 80px`,
                   }}
                 >
+                  <div className="text-center">📏</div>
                   <div>🏋️ Ejercicio</div>
                   <div>📊 Series</div>
                   <div>🔄 Reps</div>
@@ -550,14 +616,32 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                 {exercises.map((exercise, index) => (
                   <div
                     key={exercise.id}
-                    className="hover:bg-blue-50 transition-colors duration-200 border-l-4 border-transparent hover:border-blue-400"
+                    draggable={true}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`
+                      hover:bg-blue-50 transition-colors duration-200 border-l-4 border-transparent hover:border-blue-400
+                      ${draggedIndex === index ? "opacity-50 bg-blue-100 border-blue-500" : ""}
+                      ${dragOverIndex === index && draggedIndex !== null && draggedIndex !== index ? "border-t-4 border-t-green-500 border-dashed" : ""}
+                      cursor-move
+                    `}
                   >
                     <div
                       className="grid gap-4 p-4 items-center"
                       style={{
-                        gridTemplateColumns: `2fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 80px`,
+                        gridTemplateColumns: `40px 2fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 80px`,
                       }}
                     >
+                      {/* Drag handle */}
+                      <div className="flex justify-center items-center">
+                        <GripVertical
+                          className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing"
+                        />
+                      </div>
+
                       {/* Selector de ejercicio */}
                       <div className="relative">
                         <Select
