@@ -22,7 +22,6 @@ import {
   Eye,
   EyeOff,
   Dumbbell,
-  X,
   GripVertical,
   Save,
   Edit,
@@ -128,6 +127,14 @@ const ExerciseSkeleton = () => (
   </div>
 )
 
+// Función helper para formatear peso
+const formatWeight = (weight: number | undefined | null): string => {
+  if (!weight || weight === 0) {
+    return "Libre"
+  }
+  return `${weight} kg`
+}
+
 export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutFormProps) {
   const [exercises, setExercises] = useState<WorkoutExercise[]>([])
   const [userExercises, setUserExercises] = useState<string[]>([])
@@ -168,12 +175,17 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       if (workout && workout.id) {
         console.log("👀 Cargando workout existente:", workout.id)
 
-        // Cargar columnas visibles
+        // FIXED: Cargar columnas visibles específicas del workout
         const visibleColumnsResponse = await fetch(`/api/workouts/${workout.id}/visible-columns`)
         if (visibleColumnsResponse.ok) {
           const visibleData = await visibleColumnsResponse.json()
           setCustomColumns(visibleData.columns || [])
-          console.log("✅ Columnas visibles cargadas:", visibleData.columns?.length || 0)
+          console.log("✅ Columnas visibles específicas cargadas:", visibleData.columns?.length || 0)
+          console.log("📊 Columnas activas:", visibleData.columns?.filter((c: any) => c.is_active).length || 0)
+          console.log(
+            "📋 Columnas activas:",
+            visibleData.columns?.filter((c: any) => c.is_active).map((c: any) => c.column_name) || [],
+          )
         }
 
         // Cargar datos completos del workout
@@ -193,7 +205,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
               console.log(`📋 Ejercicio ${index + 1}: ${ex.exercise_name}`)
               console.log(`   Estado: is_saved=${ex.is_saved}, is_expanded=${ex.is_expanded}`)
               console.log(
-                `   Configuración: ${ex.sets} series × ${ex.reps} reps × ${ex.weight}kg, descanso: ${ex.rest_time}s`,
+                `   Configuración: ${ex.sets} series × ${ex.reps} reps × ${formatWeight(ex.weight)}, descanso: ${ex.rest_time}s`,
               )
               console.log(`   Series registradas: ${ex.set_records?.length || 0}`)
               if (ex.custom_data && Object.keys(ex.custom_data).length > 0) {
@@ -213,14 +225,19 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           createInitialExercise()
         }
       } else {
-        // Para workouts nuevos
-        console.log("🆕 Workout nuevo, cargando configuración por defecto")
+        // FIXED: Para workouts nuevos, cargar columnas DESACTIVADAS por defecto
+        console.log("🆕 Workout nuevo, cargando columnas DESACTIVADAS por defecto")
 
         const columnsResponse = await fetch("/api/user-columns")
         if (columnsResponse.ok) {
           const columnsData = await columnsResponse.json()
-          setCustomColumns(columnsData.filter((col: any) => col.is_active))
-          console.log("✅ Columnas por defecto cargadas:", columnsData.length)
+          // Marcar todas las columnas como NO activas por defecto para workouts nuevos
+          const inactiveColumns = columnsData.map((col: any) => ({
+            ...col,
+            is_active: false, // ✅ NUEVO: Columnas desactivadas por defecto
+          }))
+          setCustomColumns(inactiveColumns)
+          console.log("✅ Columnas por defecto cargadas (DESACTIVADAS):", columnsData.length)
         }
 
         createInitialExercise()
@@ -476,16 +493,19 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     }
   }
 
-  const toggleColumnVisibility = async (columnId: string, isActive: boolean) => {
+  // FIXED: Función mejorada para manejar visibilidad de columnas
+  const toggleColumnVisibility = (columnId: string, isActive: boolean) => {
     // Actualizar estado local inmediatamente
     setCustomColumns(customColumns.map((col) => (col.id === columnId ? { ...col, is_active: isActive } : col)))
 
     const column = customColumns.find((col) => col.id === columnId)
+    console.log(`🔄 Columna "${column?.column_name}" ${isActive ? "activada" : "desactivada"} para este entrenamiento`)
+
     setMessage(`✅ Columna "${column?.column_name}" ${isActive ? "activada" : "desactivada"} para este entrenamiento`)
     setTimeout(() => setMessage(""), 3000)
   }
 
-  // Guardar entrenamiento
+  // FIXED: Función mejorada para guardar entrenamiento
   const handleSave = async () => {
     const validExercises = exercises.filter((ex) => ex.exercise_name.trim() !== "")
 
@@ -509,7 +529,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         if (ex.is_saved && ex.set_records) {
           console.log(
             `   📊 Series:`,
-            ex.set_records.map((sr) => `${sr.set_number}: ${sr.reps}x${sr.weight}kg`),
+            ex.set_records.map((sr) => `${sr.set_number}: ${sr.reps}x${formatWeight(sr.weight)}`),
           )
         }
       })
@@ -535,15 +555,23 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         const result = await response.json()
         console.log("✅ Entrenamiento guardado exitosamente:", result)
 
-        // FIXED: Store the workout ID for immediate use in column visibility config
-        let workoutIdForColumns = result.workout?.id || workout?.id
-        if (result.workout && !workout) {
-          // For new workouts, ensure we have the correct workout ID for column config
+        // FIXED: Guardar configuración de columnas visibles DESPUÉS de que el workout se haya creado/actualizado
+        let workoutIdForColumns: string | null = null
+
+        if (workout) {
+          // Para workouts existentes, usar el ID que ya tenemos
+          workoutIdForColumns = workout.id
+        } else if (result.workout?.id) {
+          // Para workouts nuevos, usar el ID devuelto por la API
           workoutIdForColumns = result.workout.id
         }
 
-        // Guardar configuración de columnas visibles
-        await saveColumnVisibilityConfig(workoutIdForColumns)
+        if (workoutIdForColumns) {
+          console.log(`💾 Guardando configuración de columnas para workout ID: ${workoutIdForColumns}`)
+          await saveColumnVisibilityConfig(workoutIdForColumns)
+        } else {
+          console.error("❌ No se pudo obtener ID del workout para guardar configuración de columnas")
+        }
 
         setMessage("✅ Entrenamiento guardado exitosamente")
         setTimeout(() => {
@@ -562,10 +590,21 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     }
   }
 
+  // FIXED: Función mejorada para guardar configuración de columnas
   const saveColumnVisibilityConfig = async (workoutId: string) => {
-    if (!workoutId) return
+    if (!workoutId) {
+      console.error("❌ No se proporcionó workoutId para guardar configuración de columnas")
+      return
+    }
 
     const visibleColumnIds = customColumns.filter((col) => col.is_active).map((col) => col.id)
+
+    console.log(`💾 Guardando configuración de columnas para workout ${workoutId}`)
+    console.log(`📊 Columnas visibles (${visibleColumnIds.length}):`, visibleColumnIds)
+    console.log(
+      `📋 Nombres de columnas visibles:`,
+      customColumns.filter((col) => col.is_active).map((col) => col.column_name),
+    )
 
     try {
       const response = await fetch(`/api/workouts/${workoutId}/visible-columns`, {
@@ -575,10 +614,13 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       })
 
       if (response.ok) {
-        console.log("✅ Configuración de columnas guardada")
+        console.log("✅ Configuración de columnas guardada exitosamente")
+      } else {
+        const errorData = await response.json()
+        console.error("❌ Error guardando configuración de columnas:", errorData)
       }
     } catch (error) {
-      console.error("⚠️ Error guardando configuración de columnas:", error)
+      console.error("💥 Error guardando configuración de columnas:", error)
     }
   }
 
@@ -639,6 +681,29 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   const handleDragEnd = () => {
     setDraggedIndex(null)
     setDragOverIndex(null)
+  }
+
+  // Handler mejorado para campos de peso
+  const handleWeightChange = (exerciseId: string, value: string, isSetRecord = false, setId?: string) => {
+    // Permitir campo vacío temporalmente
+    if (value === "") {
+      if (isSetRecord && setId) {
+        updateSetRecord(exerciseId, setId, "weight", 0)
+      } else {
+        updateExercise(exerciseId, "weight", 0)
+      }
+      return
+    }
+
+    // Validar que sea un número válido
+    const numValue = Number.parseFloat(value)
+    if (!isNaN(numValue) && numValue >= 0) {
+      if (isSetRecord && setId) {
+        updateSetRecord(exerciseId, setId, "weight", numValue)
+      } else {
+        updateExercise(exerciseId, "weight", numValue)
+      }
+    }
   }
 
   const renderEditingExercise = (exercise: WorkoutExercise, index: number) => {
@@ -775,12 +840,20 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors"
           />
 
+          {/* Campo de peso mejorado */}
           <Input
             type="number"
             min="0"
             step="0.5"
-            value={exercise.weight || 0}
-            onChange={(e) => updateExercise(exercise.id, "weight", Number.parseFloat(e.target.value) || 0)}
+            value={exercise.weight === 0 ? "" : exercise.weight || ""}
+            onChange={(e) => handleWeightChange(exercise.id, e.target.value)}
+            onFocus={(e) => {
+              // Si el valor es 0, limpiar el campo al hacer focus
+              if (exercise.weight === 0) {
+                e.target.value = ""
+              }
+            }}
+            placeholder="Libre"
             className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors"
           />
 
@@ -864,59 +937,41 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                 <span className="font-semibold text-gray-900">{exercise.exercise_name}</span>
               </div>
               <Badge variant="outline" className="bg-white">
-                {exercise.sets} series × {exercise.reps} reps
+                {exercise.sets} series × {exercise.reps} reps × {formatWeight(exercise.weight)}
               </Badge>
-              {exercise.weight && exercise.weight > 0 && (
-                <Badge variant="outline" className="bg-white">
-                  {exercise.weight} kg
-                </Badge>
-              )}
-              {/* NUEVO: Mostrar tiempo de descanso */}
-              {exercise.rest_time && exercise.rest_time > 0 && (
-                <Badge variant="outline" className="bg-white flex items-center">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {exercise.rest_time}s
-                </Badge>
-              )}
+              <Badge variant="outline" className="bg-white">
+                <Clock className="w-3 h-3 mr-1" />
+                {exercise.rest_time}s
+              </Badge>
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => editExercise(exercise.id)}
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200"
-              >
-                <Edit className="w-4 h-4 text-blue-600" />
-              </Button>
-              <Button
-                onClick={() => removeExercise(exercise.id)}
-                variant="outline"
-                size="sm"
-                disabled={exercises.length === 1}
-                className="h-8 px-3 hover:bg-red-50 hover:border-red-300 border-2 transition-all duration-200"
-              >
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
-            </div>
+            <Button
+              onClick={() => editExercise(exercise.id)}
+              variant="outline"
+              size="sm"
+              className="hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200"
+            >
+              <Edit className="w-4 h-4 text-blue-600 mr-1" />
+              Editar
+            </Button>
           </div>
         </div>
 
-        {/* Contenido expandible - Series para registro */}
+        {/* Contenido expandible - tabla de series */}
         <CollapsibleContent>
-          <div className="bg-gray-50 border-l-4 border-green-500">
-            {/* Encabezado de las series */}
-            <div className="bg-gradient-to-r from-green-100 to-green-200 border-b border-green-300">
+          <div className="bg-white border-l-4 border-green-500">
+            {/* Header de la tabla de series */}
+            <div className="bg-gray-100 border-b">
               <div
-                className="grid gap-4 p-3 font-bold text-sm text-gray-800"
+                className="grid gap-4 p-3 font-semibold text-sm text-gray-700"
                 style={{
-                  gridTemplateColumns: `120px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
+                  gridTemplateColumns: `80px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
                 }}
               >
-                <div>📋 Serie</div>
-                <div>🔄 Reps</div>
-                <div>⚖️ Peso (kg)</div>
+                <div className="text-center">📊 Serie</div>
+                <div className="text-center">🔄 Reps</div>
+                <div className="text-center">⚖️ Peso (kg)</div>
                 {activeColumns.map((column) => (
-                  <div key={column.id}>
+                  <div key={column.id} className="text-center">
                     {column.column_type === "text" && "📝"}
                     {column.column_type === "number" && "🔢"}
                     {column.column_type === "boolean" && "✅"} {column.column_name}
@@ -926,288 +981,305 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             </div>
 
             {/* Filas de series */}
-            <div className="divide-y divide-green-200">
-              {exercise.set_records?.map((setRecord) => (
-                <div
-                  key={setRecord.id}
-                  className="grid gap-4 p-3 items-center hover:bg-green-100 transition-colors"
-                  style={{
-                    gridTemplateColumns: `120px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
+            {exercise.set_records?.map((setRecord, setIndex) => (
+              <div
+                key={setRecord.id}
+                className={`grid gap-4 p-3 items-center ${setIndex % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                style={{
+                  gridTemplateColumns: `80px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
+                }}
+              >
+                <div className="text-center font-semibold text-gray-600">#{setRecord.set_number}</div>
+
+                <Input
+                  type="number"
+                  min="1"
+                  value={setRecord.reps}
+                  onChange={(e) =>
+                    updateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
+                  }
+                  className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors"
+                />
+
+                {/* Campo de peso mejorado para series */}
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={setRecord.weight === 0 ? "" : setRecord.weight || ""}
+                  onChange={(e) => handleWeightChange(exercise.id, e.target.value, true, setRecord.id)}
+                  onFocus={(e) => {
+                    // Si el valor es 0, limpiar el campo al hacer focus
+                    if (setRecord.weight === 0) {
+                      e.target.value = ""
+                    }
                   }}
-                >
-                  {/* Número de serie */}
-                  <div className="font-semibold text-gray-700">Serie {setRecord.set_number}:</div>
+                  placeholder="Libre"
+                  className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors"
+                />
 
-                  {/* Repeticiones */}
-                  <Input
-                    type="number"
-                    min="1"
-                    value={setRecord.reps}
-                    onChange={(e) =>
-                      updateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
-                    }
-                    className="text-center font-semibold bg-white border-2 hover:border-green-300 transition-colors"
-                  />
-
-                  {/* Peso */}
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={setRecord.weight}
-                    onChange={(e) =>
-                      updateSetRecord(exercise.id, setRecord.id, "weight", Number.parseFloat(e.target.value) || 0)
-                    }
-                    className="text-center font-semibold bg-white border-2 hover:border-green-300 transition-colors"
-                  />
-
-                  {/* Columnas personalizadas */}
-                  {activeColumns.map((column) => (
-                    <div key={column.id}>
-                      {column.column_type === "boolean" ? (
-                        <div className="flex justify-center">
-                          <Checkbox
-                            checked={setRecord.custom_data?.[column.column_name] || false}
-                            onCheckedChange={(checked) =>
-                              updateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, checked)
-                            }
-                            className="w-5 h-5"
-                          />
-                        </div>
-                      ) : (
-                        <Input
-                          type={column.column_type === "number" ? "number" : "text"}
-                          value={setRecord.custom_data?.[column.column_name] || ""}
-                          onChange={(e) =>
-                            updateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, e.target.value)
+                {/* Columnas personalizadas para series */}
+                {activeColumns.map((column) => (
+                  <div key={column.id}>
+                    {column.column_type === "boolean" ? (
+                      <div className="flex justify-center">
+                        <Checkbox
+                          checked={setRecord.custom_data?.[column.column_name] || false}
+                          onCheckedChange={(checked) =>
+                            updateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, checked)
                           }
-                          className="text-center bg-white border-2 hover:border-green-300 transition-colors"
-                          placeholder={column.column_type === "number" ? "0" : "..."}
+                          className="w-5 h-5"
                         />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+                      </div>
+                    ) : (
+                      <Input
+                        type={column.column_type === "number" ? "number" : "text"}
+                        value={setRecord.custom_data?.[column.column_name] || ""}
+                        onChange={(e) =>
+                          updateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, e.target.value)
+                        }
+                        className="text-center bg-white border-2 hover:border-blue-300 transition-colors"
+                        placeholder={column.column_type === "number" ? "0" : "..."}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </CollapsibleContent>
       </Collapsible>
     )
   }
 
-  // Mostrar overlay de carga mientras se cargan los datos iniciales
-  if (loadingData && !initialDataLoaded) {
-    return <LoadingOverlay message="Cargando entrenamiento..." />
-  }
-
-  // Mostrar overlay de guardado
-  if (saving) {
-    return <LoadingOverlay message="Guardando entrenamiento..." />
+  if (loadingData) {
+    return <LoadingOverlay message="Cargando datos del entrenamiento..." />
   }
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader className="bg-gradient-to-r from-blue-50 to-purple-50 -m-6 p-6 mb-6 rounded-t-lg">
-          <div className="flex items-center">
-            <div>
-              <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
-                <Dumbbell className="w-7 h-7 mr-3 text-blue-600" />
-                {workout ? "Editar" : "Crear"} Entrenamiento
-              </DialogTitle>
-              <p className="text-gray-600 mt-1 ml-10">{date.toLocaleDateString("es-ES")}</p>
+    <>
+      {saving && <LoadingOverlay message="Guardando entrenamiento..." />}
+
+      <Dialog open={true} onOpenChange={onClose}>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
+              <Dumbbell className="w-8 h-8 mr-3 text-blue-600" />
+              {workout ? "Editar Entrenamiento" : "Nuevo Entrenamiento"} - {date.toLocaleDateString("es-ES")}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Mensaje de estado */}
+          {message && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm font-medium">
+              {message}
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setShowExerciseManager(true)}
-                variant="outline"
-                size="sm"
-                className="bg-white hover:bg-gray-50 border-2 font-semibold"
-              >
-                <Dumbbell className="w-4 h-4 mr-2" />
-                Ejercicios
-              </Button>
-              <Button
-                onClick={() => setShowColumnSettings(!showColumnSettings)}
-                variant="outline"
-                size="sm"
-                className="bg-white hover:bg-gray-50 border-2 font-semibold"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Columnas
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Panel de configuración de columnas */}
-          {showColumnSettings && (
-            <Card className="border-2 border-blue-200 bg-blue-50/50">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Settings className="w-5 h-5 mr-2" />
-                  Configuración de Columnas
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Agregar nueva columna */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <Input
-                    placeholder="Nombre de la columna"
-                    value={newColumnName}
-                    onChange={(e) => setNewColumnName(e.target.value)}
-                    className="bg-white"
-                  />
-                  <Select
-                    value={newColumnType}
-                    onValueChange={(value: "text" | "number" | "boolean") => setNewColumnType(value)}
-                  >
-                    <SelectTrigger className="bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">📝 Texto</SelectItem>
-                      <SelectItem value="number">🔢 Número</SelectItem>
-                      <SelectItem value="boolean">✅ Sí/No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={addCustomColumn} className="md:col-span-2 bg-blue-600 hover:bg-blue-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Columna
-                  </Button>
-                </div>
-
-                <Separator />
-
-                {/* Lista de columnas disponibles */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto">
-                  {customColumns.map((column) => (
-                    <div
-                      key={column.id}
-                      className="flex items-center space-x-3 p-4 bg-white rounded-lg border-2 hover:border-blue-300 transition-colors"
-                    >
-                      <Checkbox
-                        checked={column.is_active}
-                        onCheckedChange={(checked) => toggleColumnVisibility(column.id, !!checked)}
-                      />
-                      <div className="flex-1">
-                        <Label className="font-medium text-gray-900">{column.column_name}</Label>
-                        <Badge variant="outline" className="ml-2 text-xs">
-                          {column.column_type === "text" && "📝"}
-                          {column.column_type === "number" && "🔢"}
-                          {column.column_type === "boolean" && "✅"}
-                          {column.column_type}
-                        </Badge>
-                      </div>
-                      {column.is_active ? (
-                        <Eye className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <EyeOff className="w-4 h-4 text-gray-400" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           )}
 
-          {/* Tabla de ejercicios */}
-          <Card className="border-2 border-gray-200 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
-              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
-                <Dumbbell className="w-5 h-5 mr-2" />
-                Ejercicios del Entrenamiento
-                {activeColumns.length > 0 && (
-                  <Badge variant="outline" className="ml-3">
-                    {activeColumns.length} columnas personalizadas
-                  </Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {/* Mostrar skeleton mientras carga */}
-              {loadingData && !initialDataLoaded ? (
-                <div className="divide-y-2 divide-gray-100">
+          {/* Contenido principal */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {/* Barra de herramientas */}
+            <div className="flex-shrink-0 p-4 bg-gray-50 border-b flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button onClick={addExercise} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agregar Ejercicio
+                </Button>
+
+                <Button
+                  onClick={() => setShowColumnSettings(true)}
+                  variant="outline"
+                  className="border-2 hover:border-purple-300 hover:bg-purple-50"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Columnas ({activeColumns.length})
+                </Button>
+
+                <Button
+                  onClick={() => setShowExerciseManager(true)}
+                  variant="outline"
+                  className="border-2 hover:border-green-300 hover:bg-green-50"
+                >
+                  <Dumbbell className="w-4 h-4 mr-2" />
+                  Gestionar Ejercicios
+                </Button>
+              </div>
+
+              <div className="text-sm text-gray-600">
+                Total: {exercises.length} ejercicios | Guardados: {exercises.filter((ex) => ex.is_saved).length}
+              </div>
+            </div>
+
+            {/* Lista de ejercicios */}
+            <div className="flex-1 overflow-auto">
+              {!initialDataLoaded ? (
+                <div className="space-y-4 p-4">
                   {[1, 2, 3].map((i) => (
                     <ExerciseSkeleton key={i} />
                   ))}
                 </div>
               ) : (
-                /* Lista de ejercicios */
-                <div className="divide-y-2 divide-gray-100">
+                <div className="bg-white">
                   {exercises.map((exercise, index) => (
-                    <div key={exercise.id}>
-                      <div
-                        draggable={true}
-                        onDragStart={(e) => handleDragStart(e, index)}
-                        onDragOver={(e) => handleDragOver(e, index)}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, index)}
-                        onDragEnd={handleDragEnd}
-                        className={`
-                          hover:bg-blue-50 transition-colors duration-200 border-l-4 border-transparent hover:border-blue-400
-                          ${draggedIndex === index ? "opacity-50 bg-blue-100 border-blue-500" : ""}
-                          ${dragOverIndex === index && draggedIndex !== null && draggedIndex !== index ? "border-t-4 border-t-green-500 border-dashed" : ""}
-                          ${exercise.is_saved ? "bg-green-50 border-l-green-500" : "cursor-move"}
-                        `}
-                      >
-                        {!exercise.is_saved ? renderEditingExercise(exercise, index) : renderSavedExercise(exercise)}
-                      </div>
+                    <div
+                      key={exercise.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`border-b transition-all duration-200 ${
+                        dragOverIndex === index ? "border-blue-400 bg-blue-50" : "border-gray-200"
+                      } ${draggedIndex === index ? "opacity-50" : ""}`}
+                    >
+                      {exercise.is_saved ? renderSavedExercise(exercise) : renderEditingExercise(exercise, index)}
                     </div>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Botón agregar ejercicio */}
-          <Button
-            onClick={addExercise}
-            variant="outline"
-            className="w-full h-16 border-3 border-dashed border-blue-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 bg-white text-blue-600 font-semibold text-lg"
-          >
-            <Plus className="w-6 h-6 mr-3" />
-            Agregar Ejercicio
-          </Button>
-
-          {message && (
-            <div
-              className={`p-3 rounded-lg text-sm font-medium ${
-                message.includes("✅")
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-red-50 text-red-700 border border-red-200"
-              }`}
-            >
-              {message}
             </div>
-          )}
+          </div>
 
           {/* Botones de acción */}
-          <div className="flex justify-end gap-4 pt-6 border-t-2 border-gray-200">
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="px-8 py-3 bg-white hover:bg-gray-50 border-2 font-semibold"
-            >
-              <X className="w-4 h-4 mr-2" />
+          <div className="flex-shrink-0 p-4 bg-gray-50 border-t flex justify-between">
+            <Button onClick={onClose} variant="outline" className="border-2 bg-transparent">
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
-              disabled={saving}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
+              className="bg-green-600 hover:bg-green-700 text-white min-w-[120px]"
             >
-              <Dumbbell className="w-4 h-4 mr-2" />
-              Guardar Entrenamiento
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Guardar
+                </>
+              )}
             </Button>
           </div>
-        </div>
-      </DialogContent>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de configuración de columnas */}
+      <Dialog open={showColumnSettings} onOpenChange={setShowColumnSettings}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center">
+              <Settings className="w-6 h-6 mr-2 text-purple-600" />
+              Configurar Columnas Personalizadas
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-auto space-y-6">
+            {/* Crear nueva columna */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Crear Nueva Columna</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="columnName">Nombre de la columna</Label>
+                    <Input
+                      id="columnName"
+                      value={newColumnName}
+                      onChange={(e) => setNewColumnName(e.target.value)}
+                      placeholder="Ej: RIR, RPE, Notas..."
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="columnType">Tipo de dato</Label>
+                    <Select value={newColumnType} onValueChange={(value: any) => setNewColumnType(value)}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="text">📝 Texto</SelectItem>
+                        <SelectItem value="number">🔢 Número</SelectItem>
+                        <SelectItem value="boolean">✅ Sí/No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <Button
+                  onClick={addCustomColumn}
+                  disabled={!newColumnName.trim()}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Crear Columna
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Lista de columnas existentes */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Columnas Disponibles</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Activa/desactiva las columnas que quieres ver en este entrenamiento específico
+                </p>
+              </CardHeader>
+              <CardContent>
+                {customColumns.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No hay columnas personalizadas creadas</p>
+                ) : (
+                  <div className="space-y-3">
+                    {customColumns.map((column) => (
+                      <div key={column.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={column.is_active}
+                              onCheckedChange={(checked) => toggleColumnVisibility(column.id, !!checked)}
+                              className="w-5 h-5"
+                            />
+                            {column.is_active ? (
+                              <Eye className="w-4 h-4 text-green-600" />
+                            ) : (
+                              <EyeOff className="w-4 h-4 text-gray-400" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium">{column.column_name}</div>
+                            <div className="text-sm text-gray-500">
+                              {column.column_type === "text" && "📝 Texto"}
+                              {column.column_type === "number" && "🔢 Número"}
+                              {column.column_type === "boolean" && "✅ Sí/No"}
+                            </div>
+                          </div>
+                        </div>
+                        <Badge variant={column.is_active ? "default" : "secondary"}>
+                          {column.is_active ? "Activa" : "Inactiva"}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex-shrink-0 pt-4 border-t">
+            <Button onClick={() => setShowColumnSettings(false)} className="w-full">
+              Cerrar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog del gestor de ejercicios */}
       {showExerciseManager && (
         <ExerciseManager onClose={() => setShowExerciseManager(false)} onExerciseChange={loadUserData} />
       )}
-    </Dialog>
+    </>
   )
 }

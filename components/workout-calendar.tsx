@@ -36,6 +36,14 @@ interface Workout {
   exercises: WorkoutExercise[]
 }
 
+// Función helper para formatear peso
+const formatWeight = (weight: number | undefined | null): string => {
+  if (!weight || weight === 0) {
+    return "Libre"
+  }
+  return `${weight} kg`
+}
+
 export default function WorkoutCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [workouts, setWorkouts] = useState<Workout[]>([])
@@ -228,19 +236,78 @@ export default function WorkoutCalendar() {
 
   return (
     <div className="relative">
-      {/* Botón Hoy reposicionado para evitar overlap con navegación */}
-      <div className="absolute top-2 right-2 z-20">
-        <Button
-          onClick={goToToday}
-          size="sm"
-          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-4 py-2 rounded-lg text-sm"
-        >
-          📅 Hoy
-        </Button>
-      </div>
+      {/* Estilos CSS personalizados para forzar el comportamiento correcto */}
+      <style jsx>{`
+        .calendar-day-workout {
+          background: linear-gradient(135deg, #10b981, #059669) !important;
+          color: white !important;
+          border: 2px solid #059669 !important;
+          font-weight: bold !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+        }
+        
+        .calendar-day-workout:hover {
+          background: linear-gradient(135deg, #34d399, #10b981) !important;
+          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
+          transform: translateY(-1px) !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .calendar-day-rest {
+          background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+          color: white !important;
+          border: 2px solid #d97706 !important;
+          font-weight: bold !important;
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+        }
+        
+        .calendar-day-rest:hover {
+          background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+          box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4) !important;
+          transform: translateY(-1px) !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .calendar-day-content {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          height: 100% !important;
+          width: 100% !important;
+          gap: 2px !important;
+        }
+        
+        .calendar-day-number {
+          font-size: 1.125rem !important;
+          font-weight: bold !important;
+          line-height: 1 !important;
+          flex-shrink: 0 !important;
+        }
+        
+        .calendar-day-icon {
+          flex-shrink: 0 !important;
+          height: 16px !important;
+          width: 16px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+      `}</style>
 
       {/* Calendario principal */}
       <div className="p-4 md:p-8">
+        {/* Botón Hoy reposicionado para evitar superposición */}
+        <div className="flex justify-center mb-4">
+          <Button
+            onClick={goToToday}
+            size="sm"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-2 rounded-lg text-sm"
+          >
+            📅 Ir a Hoy
+          </Button>
+        </div>
+
         <div className="flex justify-center">
           <div className="w-full max-w-6xl">
             <Calendar
@@ -266,7 +333,7 @@ export default function WorkoutCalendar() {
                   "text-gray-600 rounded-lg w-full h-14 font-bold text-base flex items-center justify-center bg-gray-50 mx-1",
                 row: "flex w-full mt-2",
                 cell: "relative p-1 w-full",
-                day: "h-20 w-full p-2 font-bold text-lg rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 flex flex-col items-center justify-center bg-white shadow-sm hover:shadow-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                day: "h-20 w-full p-1 font-bold text-lg rounded-xl border-2 border-gray-200 transition-all duration-200 flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                 day_selected:
                   "bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-blue-500 shadow-lg",
                 day_today:
@@ -276,26 +343,6 @@ export default function WorkoutCalendar() {
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
                 day_hidden: "invisible",
               }}
-              modifiers={{
-                workout: (date) => getDayStatus(date) === "workout",
-                rest: (date) => getDayStatus(date) === "rest",
-              }}
-              modifiersStyles={{
-                workout: {
-                  background: "linear-gradient(135deg, #10b981, #059669)",
-                  color: "white",
-                  border: "2px solid #059669",
-                  fontWeight: "bold",
-                  boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
-                },
-                rest: {
-                  background: "linear-gradient(135deg, #f59e0b, #d97706)",
-                  color: "white",
-                  border: "2px solid #d97706",
-                  fontWeight: "bold",
-                  boxShadow: "0 4px 12px rgba(245, 158, 11, 0.3)",
-                },
-              }}
               components={{
                 Day: ({ date, displayMonth, ...props }) => {
                   const status = getDayStatus(date)
@@ -303,30 +350,30 @@ export default function WorkoutCalendar() {
                   const isSelected = selectedDate?.toDateString() === date.toDateString()
                   const isOutside = date.getMonth() !== displayMonth.getMonth()
 
-                  let dayClasses =
-                    "h-20 w-full p-2 font-bold text-lg rounded-xl border-2 transition-all duration-200 flex flex-col items-center justify-center shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 "
+                  // Determinar clases CSS personalizadas
+                  let customClass = ""
+                  let baseClass =
+                    "h-20 w-full p-1 rounded-xl border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
 
                   if (isOutside) {
-                    dayClasses += "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100 "
+                    baseClass += " text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100"
                   } else if (isSelected) {
-                    dayClasses += "bg-gradient-to-br from-blue-500 to-blue-600 text-white border-blue-500 shadow-lg "
+                    baseClass += " bg-gradient-to-br from-blue-500 to-blue-600 text-white border-blue-500 shadow-lg"
                   } else if (isToday) {
-                    dayClasses +=
-                      "bg-gradient-to-br from-orange-400 to-orange-500 text-white border-orange-400 shadow-lg font-black "
+                    baseClass +=
+                      " bg-gradient-to-br from-orange-400 to-orange-500 text-white border-orange-400 shadow-lg font-black"
                   } else if (status === "workout") {
-                    dayClasses +=
-                      "bg-gradient-to-br from-green-500 to-green-600 text-white border-green-500 shadow-md hover:shadow-lg "
+                    customClass = "calendar-day-workout"
                   } else if (status === "rest") {
-                    dayClasses +=
-                      "bg-gradient-to-br from-yellow-500 to-orange-500 text-white border-orange-500 shadow-md hover:shadow-lg "
+                    customClass = "calendar-day-rest"
                   } else {
-                    dayClasses += "bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md "
+                    baseClass += " bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md"
                   }
 
                   return (
                     <button
                       {...props}
-                      className={dayClasses}
+                      className={`${baseClass} ${customClass}`}
                       onClick={() => !isOutside && handleDateSelect(date)}
                       disabled={isOutside}
                       type="button"
@@ -335,9 +382,13 @@ export default function WorkoutCalendar() {
                       aria-selected={isSelected}
                       aria-label={`${date.getDate()} de ${date.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}${status ? ` - ${status === "workout" ? "Entrenamiento" : "Descanso"}` : ""}`}
                     >
-                      <span className="text-lg font-bold">{date.getDate()}</span>
-                      {status === "workout" && <Dumbbell className="w-4 h-4 mt-1" />}
-                      {status === "rest" && <Coffee className="w-4 h-4 mt-1" />}
+                      <div className="calendar-day-content">
+                        <div className="calendar-day-number">{date.getDate()}</div>
+                        <div className="calendar-day-icon">
+                          {status === "workout" && <Dumbbell className="w-4 h-4" />}
+                          {status === "rest" && <Coffee className="w-4 h-4" />}
+                        </div>
+                      </div>
                     </button>
                   )
                 },
@@ -349,7 +400,7 @@ export default function WorkoutCalendar() {
 
       {/* Menú de acciones flotante */}
       {showDayActions && selectedDate && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-5">
           <Card className="w-full max-w-lg shadow-2xl border-0 bg-white/95 backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-200">
             <CardHeader className="pb-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-t-lg">
               <div className="flex items-center justify-between">
@@ -358,12 +409,14 @@ export default function WorkoutCalendar() {
                     {formatDate(selectedDate)}
                     {selectedWorkout && (
                       <Badge
-                        variant={selectedWorkout.type === "rest" ? "secondary" : "default"}
-                        className={`ml-3 px-3 py-1 text-sm font-semibold ${
-                          selectedWorkout.type === "rest"
-                            ? "bg-orange-100 text-orange-800 border-orange-200"
-                            : "bg-green-100 text-green-800 border-green-200"
-                        }`}
+                        className={`
+                          ml-3 px-2 py-2 text-sm font-semibold
+                          ${
+                            selectedWorkout.type === "rest"
+                              ? "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
+                              : "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
+                          }
+                        `}
                       >
                         {selectedWorkout.type === "rest" ? "🛌 Descanso" : "💪 Entrenamiento"}
                       </Badge>
@@ -382,6 +435,34 @@ export default function WorkoutCalendar() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6 p-6">
+              {/* Sección mejorada para días de descanso */}
+              {selectedWorkout && selectedWorkout.type === "rest" && (
+                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 p-6 rounded-xl border-2 border-orange-200">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="bg-orange-100 p-4 rounded-full">
+                      <Coffee className="w-8 h-8 text-orange-600" />
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-orange-800 mb-2">Día de Descanso</h3>
+                    <p className="text-orange-700 text-sm leading-relaxed">
+                      Este día está marcado como descanso. Es importante permitir que tu cuerpo se recupere para obtener
+                      mejores resultados en tus próximos entrenamientos.
+                    </p>
+                  </div>
+                  <div className="mt-4 flex items-center justify-center space-x-4 text-xs text-orange-600">
+                    <div className="flex items-center">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+                      Recuperación muscular
+                    </div>
+                    <div className="flex items-center">
+                      <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+                      Descanso activo
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Resumen del entrenamiento si existe */}
               {selectedWorkout && selectedWorkout.type === "workout" && (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-200">
@@ -397,20 +478,14 @@ export default function WorkoutCalendar() {
                           <span className="text-green-600 bg-green-200 px-3 py-1 rounded-full text-xs font-bold">
                             {exercise.sets}×{exercise.reps}
                           </span>
-                          {exercise.weight && exercise.weight > 0 && (
-                            <span className="text-green-600 bg-green-200 px-3 py-1 rounded-full text-xs font-bold">
-                              {exercise.weight}kg
-                            </span>
-                          )}
+                          {/* Mostrar "Libre" en lugar de peso 0 */}
+                          <span className="text-green-600 bg-green-200 px-3 py-1 rounded-full text-xs font-bold">
+                            {formatWeight(exercise.weight)}
+                          </span>
                           {exercise.rest_time && exercise.rest_time > 0 && (
                             <span className="text-green-600 bg-green-200 px-2 py-1 rounded-full text-xs font-bold flex items-center">
                               <Clock className="w-3 h-3 mr-1" />
                               {exercise.rest_time}s
-                            </span>
-                          )}
-                          {exercise.is_saved && (
-                            <span className="text-green-600 bg-green-200 px-2 py-1 rounded-full text-xs font-bold">
-                              ✓
                             </span>
                           )}
                         </div>

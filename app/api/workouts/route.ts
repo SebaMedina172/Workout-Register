@@ -202,7 +202,7 @@ export async function POST(request: Request) {
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
       console.log(`   Estado: is_saved=${exercise.is_saved}, set_records=${exercise.set_records?.length || 0}`)
 
-      // FIXED: Crear ejercicio con TODOS los datos incluyendo estado
+      // Crear ejercicio con TODOS los datos incluyendo estado
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
@@ -212,8 +212,8 @@ export async function POST(request: Request) {
           reps: exercise.reps,
           rest_seconds: exercise.rest_time,
           weight: exercise.weight || 0,
-          is_saved: exercise.is_saved || false, // ✅ FIXED: Guardar estado is_saved
-          is_expanded: exercise.is_expanded || false, // ✅ FIXED: Guardar estado is_expanded
+          is_saved: exercise.is_saved || false,
+          is_expanded: exercise.is_expanded || false,
         })
         .select()
         .single()
@@ -229,7 +229,7 @@ export async function POST(request: Request) {
       createdExercises.push(createdExercise)
       console.log(`✅ Ejercicio ${i + 1} creado exitosamente con ID:`, createdExercise.id)
 
-      // FIXED: Guardar registros de series si el ejercicio está guardado
+      // Guardar registros de series si el ejercicio está guardado
       if (exercise.is_saved && exercise.set_records && exercise.set_records.length > 0) {
         console.log(`💾 Guardando ${exercise.set_records.length} series para ejercicio ${exercise.exercise_name}`)
 
