@@ -18,6 +18,15 @@ interface WorkoutExercise {
   rest_time: number
   weight?: number
   custom_data?: Record<string, any>
+  is_saved?: boolean
+  is_expanded?: boolean
+  set_records?: Array<{
+    id: string
+    set_number: number
+    reps: number
+    weight: number
+    custom_data?: Record<string, any>
+  }>
 }
 
 interface Workout {
@@ -50,7 +59,20 @@ export default function WorkoutCalendar() {
       if (response.ok) {
         const data = await response.json()
         console.log("📊 Workouts cargados:", data.length)
-        setWorkouts(data)
+
+        // Procesar workouts para asegurar que tengan la estructura correcta
+        const processedWorkouts = data.map((workout: any) => ({
+          ...workout,
+          exercises:
+            workout.exercises?.map((ex: any) => ({
+              ...ex,
+              is_saved: ex.is_saved || false,
+              is_expanded: ex.is_expanded || false,
+              set_records: ex.set_records || [],
+            })) || [],
+        }))
+
+        setWorkouts(processedWorkouts)
       } else {
         console.error("❌ Error cargando workouts:", response.status, response.statusText)
         const errorText = await response.text()
@@ -95,6 +117,7 @@ export default function WorkoutCalendar() {
       const workout = getWorkoutForDate(selectedDate)
       if (workout) {
         console.log("✏️ Editando entrenamiento:", workout.id)
+        console.log("📊 Datos del workout a editar:", workout)
         setEditingWorkout(workout)
         setShowWorkoutForm(true)
         setShowDayActions(false)
@@ -206,7 +229,7 @@ export default function WorkoutCalendar() {
   return (
     <div className="relative">
       {/* Botón Hoy reposicionado para evitar overlap con navegación */}
-      <div className="absolute top-1 right-2 z-20">
+      <div className="absolute top-2 right-2 z-20">
         <Button
           onClick={goToToday}
           size="sm"
@@ -379,6 +402,17 @@ export default function WorkoutCalendar() {
                               {exercise.weight}kg
                             </span>
                           )}
+                          {exercise.rest_time && exercise.rest_time > 0 && (
+                            <span className="text-green-600 bg-green-200 px-2 py-1 rounded-full text-xs font-bold flex items-center">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {exercise.rest_time}s
+                            </span>
+                          )}
+                          {exercise.is_saved && (
+                            <span className="text-green-600 bg-green-200 px-2 py-1 rounded-full text-xs font-bold">
+                              ✓
+                            </span>
+                          )}
                         </div>
                       </li>
                     ))}
@@ -462,10 +496,10 @@ export default function WorkoutCalendar() {
             setShowWorkoutForm(false)
             setEditingWorkout(null)
           }}
-          onSave={() => {
+          onSave={async () => {
             setShowWorkoutForm(false)
             setEditingWorkout(null)
-            loadWorkouts()
+            await loadWorkouts()
           }}
         />
       )}

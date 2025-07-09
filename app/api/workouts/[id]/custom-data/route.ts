@@ -2,11 +2,11 @@ import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
+// GET - Obtener datos completos del workout incluyendo ejercicios y datos personalizados
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
 
-    // Verificar autenticación
     const {
       data: { session },
     } = await supabase.auth.getSession()
@@ -17,123 +17,122 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // El ID viene como "workout_YYYY-MM-DD", extraer la fecha
     const workoutDate = params.id.replace("workout_", "")
 
-    console.log("📊 Cargando datos personalizados para fecha:", workoutDate)
+    console.log("📊 Cargando datos completos para workout:", workoutDate)
 
-    // 1. Obtener el workout
+    // CONSULTA MEJORADA - obtener todos los datos en una sola consulta
     const { data: workout, error: workoutError } = await supabase
       .from("workouts")
-      .select("id")
+      .select(`
+        *,
+        workout_exercises (
+          id,
+          exercise_name,
+          sets,
+          reps,
+          rest_seconds,
+          weight,
+          is_saved,
+          is_expanded,
+          workout_set_records (
+            id,
+            set_number,
+            reps,
+            weight,
+            custom_data
+          ),
+          workout_custom_data (
+            value,
+            user_columns (
+              column_name,
+              column_type
+            )
+          )
+        )
+      `)
       .eq("user_id", session.user.id)
       .eq("date", workoutDate)
       .single()
 
-    if (workoutError || !workout) {
-      console.log("ℹ️ No se encontró workout para la fecha:", workoutDate)
-      return NextResponse.json({ exercises: [] })
+    if (workoutError) {
+      console.error("❌ Error fetching workout:", workoutError)
+      return NextResponse.json({ error: "Workout no encontrado" }, { status: 404 })
     }
 
-    console.log("✅ Workout encontrado:", workout.id)
-
-    // 2. Obtener ejercicios del workout
-    const { data: exercises, error: exercisesError } = await supabase
-      .from("workout_exercises")
-      .select("*")
-      .eq("workout_id", workout.id)
-      .order("created_at")
-
-    if (exercisesError) {
-      console.error("❌ Error obteniendo ejercicios:", exercisesError)
-      return NextResponse.json({ error: "Error obteniendo ejercicios" }, { status: 500 })
+    if (!workout) {
+      return NextResponse.json({ error: "Workout no encontrado" }, { status: 404 })
     }
 
-    if (!exercises || exercises.length === 0) {
-      console.log("ℹ️ No hay ejercicios para este workout")
-      return NextResponse.json({ exercises: [] })
-    }
+    // Formatear ejercicios con todos los datos
+    const exercises =
+      workout.workout_exercises?.map((exercise: any) => {
+        // Procesar datos personalizados del ejercicio
+        const custom_data: Record<string, any> = {}
+        if (exercise.workout_custom_data) {
+          exercise.workout_custom_data.forEach((item: any) => {
+            if (item.user_columns) {
+              const columnName = item.user_columns.column_name
+              const columnType = item.user_columns.column_type
+              let value = item.value
 
-    console.log(`✅ ${exercises.length} ejercicios encontrados`)
+              // Convertir valor según el tipo
+              if (columnType === "number" && value) {
+                value = Number(value)
+              } else if (columnType === "boolean" && value) {
+                value = value.toLowerCase() === "true"
+              }
 
-    // 3. Obtener datos personalizados para estos ejercicios
-    const exerciseIds = exercises.map((ex) => ex.id)
-    console.log(
-      "📊 Obteniendo datos personalizados para ejercicios:",
-      exerciseIds.map((id) => id.slice(0, 8) + "…"),
-    )
-
-    const { data: customData, error: customDataError } = await supabase
-      .from("workout_custom_data")
-      .select("exercise_id, column_id, value")
-      .in("exercise_id", exerciseIds)
-
-    if (customDataError) {
-      console.error("❌ Error obteniendo datos personalizados:", customDataError)
-      // No fallar, continuar sin datos personalizados
-    }
-
-    console.log(`📊 ${customData?.length || 0} registros de datos personalizados encontrados`)
-
-    // 4. Obtener información de las columnas personalizadas
-    const { data: userColumns, error: columnsError } = await supabase
-      .from("user_columns") // CORREGIDO: usar user_columns
-      .select("id, column_name, column_type")
-      .eq("user_id", session.user.id)
-      .eq("is_active", true)
-
-    if (columnsError) {
-      console.error("❌ Error obteniendo columnas:", columnsError)
-      // Continuar sin columnas personalizadas
-    }
-
-    console.log(
-      `✅ ${userColumns?.length || 0} columnas encontradas:`,
-      userColumns?.map((col) => `${col.column_name} (${col.column_type}, ID: ${col.id})`) || [],
-    )
-
-    // 5. Combinar datos
-    const exercisesWithCustomData = exercises.map((exercise) => {
-      const exerciseCustomData = customData?.filter((cd) => cd.exercise_id === exercise.id) || []
-
-      const customDataObject: Record<string, any> = {}
-
-      exerciseCustomData.forEach((cd) => {
-        const column = userColumns?.find((col) => col.id === cd.column_id)
-        if (column) {
-          let processedValue = cd.value
-
-          // Convertir el valor según el tipo de columna
-          if (column.column_type === "boolean") {
-            processedValue = cd.value === "true" || cd.value === true
-          } else if (column.column_type === "number") {
-            processedValue = Number(cd.value) || 0
-          }
-
-          customDataObject[column.column_name] = processedValue
-          console.log(
-            `📋 Dato procesado: ejercicio ${exercise.id.slice(0, 8)}… -> ${column.column_name} = ${processedValue}`,
-          )
+              custom_data[columnName] = value
+            }
+          })
         }
-      })
 
-      return {
-        ...exercise,
-        custom_data: customDataObject,
-      }
-    })
+        // Procesar registros de series
+        const set_records =
+          exercise.workout_set_records?.map((record: any) => ({
+            id: record.id,
+            set_number: record.set_number,
+            reps: record.reps,
+            weight: record.weight,
+            custom_data: record.custom_data || {},
+          })) || []
 
-    console.log(`✅ Cargados ${exercisesWithCustomData.length} ejercicios con datos personalizados`)
+        console.log(`📋 Ejercicio cargado: ${exercise.exercise_name}`)
+        console.log(
+          `   Configuración: ${exercise.sets}×${exercise.reps}×${exercise.weight}kg, descanso: ${exercise.rest_seconds}s`,
+        )
+        console.log(
+          `   Estado: is_saved=${exercise.is_saved}, is_expanded=${exercise.is_expanded}, series=${set_records.length}`,
+        )
 
-    // Log de datos personalizados por ejercicio
-    exercisesWithCustomData.forEach((ex, idx) => {
-      if (Object.keys(ex.custom_data).length > 0) {
-        console.log(`📋 Ejercicio ${idx + 1} (${ex.exercise_name}) - Datos personalizados:`, ex.custom_data)
-      }
+        return {
+          id: exercise.id,
+          exercise_name: exercise.exercise_name,
+          sets: exercise.sets || 3,
+          reps: exercise.reps || 10,
+          rest_time: exercise.rest_seconds || 60,
+          weight: exercise.weight || 0,
+          custom_data,
+          is_saved: exercise.is_saved || false,
+          is_expanded: exercise.is_expanded || false,
+          set_records,
+        }
+      }) || []
+
+    console.log("✅ Datos completos cargados:", exercises.length, "ejercicios")
+    exercises.forEach((ex: any, idx: number) => {
+      console.log(`  ${idx + 1}. ${ex.exercise_name} (saved: ${ex.is_saved}, series: ${ex.set_records.length})`)
     })
 
     return NextResponse.json({
-      exercises: exercisesWithCustomData,
+      workout: {
+        id: workout.id,
+        date: workout.date,
+        type: workout.is_rest_day ? "rest" : "workout",
+      },
+      exercises,
     })
   } catch (error) {
-    console.error("💥 Error cargando datos personalizados:", error)
+    console.error("💥 Error in GET /api/workouts/[id]/custom-data:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

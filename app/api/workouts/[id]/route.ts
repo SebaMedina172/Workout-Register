@@ -47,8 +47,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     console.log("✅ Workout principal actualizado:", workout.id)
 
-    // Eliminar ejercicios existentes y sus datos personalizados (cascada)
+    // Eliminar ejercicios existentes y sus datos relacionados
     console.log("🗑️ Eliminando ejercicios existentes...")
+
+    // First delete set records
+    await supabase.from("workout_set_records").delete().eq("workout_id", workout.id)
+
+    // Then delete exercises (this will cascade delete custom data)
     const { error: deleteExercisesError } = await supabase
       .from("workout_exercises")
       .delete()
@@ -77,8 +82,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       const exercise = exercises[i]
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
+      console.log(`   Estado: is_saved=${exercise.is_saved}, set_records=${exercise.set_records?.length || 0}`)
 
-      // Crear ejercicio en workout_exercises
+      // Crear ejercicio en workout_exercises con estado guardado
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
@@ -88,6 +94,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
           reps: exercise.reps,
           rest_seconds: exercise.rest_time,
           weight: exercise.weight || 0,
+          is_saved: exercise.is_saved || false,
+          is_expanded: exercise.is_expanded || false,
         })
         .select()
         .single()
@@ -103,14 +111,36 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       createdExercises.push(createdExercise)
       console.log(`✅ Ejercicio ${i + 1} creado exitosamente con ID:`, createdExercise.id)
 
-      // GUARDAR datos personalizados - CORREGIDO: incluir workout_id
+      // Guardar registros de series si el ejercicio está guardado
+      if (exercise.is_saved && exercise.set_records && exercise.set_records.length > 0) {
+        console.log(`💾 Guardando ${exercise.set_records.length} series para ejercicio ${exercise.exercise_name}`)
+
+        const setRecordsToInsert = exercise.set_records.map((setRecord: any) => ({
+          workout_id: workout.id,
+          exercise_id: createdExercise.id,
+          set_number: setRecord.set_number,
+          reps: setRecord.reps,
+          weight: setRecord.weight || 0,
+          custom_data: setRecord.custom_data || {},
+        }))
+
+        const { error: setRecordsError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)
+
+        if (setRecordsError) {
+          console.error(`❌ Error guardando series para ejercicio ${i + 1}:`, setRecordsError)
+        } else {
+          console.log(`✅ Series guardadas para ejercicio ${i + 1}`)
+        }
+      }
+
+      // GUARDAR datos personalizados del ejercicio
       if (exercise.custom_data && Object.keys(exercise.custom_data).length > 0) {
         console.log(`📊 Guardando datos personalizados para ejercicio ${i + 1}`)
 
         try {
           // Obtener columnas personalizadas del usuario
           const { data: userColumns, error: columnsError } = await supabase
-            .from("user_columns") // CORREGIDO: usar user_columns
+            .from("user_columns")
             .select("id, column_name, column_type")
             .eq("user_id", session.user.id)
             .eq("is_active", true)
@@ -121,21 +151,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
           }
 
           if (userColumns && userColumns.length > 0) {
-            console.log(
-              `📋 Columnas disponibles:`,
-              userColumns.map((col) => `${col.column_name} (${col.column_type}, ID: ${col.id})`),
-            )
-
             const customDataToInsert = []
 
             for (const [columnName, value] of Object.entries(exercise.custom_data)) {
               const column = userColumns.find((col) => col.column_name === columnName)
               if (column && value !== null && value !== undefined && value !== "") {
-                console.log(
-                  `📊 Preparando dato: ${columnName} = ${value} (tipo: ${column.column_type}, column_id: ${column.id})`,
-                )
-
-                // Validar y procesar valor según el tipo de columna
                 let processedValue = String(value)
 
                 if (column.column_type === "boolean") {
@@ -144,9 +164,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
                   processedValue = String(Number(value) || 0)
                 }
 
-                // CORREGIDO: Incluir workout_id obligatorio
                 customDataToInsert.push({
-                  workout_id: workout.id, // ✅ AGREGADO: workout_id obligatorio
+                  workout_id: workout.id,
                   exercise_id: createdExercise.id,
                   column_id: column.id,
                   value: processedValue,
@@ -155,29 +174,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             }
 
             if (customDataToInsert.length > 0) {
-              console.log(`📊 Insertando ${customDataToInsert.length} datos personalizados:`)
-              customDataToInsert.forEach((item, idx) => {
-                console.log(
-                  `  ${idx + 1}. workout_id: ${item.workout_id}, exercise_id: ${item.exercise_id}, column_id: ${item.column_id}, value: "${item.value}"`,
-                )
-              })
-
               const { error: customError } = await supabase.from("workout_custom_data").insert(customDataToInsert)
 
               if (customError) {
                 console.error(`❌ Error guardando datos personalizados:`, customError)
-                console.error("Código de error:", customError.code)
-                console.error("Mensaje:", customError.message)
-                console.error("Detalles:", customError.details)
-                console.error("Datos que se intentaron insertar:", JSON.stringify(customDataToInsert, null, 2))
               } else {
                 console.log(`✅ Datos personalizados guardados para ejercicio ${i + 1}`)
               }
-            } else {
-              console.log(`ℹ️ No hay datos personalizados válidos para guardar en ejercicio ${i + 1}`)
             }
-          } else {
-            console.log(`ℹ️ No hay columnas personalizadas activas para el usuario`)
           }
         } catch (customDataError) {
           console.error(`💥 Error procesando datos personalizados para ejercicio ${i + 1}:`, customDataError)
@@ -228,7 +232,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Error al crear workout: ${workoutError.message}` }, { status: 500 })
     }
 
-    console.log("✅ Workout principal creado/actualizado:", workout.id)
+    console.log("✅ Workout principal creado:", workout.id)
 
     if (type === "rest") {
       console.log("🛌 Día de descanso creado exitosamente")
@@ -249,7 +253,7 @@ export async function POST(request: Request) {
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
 
-      // Crear ejercicio en workout_exercises
+      // Crear ejercicio en workout_exercises con estado guardado
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
@@ -259,6 +263,8 @@ export async function POST(request: Request) {
           reps: exercise.reps,
           rest_seconds: exercise.rest_time,
           weight: exercise.weight || 0,
+          is_saved: exercise.is_saved || false,
+          is_expanded: exercise.is_expanded || false,
         })
         .select()
         .single()
@@ -274,14 +280,35 @@ export async function POST(request: Request) {
       createdExercises.push(createdExercise)
       console.log(`✅ Ejercicio ${i + 1} creado exitosamente`)
 
+      // Guardar registros de series si el ejercicio está guardado
+      if (exercise.is_saved && exercise.set_records && exercise.set_records.length > 0) {
+        console.log(`💾 Guardando ${exercise.set_records.length} series para ejercicio ${exercise.exercise_name}`)
+
+        const setRecordsToInsert = exercise.set_records.map((setRecord: any) => ({
+          workout_id: workout.id,
+          exercise_id: createdExercise.id,
+          set_number: setRecord.set_number,
+          reps: setRecord.reps,
+          weight: setRecord.weight || 0,
+          custom_data: setRecord.custom_data || {},
+        }))
+
+        const { error: setRecordsError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)
+
+        if (setRecordsError) {
+          console.error(`❌ Error guardando series:`, setRecordsError)
+        } else {
+          console.log(`✅ Series guardadas para ejercicio ${i + 1}`)
+        }
+      }
+
       // GUARDAR datos personalizados (mismo código que PUT)
       if (exercise.custom_data && Object.keys(exercise.custom_data).length > 0) {
         console.log(`📊 Guardando datos personalizados para ejercicio ${i + 1}`)
 
         try {
-          // Obtener columnas personalizadas del usuario
           const { data: userColumns, error: columnsError } = await supabase
-            .from("user_columns") // CORREGIDO: tabla correcta
+            .from("user_columns")
             .select("id, column_name, column_type")
             .eq("user_id", session.user.id)
             .eq("is_active", true)
@@ -292,18 +319,11 @@ export async function POST(request: Request) {
           }
 
           if (userColumns && userColumns.length > 0) {
-            console.log(
-              `📋 Columnas disponibles:`,
-              userColumns.map((col) => `${col.column_name} (${col.column_type}, ID: ${col.id})`),
-            )
-
             const customDataToInsert = []
 
             for (const [columnName, value] of Object.entries(exercise.custom_data)) {
               const column = userColumns.find((col) => col.column_name === columnName)
               if (column && value !== null && value !== undefined && value !== "") {
-                console.log(`📊 Preparando dato: ${columnName} = ${value} (tipo: ${column.column_type})`)
-
                 let processedValue = String(value)
 
                 if (column.column_type === "boolean") {
@@ -313,7 +333,7 @@ export async function POST(request: Request) {
                 }
 
                 customDataToInsert.push({
-                  workout_id: workout.id, // ✅ INCLUIR workout_id
+                  workout_id: workout.id,
                   exercise_id: createdExercise.id,
                   column_id: column.id,
                   value: processedValue,
@@ -322,19 +342,17 @@ export async function POST(request: Request) {
             }
 
             if (customDataToInsert.length > 0) {
-              console.log(`📊 Insertando ${customDataToInsert.length} datos personalizados`)
-
               const { error: customError } = await supabase.from("workout_custom_data").insert(customDataToInsert)
 
               if (customError) {
-                console.error(`⚠️ Error guardando datos personalizados para ejercicio ${i + 1}:`, customError)
+                console.error(`⚠️ Error guardando datos personalizados:`, customError)
               } else {
                 console.log(`✅ Datos personalizados guardados para ejercicio ${i + 1}`)
               }
             }
           }
         } catch (customDataError) {
-          console.error(`💥 Error procesando datos personalizados para ejercicio ${i + 1}:`, customDataError)
+          console.error(`💥 Error procesando datos personalizados:`, customDataError)
         }
       }
     }
@@ -377,7 +395,11 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: "Entrenamiento no encontrado" }, { status: 404 })
     }
 
-    // Eliminar ejercicios primero (cascada automática debería eliminar custom_data)
+    // Eliminar set records primero
+    console.log("🗑️ Eliminando registros de series...")
+    await supabase.from("workout_set_records").delete().eq("workout_id", workout.id)
+
+    // Eliminar ejercicios (cascada automática debería eliminar custom_data)
     console.log("🗑️ Eliminando ejercicios...")
     await supabase.from("workout_exercises").delete().eq("workout_id", workout.id)
 

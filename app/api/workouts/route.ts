@@ -17,7 +17,7 @@ export async function GET() {
 
     console.log("📊 Cargando entrenamientos para usuario:", session.user.id)
 
-    // CONSULTA SIMPLIFICADA PRIMERO - sin datos personalizados para evitar errores de relación
+    // CONSULTA MEJORADA - cargar todos los datos de una vez
     const { data: workouts, error: workoutsError } = await supabase
       .from("workouts")
       .select(`
@@ -28,7 +28,23 @@ export async function GET() {
           sets,
           reps,
           rest_seconds,
-          weight
+          weight,
+          is_saved,
+          is_expanded,
+          workout_set_records (
+            id,
+            set_number,
+            reps,
+            weight,
+            custom_data
+          ),
+          workout_custom_data (
+            value,
+            user_columns (
+              column_name,
+              column_type
+            )
+          )
         )
       `)
       .eq("user_id", session.user.id)
@@ -46,6 +62,37 @@ export async function GET() {
       workouts?.map((workout) => {
         const exercises =
           workout.workout_exercises?.map((exercise: any) => {
+            // Procesar datos personalizados
+            const custom_data: Record<string, any> = {}
+            if (exercise.workout_custom_data) {
+              exercise.workout_custom_data.forEach((item: any) => {
+                if (item.user_columns) {
+                  const columnName = item.user_columns.column_name
+                  const columnType = item.user_columns.column_type
+                  let value = item.value
+
+                  // Convertir valor según el tipo
+                  if (columnType === "number" && value) {
+                    value = Number(value)
+                  } else if (columnType === "boolean" && value) {
+                    value = value.toLowerCase() === "true"
+                  }
+
+                  custom_data[columnName] = value
+                }
+              })
+            }
+
+            // Procesar registros de series
+            const set_records =
+              exercise.workout_set_records?.map((record: any) => ({
+                id: record.id,
+                set_number: record.set_number,
+                reps: record.reps,
+                weight: record.weight,
+                custom_data: record.custom_data || {},
+              })) || []
+
             return {
               id: exercise.id,
               exercise_name: exercise.exercise_name,
@@ -53,7 +100,10 @@ export async function GET() {
               reps: exercise.reps || 10,
               rest_time: exercise.rest_seconds || 60,
               weight: exercise.weight || 0,
-              custom_data: {}, // Por ahora vacío hasta que la relación esté funcionando
+              custom_data,
+              is_saved: exercise.is_saved || false,
+              is_expanded: exercise.is_expanded || false,
+              set_records,
             }
           }) || []
 
@@ -64,55 +114,6 @@ export async function GET() {
           exercises,
         }
       }) || []
-
-    // Intentar cargar datos personalizados por separado
-    try {
-      console.log("📊 Intentando cargar datos personalizados...")
-
-      for (const workout of formattedWorkouts) {
-        for (const exercise of workout.exercises) {
-          // Cargar datos personalizados para cada ejercicio
-          const { data: customData, error: customError } = await supabase
-            .from("workout_custom_data")
-            .select(`
-              value,
-              user_columns (
-                column_name,
-                column_type
-              )
-            `)
-            .eq("exercise_id", exercise.id)
-
-          if (!customError && customData) {
-            const custom_data: Record<string, any> = {}
-
-            customData.forEach((item: any) => {
-              if (item.user_columns) {
-                const columnName = item.user_columns.column_name
-                const columnType = item.user_columns.column_type
-                let value = item.value
-
-                // Convertir valor según el tipo
-                if (columnType === "number" && value) {
-                  value = Number(value)
-                } else if (columnType === "boolean" && value) {
-                  value = value.toLowerCase() === "true"
-                }
-
-                custom_data[columnName] = value
-              }
-            })
-
-            exercise.custom_data = custom_data
-          }
-        }
-      }
-
-      console.log("✅ Datos personalizados cargados exitosamente")
-    } catch (customError) {
-      console.warn("⚠️ No se pudieron cargar datos personalizados:", customError)
-      // Continuar sin datos personalizados
-    }
 
     console.log("✅ Entrenamientos formateados:", formattedWorkouts.length)
     return NextResponse.json(formattedWorkouts)
@@ -164,7 +165,13 @@ export async function POST(request: Request) {
 
     console.log("✅ Workout principal creado/actualizado:", workout.id)
 
-    // Eliminar ejercicios existentes
+    // Eliminar ejercicios existentes y sus datos relacionados
+    console.log("🗑️ Eliminando ejercicios existentes...")
+
+    // Primero eliminar registros de series
+    await supabase.from("workout_set_records").delete().eq("workout_id", workout.id)
+
+    // Luego eliminar ejercicios (esto eliminará automáticamente los custom_data por cascada)
     const { error: deleteExercisesError } = await supabase
       .from("workout_exercises")
       .delete()
@@ -193,8 +200,9 @@ export async function POST(request: Request) {
       const exercise = exercises[i]
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
+      console.log(`   Estado: is_saved=${exercise.is_saved}, set_records=${exercise.set_records?.length || 0}`)
 
-      // Crear ejercicio
+      // FIXED: Crear ejercicio con TODOS los datos incluyendo estado
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
@@ -204,6 +212,8 @@ export async function POST(request: Request) {
           reps: exercise.reps,
           rest_seconds: exercise.rest_time,
           weight: exercise.weight || 0,
+          is_saved: exercise.is_saved || false, // ✅ FIXED: Guardar estado is_saved
+          is_expanded: exercise.is_expanded || false, // ✅ FIXED: Guardar estado is_expanded
         })
         .select()
         .single()
@@ -217,16 +227,38 @@ export async function POST(request: Request) {
       }
 
       createdExercises.push(createdExercise)
-      console.log(`✅ Ejercicio ${i + 1} creado exitosamente`)
+      console.log(`✅ Ejercicio ${i + 1} creado exitosamente con ID:`, createdExercise.id)
 
-      // GUARDAR datos personalizados - CORREGIDO: incluir workout_id
+      // FIXED: Guardar registros de series si el ejercicio está guardado
+      if (exercise.is_saved && exercise.set_records && exercise.set_records.length > 0) {
+        console.log(`💾 Guardando ${exercise.set_records.length} series para ejercicio ${exercise.exercise_name}`)
+
+        const setRecordsToInsert = exercise.set_records.map((setRecord: any) => ({
+          workout_id: workout.id,
+          exercise_id: createdExercise.id,
+          set_number: setRecord.set_number,
+          reps: setRecord.reps,
+          weight: setRecord.weight || 0,
+          custom_data: setRecord.custom_data || {},
+        }))
+
+        const { error: setRecordsError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)
+
+        if (setRecordsError) {
+          console.error(`❌ Error guardando series para ejercicio ${i + 1}:`, setRecordsError)
+        } else {
+          console.log(`✅ Series guardadas para ejercicio ${i + 1}`)
+        }
+      }
+
+      // GUARDAR datos personalizados del ejercicio
       if (exercise.custom_data && Object.keys(exercise.custom_data).length > 0) {
         console.log(`📊 Guardando datos personalizados para ejercicio ${i + 1}`)
 
         try {
           // Obtener columnas personalizadas del usuario
           const { data: userColumns, error: columnsError } = await supabase
-            .from("user_columns") // CORREGIDO: usar user_columns
+            .from("user_columns")
             .select("id, column_name, column_type")
             .eq("user_id", session.user.id)
             .eq("is_active", true)
@@ -257,9 +289,8 @@ export async function POST(request: Request) {
                   processedValue = String(Number(value) || 0)
                 }
 
-                // CORREGIDO: Incluir workout_id obligatorio
                 customDataToInsert.push({
-                  workout_id: workout.id, // ✅ AGREGADO: workout_id obligatorio
+                  workout_id: workout.id,
                   exercise_id: createdExercise.id,
                   column_id: column.id,
                   value: processedValue,
