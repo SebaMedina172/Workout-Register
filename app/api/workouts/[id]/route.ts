@@ -82,9 +82,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       const exercise = exercises[i]
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
-      console.log(`   Estado: is_saved=${exercise.is_saved}, set_records=${exercise.set_records?.length || 0}`)
+      console.log(
+        `   Estado: is_saved=${exercise.is_saved}, is_completed=${exercise.is_completed}, set_records=${exercise.set_records?.length || 0}`,
+      )
 
-      // Crear ejercicio en workout_exercises con estado guardado
+      // Crear ejercicio en workout_exercises con estado guardado y completado
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
@@ -96,6 +98,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
           weight: exercise.weight || 0,
           is_saved: exercise.is_saved || false,
           is_expanded: exercise.is_expanded || false,
+          is_completed: exercise.is_completed || false,
         })
         .select()
         .single()
@@ -122,6 +125,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
           reps: setRecord.reps,
           weight: setRecord.weight || 0,
           custom_data: setRecord.custom_data || {},
+          is_completed: Boolean(setRecord.is_completed), // Ensure boolean type
         }))
 
         const { error: setRecordsError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)
@@ -253,7 +257,7 @@ export async function POST(request: Request) {
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
 
-      // Crear ejercicio en workout_exercises con estado guardado
+      // Crear ejercicio en workout_exercises con estado guardado y completado
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
@@ -265,6 +269,7 @@ export async function POST(request: Request) {
           weight: exercise.weight || 0,
           is_saved: exercise.is_saved || false,
           is_expanded: exercise.is_expanded || false,
+          is_completed: exercise.is_completed || false,
         })
         .select()
         .single()
@@ -291,6 +296,7 @@ export async function POST(request: Request) {
           reps: setRecord.reps,
           weight: setRecord.weight || 0,
           custom_data: setRecord.custom_data || {},
+          is_completed: Boolean(setRecord.is_completed), // Ensure boolean type
         }))
 
         const { error: setRecordsError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)

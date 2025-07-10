@@ -17,7 +17,7 @@ export async function GET() {
 
     console.log("📊 Cargando entrenamientos para usuario:", session.user.id)
 
-    // CONSULTA MEJORADA - cargar todos los datos de una vez
+    // CONSULTA MEJORADA - cargar todos los datos de una vez incluyendo estado de completado
     const { data: workouts, error: workoutsError } = await supabase
       .from("workouts")
       .select(`
@@ -31,12 +31,14 @@ export async function GET() {
           weight,
           is_saved,
           is_expanded,
+          is_completed,
           workout_set_records (
             id,
             set_number,
             reps,
             weight,
-            custom_data
+            custom_data,
+            is_completed
           ),
           workout_custom_data (
             value,
@@ -83,7 +85,7 @@ export async function GET() {
               })
             }
 
-            // Procesar registros de series
+            // Procesar registros de series con estado de completado
             const set_records =
               exercise.workout_set_records?.map((record: any) => ({
                 id: record.id,
@@ -91,6 +93,7 @@ export async function GET() {
                 reps: record.reps,
                 weight: record.weight,
                 custom_data: record.custom_data || {},
+                is_completed: record.is_completed || false,
               })) || []
 
             return {
@@ -103,6 +106,7 @@ export async function GET() {
               custom_data,
               is_saved: exercise.is_saved || false,
               is_expanded: exercise.is_expanded || false,
+              is_completed: exercise.is_completed || false,
               set_records,
             }
           }) || []
@@ -200,9 +204,11 @@ export async function POST(request: Request) {
       const exercise = exercises[i]
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
-      console.log(`   Estado: is_saved=${exercise.is_saved}, set_records=${exercise.set_records?.length || 0}`)
+      console.log(
+        `   Estado: is_saved=${exercise.is_saved}, is_completed=${exercise.is_completed}, set_records=${exercise.set_records?.length || 0}`,
+      )
 
-      // Crear ejercicio con TODOS los datos incluyendo estado
+      // Crear ejercicio con TODOS los datos incluyendo estado de completado
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
@@ -214,6 +220,7 @@ export async function POST(request: Request) {
           weight: exercise.weight || 0,
           is_saved: exercise.is_saved || false,
           is_expanded: exercise.is_expanded || false,
+          is_completed: exercise.is_completed || false,
         })
         .select()
         .single()
@@ -240,6 +247,7 @@ export async function POST(request: Request) {
           reps: setRecord.reps,
           weight: setRecord.weight || 0,
           custom_data: setRecord.custom_data || {},
+          is_completed: Boolean(setRecord.is_completed), // Ensure boolean type
         }))
 
         const { error: setRecordsError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -30,6 +30,9 @@ import {
   Lock,
   Loader2,
   Clock,
+  CheckCircle2,
+  Circle,
+  Target,
 } from "lucide-react"
 import ExerciseManager from "./exercise-manager"
 
@@ -63,6 +66,7 @@ interface SetRecord {
   reps: number
   weight: number
   custom_data?: Record<string, any>
+  is_completed?: boolean
 }
 
 interface WorkoutExercise {
@@ -75,6 +79,7 @@ interface WorkoutExercise {
   custom_data?: Record<string, any>
   is_saved?: boolean
   is_expanded?: boolean
+  is_completed?: boolean
   set_records?: SetRecord[]
 }
 
@@ -200,21 +205,51 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           if (customData.exercises && customData.exercises.length > 0) {
             console.log("✅ Datos completos cargados:", customData.exercises.length, "ejercicios")
 
-            // Log detallado de cada ejercicio
-            customData.exercises.forEach((ex: any, index: number) => {
-              console.log(`📋 Ejercicio ${index + 1}: ${ex.exercise_name}`)
-              console.log(`   Estado: is_saved=${ex.is_saved}, is_expanded=${ex.is_expanded}`)
-              console.log(
-                `   Configuración: ${ex.sets} series × ${ex.reps} reps × ${formatWeight(ex.weight)}, descanso: ${ex.rest_time}s`,
-              )
-              console.log(`   Series registradas: ${ex.set_records?.length || 0}`)
-              if (ex.custom_data && Object.keys(ex.custom_data).length > 0) {
-                console.log(`   Datos personalizados:`, ex.custom_data)
+            // ✅ VALIDACIÓN MEJORADA: Asegurar que todos los valores boolean sean correctos
+            const validatedExercises = customData.exercises.map((ex: any) => {
+              const validatedSetRecords = (ex.set_records || []).map((sr: any) => ({
+                ...sr,
+                is_completed: Boolean(sr.is_completed), // ✅ Forzar boolean
+              }))
+
+              const validatedExercise = {
+                ...ex,
+                is_saved: Boolean(ex.is_saved),
+                is_expanded: Boolean(ex.is_expanded),
+                is_completed: Boolean(ex.is_completed), // ✅ Forzar boolean
+                set_records: validatedSetRecords,
               }
+
+              // Log detallado de cada ejercicio DESPUÉS de validación
+              console.log(`📋 Ejercicio validado: ${validatedExercise.exercise_name}`)
+              console.log(
+                `   Estado: is_saved=${validatedExercise.is_saved}, is_expanded=${validatedExercise.is_expanded}, is_completed=${validatedExercise.is_completed}`,
+              )
+              console.log(
+                `   Configuración: ${validatedExercise.sets} series × ${validatedExercise.reps} reps × ${formatWeight(validatedExercise.weight)}, descanso: ${validatedExercise.rest_time}s`,
+              )
+              console.log(`   Series registradas: ${validatedSetRecords.length}`)
+
+              if (validatedSetRecords.length > 0) {
+                const completedSets = validatedSetRecords.filter((sr: any) => sr.is_completed === true).length
+                console.log(`   Series completadas: ${completedSets}/${validatedSetRecords.length}`)
+                // Log detallado de cada serie
+                validatedSetRecords.forEach((sr: any) => {
+                  console.log(
+                    `     Serie ${sr.set_number}: ${sr.reps}x${formatWeight(sr.weight)} - Completada: ${sr.is_completed} (tipo: ${typeof sr.is_completed})`,
+                  )
+                })
+              }
+
+              if (validatedExercise.custom_data && Object.keys(validatedExercise.custom_data).length > 0) {
+                console.log(`   Datos personalizados:`, validatedExercise.custom_data)
+              }
+
+              return validatedExercise
             })
 
-            // Establecer ejercicios cargados
-            setExercises(customData.exercises)
+            // Establecer ejercicios validados
+            setExercises(validatedExercises)
           } else {
             console.log("ℹ️ No hay ejercicios guardados, creando uno inicial")
             createInitialExercise()
@@ -265,6 +300,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       custom_data: {},
       is_saved: false,
       is_expanded: false,
+      is_completed: false,
       set_records: [],
     }
     setExercises([initialExercise])
@@ -301,6 +337,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       custom_data: {},
       is_saved: false,
       is_expanded: false,
+      is_completed: false,
       set_records: [],
     }
     setExercises((prev) => [...prev, newExercise])
@@ -356,6 +393,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             reps: ex.reps,
             weight: ex.weight || 0,
             custom_data: { ...ex.custom_data },
+            is_completed: false, // ✅ Explícitamente false
           }))
 
           console.log(`💾 Guardando ejercicio ${ex.exercise_name} con ${setRecords.length} series`)
@@ -364,6 +402,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             ...ex,
             is_saved: true,
             is_expanded: false,
+            is_completed: false, // ✅ Explícitamente false
             set_records: setRecords,
           }
         }
@@ -385,6 +424,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             ...ex,
             is_saved: false,
             is_expanded: false,
+            is_completed: false,
             set_records: [],
           }
         }
@@ -406,6 +446,153 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         return ex
       }),
     )
+  }
+
+  // ✅ FUNCIÓN MEJORADA: Guardar automáticamente estados de completado
+  const saveCompletionStates = async () => {
+    if (!workout || !workout.id) {
+      console.log("⚠️ No hay workout ID, no se puede guardar automáticamente")
+      return
+    }
+
+    try {
+      console.log("💾 Guardando estados de completado automáticamente...")
+      console.log("📊 Ejercicios a guardar:", exercises.length)
+
+      // Log detallado de lo que se va a guardar
+      exercises.forEach((ex, index) => {
+        if (ex.is_saved) {
+          console.log(`📋 Ejercicio ${index + 1}: ${ex.exercise_name}`)
+          console.log(`   Completado: ${ex.is_completed} (tipo: ${typeof ex.is_completed})`)
+          if (ex.set_records) {
+            const completedSets = ex.set_records.filter((sr) => sr.is_completed === true).length
+            console.log(`   Series: ${completedSets}/${ex.set_records.length} completadas`)
+            // Log detallado de cada serie
+            ex.set_records.forEach((sr) => {
+              console.log(
+                `     Serie ${sr.set_number}: is_completed=${sr.is_completed} (tipo: ${typeof sr.is_completed})`,
+              )
+            })
+          }
+        }
+      })
+
+      const response = await fetch(`/api/workouts/${workout.id}/completion`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exercises }),
+      })
+
+      if (response.ok) {
+        console.log("✅ Estados de completado guardados automáticamente")
+      } else {
+        const errorData = await response.json()
+        console.error("❌ Error guardando estados de completado:", errorData)
+      }
+    } catch (error) {
+      console.error("💥 Error saving completion states:", error)
+    }
+  }
+
+  // Debounced version para evitar demasiadas llamadas
+  const debouncedSaveCompletion = useMemo(() => {
+    const timeoutRef = { current: null as NodeJS.Timeout | null }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        saveCompletionStates()
+      }, 1000) // Esperar 1 segundo después del último cambio
+    }
+  }, [workout, exercises])
+
+  // ✅ FUNCIÓN MEJORADA: Alternar completado de ejercicio completo
+  const toggleExerciseCompletion = (id: string) => {
+    setExercises(
+      exercises.map((ex) => {
+        if (ex.id === id) {
+          const newCompletedState = !ex.is_completed
+          console.log(`🎯 ${newCompletedState ? "Marcando" : "Desmarcando"} ejercicio completo: ${ex.exercise_name}`)
+          console.log(`   Nuevo estado: ${newCompletedState} (tipo: ${typeof newCompletedState})`)
+
+          // Si marcamos el ejercicio como completado, marcar todas las series
+          // Si lo desmarcamos, desmarcar todas las series
+          const updatedSetRecords =
+            ex.set_records?.map((setRecord) => ({
+              ...setRecord,
+              is_completed: newCompletedState, // ✅ Usar el mismo valor boolean
+            })) || []
+
+          console.log(
+            `   Series actualizadas: ${updatedSetRecords.filter((sr) => sr.is_completed).length}/${updatedSetRecords.length}`,
+          )
+
+          return {
+            ...ex,
+            is_completed: newCompletedState,
+            set_records: updatedSetRecords,
+          }
+        }
+        return ex
+      }),
+    )
+
+    // Guardar automáticamente si es un workout existente
+    if (workout && workout.id) {
+      console.log("💾 Guardando cambio de completado de ejercicio...")
+      debouncedSaveCompletion()
+    }
+  }
+
+  // ✅ FUNCIÓN MEJORADA: Alternar completado de serie individual
+  const toggleSetCompletion = (exerciseId: string, setId: string) => {
+    setExercises(
+      exercises.map((ex) => {
+        if (ex.id === exerciseId) {
+          const updatedSetRecords =
+            ex.set_records?.map((setRecord) => {
+              if (setRecord.id === setId) {
+                const newCompletedState = !setRecord.is_completed
+                console.log(
+                  `🎯 ${newCompletedState ? "Completando" : "Desmarcando"} serie ${setRecord.set_number} de ${ex.exercise_name}`,
+                )
+                console.log(`   Nuevo estado: ${newCompletedState} (tipo: ${typeof newCompletedState})`)
+                return { ...setRecord, is_completed: newCompletedState }
+              }
+              return setRecord
+            }) || []
+
+          // Verificar si todas las series están completadas para actualizar el estado del ejercicio
+          const allSetsCompleted =
+            updatedSetRecords.length > 0 && updatedSetRecords.every((sr) => sr.is_completed === true)
+
+          // El ejercicio está completado solo si TODAS las series están completadas
+          const exerciseCompleted = allSetsCompleted
+
+          const completedSetsCount = updatedSetRecords.filter((sr) => sr.is_completed === true).length
+          console.log(
+            `📊 Estado del ejercicio ${ex.exercise_name}: ${completedSetsCount}/${updatedSetRecords.length} series completadas`,
+          )
+          console.log(`   Ejercicio completado: ${exerciseCompleted}`)
+
+          return {
+            ...ex,
+            set_records: updatedSetRecords,
+            is_completed: exerciseCompleted,
+          }
+        }
+        return ex
+      }),
+    )
+
+    // Guardar automáticamente si es un workout existente
+    if (workout && workout.id) {
+      console.log("💾 Guardando cambio de completado de serie...")
+      debouncedSaveCompletion()
+    }
   }
 
   // Actualizar registro de serie
@@ -437,6 +624,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         return ex
       }),
     )
+
+    // Guardar automáticamente cambios en series si es un workout existente
+    if (workout && workout.id && (field === "reps" || field === "weight" || field.startsWith("custom_"))) {
+      console.log("💾 Guardando cambio en datos de serie...")
+      debouncedSaveCompletion()
+    }
   }
 
   // Crear ejercicio personalizado desde el dropdown
@@ -521,15 +714,22 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         date: date.toISOString().split("T")[0],
         exercisesCount: validExercises.length,
         savedExercises: validExercises.filter((ex) => ex.is_saved).length,
+        completedExercises: validExercises.filter((ex) => ex.is_completed).length,
       })
 
       validExercises.forEach((ex, index) => {
         console.log(`📋 Ejercicio ${index + 1}: ${ex.exercise_name}`)
-        console.log(`   Estado: is_saved=${ex.is_saved}, series=${ex.set_records?.length || 0}`)
+        console.log(
+          `   Estado: is_saved=${ex.is_saved}, is_completed=${ex.is_completed}, series=${ex.set_records?.length || 0}`,
+        )
         if (ex.is_saved && ex.set_records) {
+          const completedSets = ex.set_records.filter((sr) => sr.is_completed).length
+          console.log(`   📊 Series: ${completedSets}/${ex.set_records.length} completadas`)
           console.log(
-            `   📊 Series:`,
-            ex.set_records.map((sr) => `${sr.set_number}: ${sr.reps}x${formatWeight(sr.weight)}`),
+            `   📊 Detalles:`,
+            ex.set_records.map(
+              (sr) => `${sr.set_number}: ${sr.reps}x${formatWeight(sr.weight)} ${sr.is_completed ? "✅" : "⭕"}`,
+            ),
           )
         }
       })
@@ -916,13 +1116,36 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   }
 
   const renderSavedExercise = (exercise: WorkoutExercise) => {
+    const completedSets = exercise.set_records?.filter((sr) => sr.is_completed === true).length || 0
+    const totalSets = exercise.set_records?.length || 0
+    const progressPercentage = totalSets > 0 ? (completedSets / totalSets) * 100 : 0
+
     return (
       <Collapsible open={exercise.is_expanded} onOpenChange={() => toggleExerciseExpansion(exercise.id)}>
-        {/* Header del ejercicio guardado */}
-        <div className="p-4 bg-green-50 border-l-4 border-green-500">
+        {/* Header del ejercicio guardado con checkbox de completado */}
+        <div
+          className={`p-4 border-l-4 transition-all duration-200 ${
+            exercise.is_completed ? "bg-green-100 border-green-500" : "bg-green-50 border-green-500"
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <GripVertical className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing" />
+
+              {/* ✅ NUEVO: Checkbox para completar ejercicio completo */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleExerciseCompletion(exercise.id)}
+                className="p-1 h-auto hover:bg-transparent"
+              >
+                {exercise.is_completed ? (
+                  <CheckCircle2 className="w-6 h-6 text-green-600" />
+                ) : (
+                  <Circle className="w-6 h-6 text-gray-400 hover:text-green-500 transition-colors" />
+                )}
+              </Button>
+
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-0 h-auto">
                   {exercise.is_expanded ? (
@@ -932,18 +1155,44 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                   )}
                 </Button>
               </CollapsibleTrigger>
+
               <div className="flex items-center space-x-2">
-                <Lock className="w-4 h-4 text-green-600" />
-                <span className="font-semibold text-gray-900">{exercise.exercise_name}</span>
+                {exercise.is_completed ? (
+                  <Target className="w-4 h-4 text-green-600" />
+                ) : (
+                  <Lock className="w-4 h-4 text-green-600" />
+                )}
+                <span
+                  className={`font-semibold ${exercise.is_completed ? "line-through text-green-700" : "text-gray-900"}`}
+                >
+                  {exercise.exercise_name}
+                </span>
               </div>
+
               <Badge variant="outline" className="bg-white">
                 {exercise.sets} series × {exercise.reps} reps × {formatWeight(exercise.weight)}
               </Badge>
+
               <Badge variant="outline" className="bg-white">
                 <Clock className="w-3 h-3 mr-1" />
                 {exercise.rest_time}s
               </Badge>
+
+              {/* ✅ NUEVO: Badge de progreso */}
+              <Badge
+                variant="outline"
+                className={`${
+                  exercise.is_completed
+                    ? "bg-green-100 text-green-800 border-green-300"
+                    : completedSets > 0
+                      ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                      : "bg-gray-100 text-gray-600 border-gray-300"
+                }`}
+              >
+                {completedSets}/{totalSets} series
+              </Badge>
             </div>
+
             <Button
               onClick={() => editExercise(exercise.id)}
               variant="outline"
@@ -958,15 +1207,20 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
 
         {/* Contenido expandible - tabla de series */}
         <CollapsibleContent>
-          <div className="bg-white border-l-4 border-green-500">
+          <div
+            className={`border-l-4 transition-all duration-200 ${
+              exercise.is_completed ? "bg-green-50 border-green-500" : "bg-white border-green-500"
+            }`}
+          >
             {/* Header de la tabla de series */}
             <div className="bg-gray-100 border-b">
               <div
                 className="grid gap-4 p-3 font-semibold text-sm text-gray-700"
                 style={{
-                  gridTemplateColumns: `80px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
+                  gridTemplateColumns: `60px 80px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
                 }}
               >
+                <div className="text-center">✅ Hecho</div>
                 <div className="text-center">📊 Serie</div>
                 <div className="text-center">🔄 Reps</div>
                 <div className="text-center">⚖️ Peso (kg)</div>
@@ -984,12 +1238,34 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             {exercise.set_records?.map((setRecord, setIndex) => (
               <div
                 key={setRecord.id}
-                className={`grid gap-4 p-3 items-center ${setIndex % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                className={`grid gap-4 p-3 items-center transition-all duration-200 ${
+                  setRecord.is_completed ? "bg-green-100" : setIndex % 2 === 0 ? "bg-gray-50" : "bg-white"
+                }`}
                 style={{
-                  gridTemplateColumns: `80px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
+                  gridTemplateColumns: `60px 80px 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")}`,
                 }}
               >
-                <div className="text-center font-semibold text-gray-600">#{setRecord.set_number}</div>
+                {/* ✅ NUEVO: Checkbox para completar serie individual */}
+                <div className="flex justify-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleSetCompletion(exercise.id, setRecord.id)}
+                    className="p-1 h-auto hover:bg-transparent"
+                  >
+                    {setRecord.is_completed ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-gray-400 hover:text-green-500 transition-colors" />
+                    )}
+                  </Button>
+                </div>
+
+                <div
+                  className={`text-center font-semibold ${setRecord.is_completed ? "text-green-700" : "text-gray-600"}`}
+                >
+                  #{setRecord.set_number}
+                </div>
 
                 <Input
                   type="number"
@@ -998,7 +1274,9 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                   onChange={(e) =>
                     updateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
                   }
-                  className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors"
+                  className={`text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors ${
+                    setRecord.is_completed ? "line-through text-green-700" : ""
+                  }`}
                 />
 
                 {/* Campo de peso mejorado para series */}
@@ -1015,7 +1293,9 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                     }
                   }}
                   placeholder="Libre"
-                  className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors"
+                  className={`text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors ${
+                    setRecord.is_completed ? "line-through text-green-700" : ""
+                  }`}
                 />
 
                 {/* Columnas personalizadas para series */}
@@ -1038,7 +1318,9 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                         onChange={(e) =>
                           updateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, e.target.value)
                         }
-                        className="text-center bg-white border-2 hover:border-blue-300 transition-colors"
+                        className={`text-center bg-white border-2 hover:border-blue-300 transition-colors ${
+                          setRecord.is_completed ? "line-through text-green-700" : ""
+                        }`}
                         placeholder={column.column_type === "number" ? "0" : "..."}
                       />
                     )}
@@ -1106,7 +1388,8 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
               </div>
 
               <div className="text-sm text-gray-600">
-                Total: {exercises.length} ejercicios | Guardados: {exercises.filter((ex) => ex.is_saved).length}
+                Total: {exercises.length} ejercicios | Guardados: {exercises.filter((ex) => ex.is_saved).length} |
+                Completados: {exercises.filter((ex) => ex.is_completed).length}
               </div>
             </div>
 
