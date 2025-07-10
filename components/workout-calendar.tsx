@@ -20,12 +20,14 @@ interface WorkoutExercise {
   custom_data?: Record<string, any>
   is_saved?: boolean
   is_expanded?: boolean
+  is_completed?: boolean
   set_records?: Array<{
     id: string
     set_number: number
     reps: number
     weight: number
     custom_data?: Record<string, any>
+    is_completed?: boolean
   }>
 }
 
@@ -76,7 +78,12 @@ export default function WorkoutCalendar() {
               ...ex,
               is_saved: ex.is_saved || false,
               is_expanded: ex.is_expanded || false,
-              set_records: ex.set_records || [],
+              is_completed: Boolean(ex.is_completed),
+              set_records:
+                ex.set_records?.map((sr: any) => ({
+                  ...sr,
+                  is_completed: Boolean(sr.is_completed),
+                })) || [],
             })) || [],
         }))
 
@@ -99,6 +106,29 @@ export default function WorkoutCalendar() {
     const workout = workouts.find((w) => w.date === dateString)
     console.log(`🔍 Buscando workout para ${dateString}:`, workout ? "encontrado" : "no encontrado")
     return workout
+  }
+
+  // ✅ NUEVA FUNCIÓN: Determinar el estado de completado de un entrenamiento
+  const getWorkoutCompletionStatus = (workout: Workout) => {
+    if (workout.type === "rest") {
+      return "rest"
+    }
+
+    // Si no hay ejercicios guardados, considerarlo como planificado
+    const savedExercises = workout.exercises.filter((ex) => ex.is_saved)
+    if (savedExercises.length === 0) {
+      return "planned"
+    }
+
+    // Verificar si todos los ejercicios guardados están completados
+    const allExercisesCompleted = savedExercises.every((exercise) => {
+      if (!exercise.set_records || exercise.set_records.length === 0) {
+        return false
+      }
+      return exercise.set_records.every((setRecord) => setRecord.is_completed === true)
+    })
+
+    return allExercisesCompleted ? "completed" : "incomplete"
   }
 
   // Formatear fecha para mostrar
@@ -195,11 +225,35 @@ export default function WorkoutCalendar() {
     }
   }
 
-  // Función para determinar si un día tiene entrenamiento
+  // ✅ FUNCIÓN MEJORADA: Determinar el estado visual de un día
   const getDayStatus = (date: Date) => {
     const workout = getWorkoutForDate(date)
     if (!workout) return null
-    return workout.type === "rest" ? "rest" : "workout"
+
+    if (workout.type === "rest") {
+      return "rest"
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const workoutDate = new Date(date)
+    workoutDate.setHours(0, 0, 0, 0)
+
+    // Si es futuro, siempre verde (planificado)
+    if (workoutDate > today) {
+      return "planned"
+    }
+
+    // Si es pasado, verificar completado
+    const completionStatus = getWorkoutCompletionStatus(workout)
+    if (completionStatus === "completed") {
+      return "completed"
+    } else if (completionStatus === "incomplete") {
+      return "incomplete"
+    }
+
+    // Por defecto, planificado
+    return "planned"
   }
 
   // Manejar selección de fecha
@@ -238,7 +292,7 @@ export default function WorkoutCalendar() {
     <div className="relative">
       {/* Estilos CSS personalizados para forzar el comportamiento correcto */}
       <style jsx>{`
-        .calendar-day-workout {
+        .calendar-day-planned {
           background: linear-gradient(135deg, #10b981, #059669) !important;
           color: white !important;
           border: 2px solid #059669 !important;
@@ -246,14 +300,29 @@ export default function WorkoutCalendar() {
           box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
         }
         
-        .calendar-day-workout:hover {
+        .calendar-day-planned:hover {
           background: linear-gradient(135deg, #34d399, #10b981) !important;
           box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
+
+        .calendar-day-completed {
+          background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+          color: white !important;
+          border: 2px solid #4b5563 !important;
+          font-weight: bold !important;
+          box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3) !important;
+        }
         
-        .calendar-day-rest {
+        .calendar-day-completed:hover {
+          background: linear-gradient(135deg, #9ca3af, #6b7280) !important;
+          box-shadow: 0 6px 16px rgba(107, 114, 128, 0.4) !important;
+          transform: translateY(-1px) !important;
+          transition: all 0.2s ease !important;
+        }
+
+        .calendar-day-incomplete {
           background: linear-gradient(135deg, #f59e0b, #d97706) !important;
           color: white !important;
           border: 2px solid #d97706 !important;
@@ -261,9 +330,24 @@ export default function WorkoutCalendar() {
           box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
         }
         
-        .calendar-day-rest:hover {
+        .calendar-day-incomplete:hover {
           background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
           box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4) !important;
+          transform: translateY(-1px) !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .calendar-day-rest {
+          background: linear-gradient(135deg, #f97316, #ea580c) !important;
+          color: white !important;
+          border: 2px solid #ea580c !important;
+          font-weight: bold !important;
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
+        }
+        
+        .calendar-day-rest:hover {
+          background: linear-gradient(135deg, #fb923c, #f97316) !important;
+          box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
@@ -362,8 +446,12 @@ export default function WorkoutCalendar() {
                   } else if (isToday) {
                     baseClass +=
                       " bg-gradient-to-br from-orange-400 to-orange-500 text-white border-orange-400 shadow-lg font-black"
-                  } else if (status === "workout") {
-                    customClass = "calendar-day-workout"
+                  } else if (status === "planned") {
+                    customClass = "calendar-day-planned"
+                  } else if (status === "completed") {
+                    customClass = "calendar-day-completed"
+                  } else if (status === "incomplete") {
+                    customClass = "calendar-day-incomplete"
                   } else if (status === "rest") {
                     customClass = "calendar-day-rest"
                   } else {
@@ -380,12 +468,26 @@ export default function WorkoutCalendar() {
                       role="gridcell"
                       tabIndex={isOutside ? -1 : 0}
                       aria-selected={isSelected}
-                      aria-label={`${date.getDate()} de ${date.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}${status ? ` - ${status === "workout" ? "Entrenamiento" : "Descanso"}` : ""}`}
+                      aria-label={`${date.getDate()} de ${date.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}${
+                        status
+                          ? ` - ${
+                              status === "planned"
+                                ? "Entrenamiento planificado"
+                                : status === "completed"
+                                  ? "Entrenamiento completado"
+                                  : status === "incomplete"
+                                    ? "Entrenamiento incompleto"
+                                    : "Descanso"
+                            }`
+                          : ""
+                      }`}
                     >
                       <div className="calendar-day-content">
                         <div className="calendar-day-number">{date.getDate()}</div>
                         <div className="calendar-day-icon">
-                          {status === "workout" && <Dumbbell className="w-4 h-4" />}
+                          {(status === "planned" || status === "completed" || status === "incomplete") && (
+                            <Dumbbell className="w-4 h-4" />
+                          )}
                           {status === "rest" && <Coffee className="w-4 h-4" />}
                         </div>
                       </div>
@@ -414,11 +516,21 @@ export default function WorkoutCalendar() {
                           ${
                             selectedWorkout.type === "rest"
                               ? "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
-                              : "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
+                              : getDayStatus(selectedDate) === "completed"
+                                ? "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
+                                : getDayStatus(selectedDate) === "incomplete"
+                                  ? "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200"
+                                  : "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
                           }
                         `}
                       >
-                        {selectedWorkout.type === "rest" ? "🛌 Descanso" : "💪 Entrenamiento"}
+                        {selectedWorkout.type === "rest"
+                          ? "🛌 Descanso"
+                          : getDayStatus(selectedDate) === "completed"
+                            ? "✅ Completado"
+                            : getDayStatus(selectedDate) === "incomplete"
+                              ? "⚠️ Incompleto"
+                              : "💪 Planificado"}
                       </Badge>
                     )}
                   </CardTitle>
@@ -465,25 +577,84 @@ export default function WorkoutCalendar() {
 
               {/* Resumen del entrenamiento si existe */}
               {selectedWorkout && selectedWorkout.type === "workout" && (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border-2 border-green-200">
+                <div
+                  className={`p-5 rounded-xl border-2 ${
+                    getDayStatus(selectedDate) === "completed"
+                      ? "bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200"
+                      : getDayStatus(selectedDate) === "incomplete"
+                        ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200"
+                        : "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200"
+                  }`}
+                >
                   <div className="flex items-center mb-3">
-                    <Dumbbell className="w-5 h-5 text-green-600 mr-2" />
-                    <p className="text-sm font-bold text-green-800">Ejercicios programados:</p>
+                    <Dumbbell
+                      className={`w-5 h-5 mr-2 ${
+                        getDayStatus(selectedDate) === "completed"
+                          ? "text-gray-600"
+                          : getDayStatus(selectedDate) === "incomplete"
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                      }`}
+                    />
+                    <p
+                      className={`text-sm font-bold ${
+                        getDayStatus(selectedDate) === "completed"
+                          ? "text-gray-800"
+                          : getDayStatus(selectedDate) === "incomplete"
+                            ? "text-yellow-800"
+                            : "text-green-800"
+                      }`}
+                    >
+                      Ejercicios programados:
+                    </p>
                   </div>
                   <ul className="space-y-3">
                     {selectedWorkout.exercises.slice(0, 3).map((exercise, index) => (
                       <li key={index} className="flex justify-between items-center">
-                        <span className="text-green-700 font-medium">{exercise.exercise_name}</span>
+                        <span
+                          className={`font-medium ${
+                            getDayStatus(selectedDate) === "completed"
+                              ? "text-gray-700"
+                              : getDayStatus(selectedDate) === "incomplete"
+                                ? "text-yellow-700"
+                                : "text-green-700"
+                          }`}
+                        >
+                          {exercise.exercise_name}
+                        </span>
                         <div className="flex items-center space-x-2">
-                          <span className="text-green-600 bg-green-200 px-3 py-1 rounded-full text-xs font-bold">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              getDayStatus(selectedDate) === "completed"
+                                ? "text-gray-600 bg-gray-200"
+                                : getDayStatus(selectedDate) === "incomplete"
+                                  ? "text-yellow-600 bg-yellow-200"
+                                  : "text-green-600 bg-green-200"
+                            }`}
+                          >
                             {exercise.sets}×{exercise.reps}
                           </span>
-                          {/* Mostrar "Libre" en lugar de peso 0 */}
-                          <span className="text-green-600 bg-green-200 px-3 py-1 rounded-full text-xs font-bold">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              getDayStatus(selectedDate) === "completed"
+                                ? "text-gray-600 bg-gray-200"
+                                : getDayStatus(selectedDate) === "incomplete"
+                                  ? "text-yellow-600 bg-yellow-200"
+                                  : "text-green-600 bg-green-200"
+                            }`}
+                          >
                             {formatWeight(exercise.weight)}
                           </span>
                           {exercise.rest_time && exercise.rest_time > 0 && (
-                            <span className="text-green-600 bg-green-200 px-2 py-1 rounded-full text-xs font-bold flex items-center">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-bold flex items-center ${
+                                getDayStatus(selectedDate) === "completed"
+                                  ? "text-gray-600 bg-gray-200"
+                                  : getDayStatus(selectedDate) === "incomplete"
+                                    ? "text-yellow-600 bg-yellow-200"
+                                    : "text-green-600 bg-green-200"
+                              }`}
+                            >
                               <Clock className="w-3 h-3 mr-1" />
                               {exercise.rest_time}s
                             </span>
@@ -492,7 +663,15 @@ export default function WorkoutCalendar() {
                       </li>
                     ))}
                     {selectedWorkout.exercises.length > 3 && (
-                      <li className="text-green-600 text-sm italic text-center pt-2 border-t border-green-200">
+                      <li
+                        className={`text-sm italic text-center pt-2 border-t ${
+                          getDayStatus(selectedDate) === "completed"
+                            ? "text-gray-600 border-gray-200"
+                            : getDayStatus(selectedDate) === "incomplete"
+                              ? "text-yellow-600 border-yellow-200"
+                              : "text-green-600 border-green-200"
+                        }`}
+                      >
                         +{selectedWorkout.exercises.length - 3} ejercicios más...
                       </li>
                     )}
