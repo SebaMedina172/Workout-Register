@@ -10,6 +10,7 @@ export const MUSCLE_GROUPS = [
   "Antebrazos",
   "Cuádriceps",
   "Isquiotibiales",
+  "Glúteo",
   "Gemelos",
   "Abductores",
   "Abdominales",
@@ -72,7 +73,6 @@ export const DEFAULT_EXERCISES = [
   { name: "Patadas de tríceps", muscle_group: "Tríceps" },
   { name: "Fondos para tríceps", muscle_group: "Tríceps" },
   { name: "Press cerrado", muscle_group: "Tríceps" },
-  { name: "Fondos en paralelas", muscle_group: "Pecho" },
 
   // ANTEBRAZOS
   { name: "Curl de muñeca", muscle_group: "Antebrazos" },
@@ -86,15 +86,22 @@ export const DEFAULT_EXERCISES = [
   { name: "Extensiones de cuádriceps", muscle_group: "Cuádriceps" },
   { name: "Zancadas", muscle_group: "Cuádriceps" },
   { name: "Zancadas laterales", muscle_group: "Cuádriceps" },
-  { name: "Sentadilla sumo", muscle_group: "Cuádriceps" },
 
   // ISQUIOTIBIALES
   { name: "Curl femoral", muscle_group: "Isquiotibiales" },
   { name: "Curl femoral acostado", muscle_group: "Isquiotibiales" },
   { name: "Curl femoral de pie", muscle_group: "Isquiotibiales" },
-    { name: "Peso muerto", muscle_group: "Espalda" },
-  { name: "Peso muerto rumano", muscle_group: "Espalda" },
+  { name: "Peso muerto", muscle_group: "Isquiotibiales" },
+  { name: "Peso muerto rumano", muscle_group: "Isquiotibiales" },
   { name: "Buenos días", muscle_group: "Isquiotibiales" },
+
+  // GLÚTEO
+  { name: "Sentadilla sumo", muscle_group: "Glúteo" },
+  { name: "Hip thrust", muscle_group: "Glúteo" },
+  { name: "Puente de glúteo", muscle_group: "Glúteo" },
+  { name: "Peso muerto sumo", muscle_group: "Glúteo" },
+  { name: "Patadas de glúteo", muscle_group: "Glúteo" },
+  { name: "Patadas de glúteo en polea", muscle_group: "Glúteo" },
 
   // GEMELOS
   { name: "Elevaciones de gemelos de pie", muscle_group: "Gemelos" },
