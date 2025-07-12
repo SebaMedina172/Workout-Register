@@ -1,0 +1,137 @@
+"use client"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Plus, Search } from "lucide-react"
+import { DEFAULT_EXERCISES, MUSCLE_GROUPS } from "./constants"
+import { getMuscleGroupColor } from "./utils"
+import type { UserExercise } from "./types"
+import { useRef, useEffect } from "react"
+
+interface ExerciseSelectorProps {
+  exerciseId: string
+  selectedExercise: string
+  userExercises: UserExercise[]
+  searchValue: string
+  onSearchChange: (value: string) => void
+  onExerciseSelect: (value: string) => void
+}
+
+export const ExerciseSelector = ({
+  exerciseId,
+  selectedExercise,
+  userExercises,
+  searchValue,
+  onSearchChange,
+  onExerciseSelect,
+}: ExerciseSelectorProps) => {
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  // Combinar ejercicios predefinidos y personalizados
+  const allExercises = [
+    ...DEFAULT_EXERCISES,
+    ...userExercises.map((ex) => ({ name: ex.name, muscle_group: ex.muscle_group })),
+  ]
+
+  // Filtrar ejercicios por búsqueda
+  const filteredExercises = allExercises.filter((ex) => ex.name.toLowerCase().includes(searchValue.toLowerCase()))
+
+  // Mantener el foco en el input después de cambios
+  useEffect(() => {
+    if (searchValue && searchInputRef.current) {
+      const timeoutId = setTimeout(() => {
+        searchInputRef.current?.focus()
+      }, 0)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [searchValue, filteredExercises.length])
+
+  return (
+    <Select value={selectedExercise} onValueChange={onExerciseSelect}>
+      <SelectTrigger className="w-full bg-white border-2 hover:border-blue-300 transition-colors">
+        <SelectValue placeholder="🔍 Seleccionar ejercicio" />
+      </SelectTrigger>
+      <SelectContent 
+        className="max-h-60" 
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        {/* Campo de búsqueda */}
+        <div className="p-3 border-b bg-gray-50" onPointerDown={(e) => e.stopPropagation()}>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            <Input
+              ref={searchInputRef}
+              placeholder="🔍 Buscar ejercicio..."
+              value={searchValue}
+              onChange={(e) => {
+                e.stopPropagation()
+                onSearchChange(e.target.value)
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                e.stopPropagation()
+                // Permitir navegación con flechas en la lista
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  const firstItem = document.querySelector('[data-radix-select-item]') as HTMLElement
+                  firstItem?.focus()
+                }
+              }}
+              onFocus={(e) => e.stopPropagation()}
+              onBlur={(e) => e.stopPropagation()}
+              className="pl-10 h-9 bg-white"
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
+        </div>
+
+        {/* Lista de ejercicios filtrados */}
+        <div className="max-h-40 overflow-y-auto">
+          {filteredExercises.map((ex) => (
+            <SelectItem 
+              key={ex.name} 
+              value={ex.name} 
+              className="py-2"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="font-medium">{ex.name}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </div>
+
+        {/* Opción para crear ejercicio personalizado */}
+        {searchValue &&
+          searchValue.trim() &&
+          !filteredExercises.some((ex) => ex.name.toLowerCase() === searchValue.toLowerCase()) && (
+            <>
+              <Separator />
+              <div className="p-2 bg-blue-50" onPointerDown={(e) => e.stopPropagation()}>
+                <p className="text-sm font-semibold text-blue-700 mb-2">Crear "{searchValue.trim()}" en:</p>
+                {MUSCLE_GROUPS.map((group) => (
+                  <SelectItem
+                    key={group}
+                    value={`CREATE_|||${searchValue.trim()}|||${group}`}
+                    className="text-blue-700 font-medium ml-2"
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center">
+                      <Plus className="w-3 h-3 mr-2" />
+                      <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
+                        {group}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </div>
+            </>
+          )}
+      </SelectContent>
+    </Select>
+  )
+}
