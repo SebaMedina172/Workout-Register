@@ -7,12 +7,31 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Trash2, Edit2, Plus, Save, X, Dumbbell } from "lucide-react"
+
+// ✅ NUEVO: Grupos musculares disponibles
+const MUSCLE_GROUPS = [
+  "Pecho",
+  "Espalda",
+  "Deltoides anterior",
+  "Deltoides medio",
+  "Deltoides posterior",
+  "Bíceps",
+  "Tríceps",
+  "Antebrazos",
+  "Cuádriceps",
+  "Isquiotibiales",
+  "Gemelos",
+  "Abductores",
+  "Abdominales",
+  "Oblicuos",
+]
 
 interface Exercise {
   id: string
   name: string
-  category: string | null
+  muscle_group: string // ✅ MODIFICADO: Ahora incluye muscle_group
   created_at: string
 }
 
@@ -21,13 +40,34 @@ interface ExerciseManagerProps {
   onExerciseChange: () => void
 }
 
+// ✅ NUEVO: Función para obtener color del badge según grupo muscular
+const getMuscleGroupColor = (muscleGroup: string): string => {
+  const colorMap: Record<string, string> = {
+    Pecho: "bg-red-100 text-red-800 border-red-300",
+    Espalda: "bg-green-100 text-green-800 border-green-300",
+    "Deltoides anterior": "bg-blue-100 text-blue-800 border-blue-300",
+    "Deltoides medio": "bg-blue-100 text-blue-800 border-blue-300",
+    "Deltoides posterior": "bg-blue-100 text-blue-800 border-blue-300",
+    Bíceps: "bg-purple-100 text-purple-800 border-purple-300",
+    Tríceps: "bg-purple-100 text-purple-800 border-purple-300",
+    Antebrazos: "bg-purple-100 text-purple-800 border-purple-300",
+    Cuádriceps: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Isquiotibiales: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Gemelos: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Abductores: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Abdominales: "bg-orange-100 text-orange-800 border-orange-300",
+    Oblicuos: "bg-orange-100 text-orange-800 border-orange-300",
+  }
+  return colorMap[muscleGroup] || "bg-gray-100 text-gray-800 border-gray-300"
+}
+
 export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseManagerProps) {
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState("")
-  const [editCategory, setEditCategory] = useState("")
+  const [editMuscleGroup, setEditMuscleGroup] = useState("") // ✅ NUEVO: Estado para grupo muscular en edición
   const [newName, setNewName] = useState("")
-  const [newCategory, setNewCategory] = useState("")
+  const [newMuscleGroup, setNewMuscleGroup] = useState("") // ✅ NUEVO: Estado para grupo muscular nuevo
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState("")
 
@@ -78,11 +118,11 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
   const handleEdit = (exercise: Exercise) => {
     setEditingId(exercise.id)
     setEditName(exercise.name)
-    setEditCategory(exercise.category || "")
+    setEditMuscleGroup(exercise.muscle_group) // ✅ NUEVO: Cargar grupo muscular para edición
   }
 
   const handleSaveEdit = async () => {
-    if (!editName.trim()) return
+    if (!editName.trim() || !editMuscleGroup) return // ✅ MODIFICADO: Validar grupo muscular
 
     try {
       const response = await fetch(`/api/user-exercises/${editingId}`, {
@@ -90,7 +130,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: editName.trim(),
-          category: editCategory.trim() || null,
+          muscle_group: editMuscleGroup, // ✅ NUEVO: Incluir grupo muscular
         }),
       })
 
@@ -101,7 +141,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
         onExerciseChange()
         setEditingId(null)
         setEditName("")
-        setEditCategory("")
+        setEditMuscleGroup("") // ✅ NUEVO: Limpiar estado
       } else {
         const error = await response.json()
         setMessage(`❌ ${error.error}`)
@@ -115,7 +155,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
   }
 
   const handleCreate = async () => {
-    if (!newName.trim()) return
+    if (!newName.trim() || !newMuscleGroup) return // ✅ MODIFICADO: Validar grupo muscular
 
     try {
       const response = await fetch("/api/user-exercises", {
@@ -123,7 +163,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newName.trim(),
-          category: newCategory.trim() || null,
+          muscle_group: newMuscleGroup, // ✅ NUEVO: Incluir grupo muscular
         }),
       })
 
@@ -133,7 +173,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
         await loadExercises()
         onExerciseChange()
         setNewName("")
-        setNewCategory("")
+        setNewMuscleGroup("") // ✅ NUEVO: Limpiar estado
       } else {
         const error = await response.json()
         setMessage(`❌ ${error.error}`)
@@ -168,8 +208,8 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                   <Label htmlFor="new-name">Nombre del ejercicio</Label>
                   <Input
                     id="new-name"
@@ -180,17 +220,30 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                   />
                 </div>
                 <div>
-                  <Label htmlFor="new-category">Categoría (opcional)</Label>
-                  <Input
-                    id="new-category"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Ej: Pecho"
-                    className="bg-white"
-                  />
+                  <Label htmlFor="new-muscle-group">Grupo muscular *</Label> {/* ✅ MODIFICADO: Obligatorio */}
+                  <Select value={newMuscleGroup} onValueChange={setNewMuscleGroup}>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Seleccionar grupo muscular" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MUSCLE_GROUPS.map((group) => (
+                        <SelectItem key={group} value={group}>
+                          <div className="flex items-center">
+                            <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
+                              {group}
+                            </Badge>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700" disabled={!newName.trim()}>
+              <Button
+                onClick={handleCreate}
+                className="bg-green-600 hover:bg-green-700"
+                disabled={!newName.trim() || !newMuscleGroup} // ✅ MODIFICADO: Validar ambos campos
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Crear Ejercicio
               </Button>
@@ -237,30 +290,37 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                       className="flex items-center justify-between p-4 bg-white border-2 border-gray-100 rounded-lg hover:border-blue-200 transition-colors"
                     >
                       {editingId === exercise.id ? (
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 mr-4">
-                          <div className="md:col-span-2">
-                            <Input
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              className="bg-white"
-                            />
-                          </div>
-                          <Input
-                            value={editCategory}
-                            onChange={(e) => setEditCategory(e.target.value)}
-                            placeholder="Categoría"
-                            className="bg-white"
-                          />
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 mr-4">
+                          <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="bg-white" />
+                          <Select value={editMuscleGroup} onValueChange={setEditMuscleGroup}>
+                            <SelectTrigger className="bg-white">
+                              <SelectValue placeholder="Seleccionar grupo muscular" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {MUSCLE_GROUPS.map((group) => (
+                                <SelectItem key={group} value={group}>
+                                  <div className="flex items-center">
+                                    <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
+                                      {group}
+                                    </Badge>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       ) : (
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
+                          <div className="flex items-center space-x-3">
+                            <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${getMuscleGroupColor(exercise.muscle_group)}`}
+                            >
+                              {exercise.muscle_group}
+                            </Badge>
+                          </div>
                           <div className="flex items-center mt-1">
-                            {exercise.category && (
-                              <Badge variant="outline" className="text-xs mr-2">
-                                {exercise.category}
-                              </Badge>
-                            )}
                             <span className="text-xs text-gray-500">
                               Creado: {new Date(exercise.created_at).toLocaleDateString("es-ES")}
                             </span>
@@ -271,14 +331,19 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                       <div className="flex items-center gap-2">
                         {editingId === exercise.id ? (
                           <>
-                            <Button onClick={handleSaveEdit} size="sm" className="bg-green-600 hover:bg-green-700">
+                            <Button
+                              onClick={handleSaveEdit}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                              disabled={!editName.trim() || !editMuscleGroup} // ✅ NUEVO: Validar ambos campos
+                            >
                               <Save className="w-4 h-4" />
                             </Button>
                             <Button
                               onClick={() => {
                                 setEditingId(null)
                                 setEditName("")
-                                setEditCategory("")
+                                setEditMuscleGroup("") // ✅ NUEVO: Limpiar estado
                               }}
                               size="sm"
                               variant="outline"

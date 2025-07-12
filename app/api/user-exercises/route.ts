@@ -45,23 +45,32 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, category } = body
+    console.log(`📥 Request body recibido:`, body)
+
+    const { name, muscle_group } = body // ✅ MODIFICADO: Incluir muscle_group
 
     if (!name || !name.trim()) {
+      console.log(`❌ Nombre inválido:`, name)
       return NextResponse.json({ error: "El nombre del ejercicio es requerido" }, { status: 400 })
     }
 
-    const { data: exercise, error } = await supabase
-      .from("user_exercises")
-      .insert({
-        user_id: session.user.id,
-        name: name.trim(),
-        category: category || null,
-      })
-      .select()
-      .single()
+    // ✅ NUEVO: Validar que muscle_group sea obligatorio
+    if (!muscle_group || !muscle_group.trim()) {
+      console.log(`❌ Grupo muscular inválido:`, muscle_group)
+      return NextResponse.json({ error: "El grupo muscular es requerido" }, { status: 400 })
+    }
+
+    const insertData = {
+      user_id: session.user.id,
+      name: name.trim(),
+      muscle_group: muscle_group.trim(), // ✅ NUEVO: Incluir muscle_group
+    }
+    console.log(`📤 Insertando en BD:`, insertData)
+
+    const { data: exercise, error } = await supabase.from("user_exercises").insert(insertData).select().single()
 
     if (error) {
+      console.error(`❌ Error de Supabase:`, error)
       if (error.code === "23505") {
         // Unique constraint violation
         return NextResponse.json({ error: "Ya tienes un ejercicio con ese nombre" }, { status: 400 })
@@ -70,6 +79,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Error al crear ejercicio" }, { status: 500 })
     }
 
+    console.log(`✅ Ejercicio creado exitosamente:`, exercise)
     return NextResponse.json(exercise)
   } catch (error) {
     console.error("Error in POST /api/user-exercises:", error)

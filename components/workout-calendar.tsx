@@ -13,6 +13,7 @@ import PostponeDialog from "./postpone-dialog"
 interface WorkoutExercise {
   id: string
   exercise_name: string
+  muscle_group?: string // ✅ NUEVO: Grupo muscular
   sets: number
   reps: number
   rest_time: number
@@ -44,6 +45,27 @@ const formatWeight = (weight: number | undefined | null): string => {
     return "Libre"
   }
   return `${weight} kg`
+}
+
+// ✅ NUEVO: Función para obtener color del badge según grupo muscular
+const getMuscleGroupColor = (muscleGroup: string): string => {
+  const colorMap: Record<string, string> = {
+    Pecho: "bg-red-100 text-red-800 border-red-300",
+    Espalda: "bg-green-100 text-green-800 border-green-300",
+    "Deltoides anterior": "bg-blue-100 text-blue-800 border-blue-300",
+    "Deltoides medio": "bg-blue-100 text-blue-800 border-blue-300",
+    "Deltoides posterior": "bg-blue-100 text-blue-800 border-blue-300",
+    Bíceps: "bg-purple-100 text-purple-800 border-purple-300",
+    Tríceps: "bg-purple-100 text-purple-800 border-purple-300",
+    Antebrazos: "bg-purple-100 text-purple-800 border-purple-300",
+    Cuádriceps: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Isquiotibiales: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Gemelos: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Abductores: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Abdominales: "bg-orange-100 text-orange-800 border-orange-300",
+    Oblicuos: "bg-orange-100 text-orange-800 border-orange-300",
+  }
+  return colorMap[muscleGroup] || "bg-gray-100 text-gray-800 border-gray-300"
 }
 
 export default function WorkoutCalendar() {
@@ -292,92 +314,92 @@ export default function WorkoutCalendar() {
     <div className="relative">
       {/* Estilos CSS personalizados para forzar el comportamiento correcto */}
       <style jsx>{`
-        .calendar-day-planned {
-          background: linear-gradient(135deg, #10b981, #059669) !important;
-          color: white !important;
-          border: 2px solid #059669 !important;
-          font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-        }
-        
-        .calendar-day-planned:hover {
-          background: linear-gradient(135deg, #34d399, #10b981) !important;
-          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
-          transform: translateY(-1px) !important;
-          transition: all 0.2s ease !important;
-        }
+      .calendar-day-planned {
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+        color: white !important;
+        border: 2px solid #059669 !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+      }
+      
+      .calendar-day-planned:hover {
+        background: linear-gradient(135deg, #34d399, #10b981) !important;
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
+        transform: translateY(-1px) !important;
+        transition: all 0.2s ease !important;
+      }
 
-        .calendar-day-completed {
-          background: linear-gradient(135deg, #6b7280, #4b5563) !important;
-          color: white !important;
-          border: 2px solid #4b5563 !important;
-          font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3) !important;
-        }
-        
-        .calendar-day-completed:hover {
-          background: linear-gradient(135deg, #9ca3af, #6b7280) !important;
-          box-shadow: 0 6px 16px rgba(107, 114, 128, 0.4) !important;
-          transform: translateY(-1px) !important;
-          transition: all 0.2s ease !important;
-        }
+      .calendar-day-completed {
+        background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+        color: white !important;
+        border: 2px solid #4b5563 !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3) !important;
+      }
+      
+      .calendar-day-completed:hover {
+        background: linear-gradient(135deg, #9ca3af, #6b7280) !important;
+        box-shadow: 0 6px 16px rgba(107, 114, 128, 0.4) !important;
+        transform: translateY(-1px) !important;
+        transition: all 0.2s ease !important;
+      }
 
-        .calendar-day-incomplete {
-          background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-          color: white !important;
-          border: 2px solid #d97706 !important;
-          font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
-        }
-        
-        .calendar-day-incomplete:hover {
-          background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
-          box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4) !important;
-          transform: translateY(-1px) !important;
-          transition: all 0.2s ease !important;
-        }
-        
-        .calendar-day-rest {
-          background: linear-gradient(135deg, #f97316, #ea580c) !important;
-          color: white !important;
-          border: 2px solid #ea580c !important;
-          font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
-        }
-        
-        .calendar-day-rest:hover {
-          background: linear-gradient(135deg, #fb923c, #f97316) !important;
-          box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4) !important;
-          transform: translateY(-1px) !important;
-          transition: all 0.2s ease !important;
-        }
-        
-        .calendar-day-content {
-          display: flex !important;
-          flex-direction: column !important;
-          align-items: center !important;
-          justify-content: center !important;
-          height: 100% !important;
-          width: 100% !important;
-          gap: 2px !important;
-        }
-        
-        .calendar-day-number {
-          font-size: 1.125rem !important;
-          font-weight: bold !important;
-          line-height: 1 !important;
-          flex-shrink: 0 !important;
-        }
-        
-        .calendar-day-icon {
-          flex-shrink: 0 !important;
-          height: 16px !important;
-          width: 16px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-        }
-      `}</style>
+      .calendar-day-incomplete {
+        background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+        color: white !important;
+        border: 2px solid #d97706 !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+      }
+      
+      .calendar-day-incomplete:hover {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4) !important;
+        transform: translateY(-1px) !important;
+        transition: all 0.2s ease !important;
+      }
+      
+      .calendar-day-rest {
+        background: linear-gradient(135deg, #f97316, #ea580c) !important;
+        color: white !important;
+        border: 2px solid #ea580c !important;
+        font-weight: bold !important;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
+      }
+      
+      .calendar-day-rest:hover {
+        background: linear-gradient(135deg, #fb923c, #f97316) !important;
+        box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4) !important;
+        transform: translateY(-1px) !important;
+        transition: all 0.2s ease !important;
+      }
+      
+      .calendar-day-content {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100% !important;
+        width: 100% !important;
+        gap: 2px !important;
+      }
+      
+      .calendar-day-number {
+        font-size: 1.125rem !important;
+        font-weight: bold !important;
+        line-height: 1 !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .calendar-day-icon {
+        flex-shrink: 0 !important;
+        height: 16px !important;
+        width: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+    `}</style>
 
       {/* Calendario principal */}
       <div className="p-4 md:p-8">
@@ -512,17 +534,17 @@ export default function WorkoutCalendar() {
                     {selectedWorkout && (
                       <Badge
                         className={`
-                          ml-3 px-2 py-2 text-sm font-semibold
-                          ${
-                            selectedWorkout.type === "rest"
-                              ? "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
-                              : getDayStatus(selectedDate) === "completed"
-                                ? "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
-                                : getDayStatus(selectedDate) === "incomplete"
-                                  ? "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200"
-                                  : "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
-                          }
-                        `}
+                        ml-3 px-2 py-2 text-sm font-semibold
+                        ${
+                          selectedWorkout.type === "rest"
+                            ? "bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200"
+                            : getDayStatus(selectedDate) === "completed"
+                              ? "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200"
+                              : getDayStatus(selectedDate) === "incomplete"
+                                ? "bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-200"
+                                : "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
+                        }
+                      `}
                       >
                         {selectedWorkout.type === "rest"
                           ? "🛌 Descanso"
@@ -611,17 +633,19 @@ export default function WorkoutCalendar() {
                   <ul className="space-y-3">
                     {selectedWorkout.exercises.slice(0, 3).map((exercise, index) => (
                       <li key={index} className="flex justify-between items-center">
-                        <span
-                          className={`font-medium ${
-                            getDayStatus(selectedDate) === "completed"
-                              ? "text-gray-700"
-                              : getDayStatus(selectedDate) === "incomplete"
-                                ? "text-yellow-700"
-                                : "text-green-700"
-                          }`}
-                        >
-                          {exercise.exercise_name}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={`font-medium ${
+                              getDayStatus(selectedDate) === "completed"
+                                ? "text-gray-700"
+                                : getDayStatus(selectedDate) === "incomplete"
+                                  ? "text-yellow-700"
+                                  : "text-green-700"
+                            }`}
+                          >
+                            {exercise.exercise_name}
+                          </span>
+                        </div>
                         <div className="flex items-center space-x-2">
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-bold ${

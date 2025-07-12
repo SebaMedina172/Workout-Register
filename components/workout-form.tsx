@@ -36,28 +36,138 @@ import {
 } from "lucide-react"
 import ExerciseManager from "./exercise-manager"
 
-// Ejercicios predefinidos básicos
+// Grupos musculares disponibles
+const MUSCLE_GROUPS = [
+  "Pecho",
+  "Espalda",
+  "Deltoides anterior",
+  "Deltoides medio",
+  "Deltoides posterior",
+  "Bíceps",
+  "Tríceps",
+  "Antebrazos",
+  "Cuádriceps",
+  "Isquiotibiales",
+  "Gemelos",
+  "Abductores",
+  "Abdominales",
+  "Oblicuos",
+]
+
+// Ejercicios predefinidos con grupos musculares
 const DEFAULT_EXERCISES = [
-  "Press de banca",
-  "Sentadillas",
-  "Peso muerto",
-  "Press militar",
-  "Remo con barra",
-  "Dominadas",
-  "Fondos",
-  "Curl de bíceps",
-  "Extensiones de tríceps",
-  "Elevaciones laterales",
-  "Plancha",
-  "Burpees",
-  "Press inclinado",
-  "Sentadilla búlgara",
-  "Remo con mancuernas",
-  "Press francés",
-  "Elevaciones frontales",
-  "Hip thrust",
-  "Zancadas",
-  "Pull-ups",
+  // PECHO
+  { name: "Press de banca con barra", muscle_group: "Pecho" },
+  { name: "Press de banca con mancuernas", muscle_group: "Pecho" },
+  { name: "Press inclinado con barra", muscle_group: "Pecho" },
+  { name: "Press inclinado con mancuernas", muscle_group: "Pecho" },
+  { name: "Press declinado con barra", muscle_group: "Pecho" },
+  { name: "Fondos en paralelas", muscle_group: "Pecho" },
+  { name: "Fondos en banco", muscle_group: "Pecho" },
+  { name: "Aperturas con mancuernas", muscle_group: "Pecho" },
+  { name: "Aperturas en polea", muscle_group: "Pecho" },
+  { name: "Cruces en máquina", muscle_group: "Pecho" },
+
+  // ESPALDA
+  { name: "Dominadas", muscle_group: "Espalda" },
+  { name: "Dominadas con agarre ancho", muscle_group: "Espalda" },
+  { name: "Dominadas con agarre cerrado", muscle_group: "Espalda" },
+  { name: "Pull-ups", muscle_group: "Espalda" },
+  { name: "Remo con barra", muscle_group: "Espalda" },
+  { name: "Remo con mancuernas", muscle_group: "Espalda" },
+  { name: "Remo en polea baja", muscle_group: "Espalda" },
+  { name: "Remo en máquina", muscle_group: "Espalda" },
+  { name: "Peso muerto", muscle_group: "Espalda" },
+  { name: "Peso muerto rumano", muscle_group: "Espalda" },
+  { name: "Jalones al pecho", muscle_group: "Espalda" },
+  { name: "Jalones tras nuca", muscle_group: "Espalda" },
+
+  // DELTOIDES ANTERIOR
+  { name: "Press militar", muscle_group: "Deltoides anterior" },
+  { name: "Press militar con mancuernas", muscle_group: "Deltoides anterior" },
+  { name: "Press Arnold", muscle_group: "Deltoides anterior" },
+  { name: "Elevaciones frontales", muscle_group: "Deltoides anterior" },
+  { name: "Elevaciones frontales con mancuernas", muscle_group: "Deltoides anterior" },
+
+  // DELTOIDES MEDIO
+  { name: "Elevaciones laterales", muscle_group: "Deltoides medio" },
+  { name: "Elevaciones laterales con mancuernas", muscle_group: "Deltoides medio" },
+  { name: "Elevaciones laterales en polea", muscle_group: "Deltoides medio" },
+  { name: "Press tras nuca", muscle_group: "Deltoides medio" },
+
+  // DELTOIDES POSTERIOR
+  { name: "Pájaros con mancuernas", muscle_group: "Deltoides posterior" },
+  { name: "Pájaros en máquina", muscle_group: "Deltoides posterior" },
+  { name: "Remo al mentón", muscle_group: "Deltoides posterior" },
+  { name: "Face pulls", muscle_group: "Deltoides posterior" },
+
+  // BÍCEPS
+  { name: "Curl de bíceps con barra", muscle_group: "Bíceps" },
+  { name: "Curl de bíceps con mancuernas", muscle_group: "Bíceps" },
+  { name: "Curl martillo", muscle_group: "Bíceps" },
+  { name: "Curl concentrado", muscle_group: "Bíceps" },
+  { name: "Curl en polea", muscle_group: "Bíceps" },
+  { name: "Curl predicador", muscle_group: "Bíceps" },
+  { name: "Curl 21s", muscle_group: "Bíceps" },
+
+  // TRÍCEPS
+  { name: "Press francés", muscle_group: "Tríceps" },
+  { name: "Extensiones de tríceps", muscle_group: "Tríceps" },
+  { name: "Extensiones tras nuca", muscle_group: "Tríceps" },
+  { name: "Patadas de tríceps", muscle_group: "Tríceps" },
+  { name: "Fondos para tríceps", muscle_group: "Tríceps" },
+  { name: "Press cerrado", muscle_group: "Tríceps" },
+
+  // ANTEBRAZOS
+  { name: "Curl de muñeca", muscle_group: "Antebrazos" },
+  { name: "Curl inverso", muscle_group: "Antebrazos" },
+  { name: "Farmer's walk", muscle_group: "Antebrazos" },
+
+  // CUÁDRICEPS
+  { name: "Sentadillas", muscle_group: "Cuádriceps" },
+  { name: "Sentadillas frontales", muscle_group: "Cuádriceps" },
+  { name: "Sentadillas búlgaras", muscle_group: "Cuádriceps" },
+  { name: "Prensa de piernas", muscle_group: "Cuádriceps" },
+  { name: "Extensiones de cuádriceps", muscle_group: "Cuádriceps" },
+  { name: "Zancadas", muscle_group: "Cuádriceps" },
+  { name: "Zancadas laterales", muscle_group: "Cuádriceps" },
+  { name: "Sentadilla sumo", muscle_group: "Cuádriceps" },
+
+  // ISQUIOTIBIALES
+  { name: "Curl femoral", muscle_group: "Isquiotibiales" },
+  { name: "Curl femoral acostado", muscle_group: "Isquiotibiales" },
+  { name: "Curl femoral de pie", muscle_group: "Isquiotibiales" },
+  { name: "Peso muerto piernas rígidas", muscle_group: "Isquiotibiales" },
+  { name: "Buenos días", muscle_group: "Isquiotibiales" },
+
+  // GEMELOS
+  { name: "Elevaciones de gemelos de pie", muscle_group: "Gemelos" },
+  { name: "Elevaciones de gemelos sentado", muscle_group: "Gemelos" },
+  { name: "Elevaciones en prensa", muscle_group: "Gemelos" },
+
+  // ABDUCTORES
+  { name: "Abducción de cadera", muscle_group: "Abductores" },
+  { name: "Patadas laterales", muscle_group: "Abductores" },
+  { name: "Caminata lateral con banda", muscle_group: "Abductores" },
+
+  // ABDOMINALES
+  { name: "Crunches", muscle_group: "Abdominales" },
+  { name: "Abdominales en máquina", muscle_group: "Abdominales" },
+  { name: "Plancha", muscle_group: "Abdominales" },
+  { name: "Plancha lateral", muscle_group: "Abdominales" },
+  { name: "Elevaciones de piernas", muscle_group: "Abdominales" },
+  { name: "Mountain climbers", muscle_group: "Abdominales" },
+
+  // OBLICUOS
+  { name: "Crunches oblicuos", muscle_group: "Oblicuos" },
+  { name: "Bicicleta", muscle_group: "Oblicuos" },
+  { name: "Russian twists", muscle_group: "Oblicuos" },
+  { name: "Leñador", muscle_group: "Oblicuos" },
+
+  // EJERCICIOS COMPUESTOS/FUNCIONALES
+  { name: "Burpees", muscle_group: "Abdominales" },
+  { name: "Thrusters", muscle_group: "Cuádriceps" },
+  { name: "Clean and press", muscle_group: "Espalda" },
 ]
 
 interface SetRecord {
@@ -72,6 +182,7 @@ interface SetRecord {
 interface WorkoutExercise {
   id: string
   exercise_name: string
+  muscle_group?: string
   sets: number
   reps: number
   rest_time: number
@@ -103,6 +214,14 @@ interface WorkoutFormProps {
   workout?: Workout | null
   onClose: () => void
   onSave: () => void
+}
+
+// Interface para ejercicios de usuario con grupo muscular
+interface UserExercise {
+  id: string
+  name: string
+  muscle_group: string
+  created_at: string
 }
 
 // Componente de overlay de carga
@@ -140,9 +259,30 @@ const formatWeight = (weight: number | undefined | null): string => {
   return `${weight} kg`
 }
 
+// Función para obtener color del badge según grupo muscular
+const getMuscleGroupColor = (muscleGroup: string): string => {
+  const colorMap: Record<string, string> = {
+    Pecho: "bg-red-100 text-red-800 border-red-300",
+    Espalda: "bg-green-100 text-green-800 border-green-300",
+    "Deltoides anterior": "bg-blue-100 text-blue-800 border-blue-300",
+    "Deltoides medio": "bg-blue-100 text-blue-800 border-blue-300",
+    "Deltoides posterior": "bg-blue-100 text-blue-800 border-blue-300",
+    Bíceps: "bg-purple-100 text-purple-800 border-purple-300",
+    Tríceps: "bg-purple-100 text-purple-800 border-purple-300",
+    Antebrazos: "bg-purple-100 text-purple-800 border-purple-300",
+    Cuádriceps: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Isquiotibiales: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Gemelos: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Abductores: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Abdominales: "bg-orange-100 text-orange-800 border-orange-300",
+    Oblicuos: "bg-orange-100 text-orange-800 border-orange-300",
+  }
+  return colorMap[muscleGroup] || "bg-gray-100 text-gray-800 border-gray-300"
+}
+
 export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutFormProps) {
   const [exercises, setExercises] = useState<WorkoutExercise[]>([])
-  const [userExercises, setUserExercises] = useState<string[]>([])
+  const [userExercises, setUserExercises] = useState<UserExercise[]>([])
   const [customColumns, setCustomColumns] = useState<CustomColumn[]>([])
   const [newColumnName, setNewColumnName] = useState("")
   const [newColumnType, setNewColumnType] = useState<"text" | "number" | "boolean">("text")
@@ -172,7 +312,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       const exercisesResponse = await fetch("/api/user-exercises")
       if (exercisesResponse.ok) {
         const userExercisesData = await exercisesResponse.json()
-        setUserExercises(userExercisesData.map((ex: any) => ex.name))
+        setUserExercises(userExercisesData) 
         console.log("✅ Ejercicios personalizados cargados:", userExercisesData.length)
       }
 
@@ -205,18 +345,18 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           if (customData.exercises && customData.exercises.length > 0) {
             console.log("✅ Datos completos cargados:", customData.exercises.length, "ejercicios")
 
-            // ✅ VALIDACIÓN MEJORADA: Asegurar que todos los valores boolean sean correctos
+            // Asegurar que todos los valores boolean sean correctos
             const validatedExercises = customData.exercises.map((ex: any) => {
               const validatedSetRecords = (ex.set_records || []).map((sr: any) => ({
                 ...sr,
-                is_completed: Boolean(sr.is_completed), // ✅ Forzar boolean
+                is_completed: Boolean(sr.is_completed), 
               }))
 
               const validatedExercise = {
                 ...ex,
                 is_saved: Boolean(ex.is_saved),
                 is_expanded: Boolean(ex.is_expanded),
-                is_completed: Boolean(ex.is_completed), // ✅ Forzar boolean
+                is_completed: Boolean(ex.is_completed), 
                 set_records: validatedSetRecords,
               }
 
@@ -226,7 +366,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                 `   Estado: is_saved=${validatedExercise.is_saved}, is_expanded=${validatedExercise.is_expanded}, is_completed=${validatedExercise.is_completed}`,
               )
               console.log(
-                `   Configuración: ${validatedExercise.sets} series × ${validatedExercise.reps} reps × ${formatWeight(validatedExercise.weight)}, descanso: ${validatedExercise.rest_time}s`,
+                `   Configuración: ${validatedExercise.sets} series × ${validatedExercise.reps} × ${formatWeight(validatedExercise.weight)}, descanso: ${validatedExercise.rest_time}s`,
               )
               console.log(`   Series registradas: ${validatedSetRecords.length}`)
 
@@ -269,7 +409,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           // Marcar todas las columnas como NO activas por defecto para workouts nuevos
           const inactiveColumns = columnsData.map((col: any) => ({
             ...col,
-            is_active: false, // ✅ NUEVO: Columnas desactivadas por defecto
+            is_active: false, // Columnas desactivadas por defecto
           }))
           setCustomColumns(inactiveColumns)
           console.log("✅ Columnas por defecto cargadas (DESACTIVADAS):", columnsData.length)
@@ -293,6 +433,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     const initialExercise: WorkoutExercise = {
       id: Date.now().toString(),
       exercise_name: "",
+      muscle_group: "", 
       sets: 3,
       reps: 10,
       rest_time: 60,
@@ -316,13 +457,16 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     }))
   }
 
-  // Combinar ejercicios predefinidos y personalizados
-  const allExercises = [...DEFAULT_EXERCISES, ...userExercises]
+  // Combinar ejercicios predefinidos y personalizados con grupos musculares
+  const allExercises = [
+    ...DEFAULT_EXERCISES,
+    ...userExercises.map((ex) => ({ name: ex.name, muscle_group: ex.muscle_group })),
+  ]
 
   // Filtrar ejercicios por búsqueda independiente por ejercicio
   const getFilteredExercises = (exerciseId: string) => {
     const search = getExerciseSearch(exerciseId)
-    return allExercises.filter((ex) => ex.toLowerCase().includes(search.toLowerCase()))
+    return allExercises.filter((ex) => ex.name.toLowerCase().includes(search.toLowerCase()))
   }
 
   // Agregar nuevo ejercicio a la lista
@@ -330,6 +474,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     const newExercise: WorkoutExercise = {
       id: Date.now().toString(),
       exercise_name: "",
+      muscle_group: "", 
       sets: 3,
       reps: 10,
       rest_time: 60,
@@ -359,8 +504,8 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   const updateExercise = (id: string, field: string, value: any) => {
     console.log(`🔄 Actualizando ejercicio ${id}, campo: ${field}, valor:`, value)
 
-    setExercises(
-      exercises.map((ex) => {
+    setExercises((prevExercises) => {
+      const updatedExercises = prevExercises.map((ex) => {
         if (ex.id === id) {
           if (field.startsWith("custom_")) {
             const customField = field.replace("custom_", "")
@@ -374,11 +519,15 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             console.log(`📊 Datos personalizados actualizados para ${ex.exercise_name}:`, updatedExercise.custom_data)
             return updatedExercise
           }
-          return { ...ex, [field]: value }
+          const updatedExercise = { ...ex, [field]: value }
+          console.log(`✅ Ejercicio actualizado:`, updatedExercise)
+          return updatedExercise
         }
         return ex
-      }),
-    )
+      })
+      console.log(`📋 Estado completo de ejercicios:`, updatedExercises)
+      return updatedExercises
+    })
   }
 
   // Guardar ejercicio (bloquear para edición)
@@ -393,7 +542,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             reps: ex.reps,
             weight: ex.weight || 0,
             custom_data: { ...ex.custom_data },
-            is_completed: false, // ✅ Explícitamente false
+            is_completed: false, 
           }))
 
           console.log(`💾 Guardando ejercicio ${ex.exercise_name} con ${setRecords.length} series`)
@@ -402,7 +551,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             ...ex,
             is_saved: true,
             is_expanded: false,
-            is_completed: false, // ✅ Explícitamente false
+            is_completed: false, 
             set_records: setRecords,
           }
         }
@@ -448,7 +597,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     )
   }
 
-  // ✅ FUNCIÓN MEJORADA: Guardar automáticamente estados de completado
+  // Guardar automáticamente estados de completado
   const saveCompletionStates = async () => {
     if (!workout || !workout.id) {
       console.log("⚠️ No hay workout ID, no se puede guardar automáticamente")
@@ -509,7 +658,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     }
   }, [workout, exercises])
 
-  // ✅ FUNCIÓN MEJORADA: Alternar completado de ejercicio completo
+  // Alternar completado de ejercicio completo
   const toggleExerciseCompletion = (id: string) => {
     setExercises(
       exercises.map((ex) => {
@@ -523,7 +672,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           const updatedSetRecords =
             ex.set_records?.map((setRecord) => ({
               ...setRecord,
-              is_completed: newCompletedState, // ✅ Usar el mismo valor boolean
+              is_completed: newCompletedState, 
             })) || []
 
           console.log(
@@ -547,7 +696,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     }
   }
 
-  // ✅ FUNCIÓN MEJORADA: Alternar completado de serie individual
+  // Alternar completado de serie individual
   const toggleSetCompletion = (exerciseId: string, setId: string) => {
     setExercises(
       exercises.map((ex) => {
@@ -632,25 +781,43 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     }
   }
 
-  // Crear ejercicio personalizado desde el dropdown
-  const createExerciseFromDropdown = async (exerciseName: string) => {
-    if (!exerciseName.trim()) return
+  // Crear ejercicio personalizado desde el dropdown con grupo muscular
+  const createExerciseFromDropdown = async (exerciseName: string, muscleGroup: string) => {
+    console.log(`🏗️ Creando ejercicio: "${exerciseName}" en grupo: "${muscleGroup}"`)
+
+    if (!exerciseName.trim() || !muscleGroup) {
+      console.log(`❌ Datos inválidos: nombre="${exerciseName}", grupo="${muscleGroup}"`)
+      return null
+    }
 
     try {
+      const requestBody = {
+        name: exerciseName.trim(),
+        muscle_group: muscleGroup, 
+      }
+      console.log(`📤 Enviando request:`, requestBody)
+
       const response = await fetch("/api/user-exercises", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: exerciseName.trim() }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log(`📥 Response status:`, response.status)
+
       if (response.ok) {
-        setUserExercises([...userExercises, exerciseName.trim()])
+        const newExercise = await response.json()
+        console.log(`✅ Ejercicio creado en BD:`, newExercise)
+        setUserExercises((prev) => [...prev, newExercise])
         setMessage(`✅ Ejercicio "${exerciseName}" creado exitosamente`)
         setTimeout(() => setMessage(""), 3000)
-        return exerciseName.trim()
+        return { name: exerciseName.trim(), muscle_group: muscleGroup } 
+      } else {
+        const errorData = await response.json()
+        console.error(`❌ Error del servidor:`, errorData)
       }
     } catch (error) {
-      console.error("Error adding custom exercise:", error)
+      console.error("💥 Error adding custom exercise:", error)
       setMessage(`❌ Error al crear el ejercicio`)
       setTimeout(() => setMessage(""), 3000)
     }
@@ -917,11 +1084,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             <div
               className="grid gap-4 p-4 font-bold text-sm text-gray-800"
               style={{
-                gridTemplateColumns: `40px 2fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 120px`,
+                gridTemplateColumns: `40px 3fr 1.5fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 120px`,
               }}
             >
               <div className="text-center">📏</div>
               <div>🏋️ Ejercicio</div>
+              <div>💪 Grupo</div> 
               <div>📊 Series</div>
               <div>🔄 Reps</div>
               <div>⚖️ Peso (kg)</div>
@@ -942,7 +1110,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         <div
           className="grid gap-4 p-4 items-center"
           style={{
-            gridTemplateColumns: `40px 2fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 120px`,
+            gridTemplateColumns: `40px 3fr 1.5fr 1fr 1fr 1fr 1fr ${activeColumns.map(() => "1fr").join(" ")} 120px`,
           }}
         >
           {/* Drag handle */}
@@ -955,72 +1123,117 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             <Select
               value={exercise.exercise_name}
               onValueChange={async (value) => {
+                console.log(`🎯 Seleccionando ejercicio: ${value}`)
+
                 if (value.startsWith("CREATE_")) {
-                  const exerciseName = value.replace("CREATE_", "")
-                  const createdName = await createExerciseFromDropdown(exerciseName)
-                  if (createdName) {
-                    updateExercise(exercise.id, "exercise_name", createdName)
+                  const parts = value.split("|||")
+                  console.log(`🔧 Creando ejercicio personalizado:`, parts)
+                  if (parts.length === 3) {
+                    const exerciseName = parts[1]
+                    const muscleGroup = parts[2]
+                    console.log(`📝 Nombre: ${exerciseName}, Grupo: ${muscleGroup}`)
+                    const createdExercise = await createExerciseFromDropdown(exerciseName, muscleGroup)
+                    if (createdExercise) {
+                      console.log(`✅ Ejercicio creado:`, createdExercise)
+                      updateExercise(exercise.id, "exercise_name", createdExercise.name)
+                      updateExercise(exercise.id, "muscle_group", createdExercise.muscle_group)
+                    }
                   }
                   return
                 }
-                updateExercise(exercise.id, "exercise_name", value)
+
+                console.log(`🔍 Buscando ejercicio en lista:`, value)
+                const selectedExercise = allExercises.find((ex) => ex.name === value)
+                console.log(`🎯 Ejercicio encontrado:`, selectedExercise)
+
+                if (selectedExercise) {
+                  console.log(
+                    `📝 Actualizando con: nombre=${selectedExercise.name}, grupo=${selectedExercise.muscle_group}`,
+                  )
+                  updateExercise(exercise.id, "exercise_name", selectedExercise.name)
+                  updateExercise(exercise.id, "muscle_group", selectedExercise.muscle_group)
+                } else {
+                  console.log(`⚠️ Ejercicio no encontrado, solo actualizando nombre`)
+                  updateExercise(exercise.id, "exercise_name", value)
+                }
               }}
             >
               <SelectTrigger className="w-full bg-white border-2 hover:border-blue-300 transition-colors">
                 <SelectValue placeholder="🔍 Seleccionar ejercicio" />
               </SelectTrigger>
-              <SelectContent className="max-h-60">
+              <SelectContent className="max-h-60" onPointerDown={(e) => e.stopPropagation()}>
                 {/* Campo de búsqueda independiente por ejercicio */}
                 <div className="p-3 border-b bg-gray-50">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      placeholder="🔍 Buscar ejercicio..."
-                      value={getExerciseSearch(exercise.id)}
-                      onChange={(e) => {
-                        setExerciseSearch(exercise.id, e.target.value)
-                      }}
-                      onFocus={(e) => {
-                        e.stopPropagation()
-                        e.preventDefault()
-                      }}
-                      onMouseDown={(e) => {
-                        e.stopPropagation()
-                      }}
-                      className="pl-10 h-9 bg-white"
-                      autoComplete="off"
-                    />
-                  </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                  <Input
+                    placeholder="🔍 Buscar ejercicio..."
+                    value={getExerciseSearch(exercise.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      setExerciseSearch(exercise.id, e.target.value)
+                    }}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    className="pl-10 h-9 bg-white"
+                    autoComplete="off"
+                  />
                 </div>
+              </div>
 
-                {/* Lista de ejercicios filtrados */}
                 {getFilteredExercises(exercise.id).map((ex) => (
-                  <SelectItem key={ex} value={ex} className="py-2">
-                    <span className="font-medium">{ex}</span>
+                  <SelectItem key={ex.name} value={ex.name} className="py-2">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="font-medium">{ex.name}</span>
+                      {/* Eliminado: Badge del grupo muscular dentro del SelectItem para evitar redundancia */}
+                    </div>
                   </SelectItem>
                 ))}
 
-                {/* Opción para crear nuevo ejercicio */}
                 {getExerciseSearch(exercise.id) &&
                   getExerciseSearch(exercise.id).trim() &&
                   !getFilteredExercises(exercise.id).some(
-                    (ex) => ex.toLowerCase() === getExerciseSearch(exercise.id).toLowerCase(),
+                    (ex) => ex.name.toLowerCase() === getExerciseSearch(exercise.id).toLowerCase(),
                   ) && (
                     <>
                       <Separator />
-                      <SelectItem
-                        value={`CREATE_${getExerciseSearch(exercise.id).trim()}`}
-                        className="bg-blue-50 text-blue-700 font-semibold"
-                      >
-                        <div className="flex items-center">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Crear &quot;{getExerciseSearch(exercise.id).trim()}&quot;
-                        </div>
-                      </SelectItem>
+                      <div className="p-2 bg-blue-50">
+                        <p className="text-sm font-semibold text-blue-700 mb-2">
+                          Crear "{getExerciseSearch(exercise.id).trim()}" en:
+                        </p>
+                        {MUSCLE_GROUPS.map((group) => (
+                          <SelectItem
+                            key={group}
+                            value={`CREATE_|||${getExerciseSearch(exercise.id).trim()}|||${group}`}
+                            className="text-blue-700 font-medium ml-2"
+                          >
+                            <div className="flex items-center">
+                              <Plus className="w-3 h-3 mr-2" />
+                              <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
+                                {group}
+                              </Badge>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </div>
                     </>
                   )}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* COLUMNA: Grupo muscular */}
+          <div className="flex justify-center">
+            {exercise.muscle_group ? (
+              <Badge variant="outline" className={`text-xs text-center ${getMuscleGroupColor(exercise.muscle_group)}`}>
+                {exercise.muscle_group}
+              </Badge>
+            ) : (
+              <span className="text-gray-400 text-xs">Sin grupo</span>
+            )}
           </div>
 
           {/* Campos básicos */}
@@ -1095,7 +1308,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
               onClick={() => saveExercise(exercise.id)}
               variant="outline"
               size="sm"
-              disabled={!exercise.exercise_name.trim()}
+              disabled={!exercise.exercise_name.trim() || !exercise.muscle_group}
               className="h-10 px-3 hover:bg-green-50 hover:border-green-300 border-2 transition-all duration-200"
             >
               <Save className="w-4 h-4 text-green-600" />
@@ -1132,7 +1345,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             <div className="flex items-center space-x-4">
               <GripVertical className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing" />
 
-              {/* ✅ NUEVO: Checkbox para completar ejercicio completo */}
+              {/* Checkbox para completar ejercicio completo */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -1169,8 +1382,15 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                 </span>
               </div>
 
+              {/* Badge de grupo muscular */}
+              {exercise.muscle_group && (
+                <Badge variant="outline" className={`text-center ${getMuscleGroupColor(exercise.muscle_group)}`}>
+                  {exercise.muscle_group}
+                </Badge>
+              )}
+
               <Badge variant="outline" className="bg-white">
-                {exercise.sets} series × {exercise.reps} reps × {formatWeight(exercise.weight)}
+                {exercise.sets} series × {exercise.reps} × {formatWeight(exercise.weight)}
               </Badge>
 
               <Badge variant="outline" className="bg-white">

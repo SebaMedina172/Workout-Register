@@ -33,10 +33,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     console.log("✅ Workout encontrado, ID:", workout.id)
 
-    // Obtener ejercicios con sus datos completos
+    // Obtener ejercicios con sus datos completos INCLUYENDO muscle_group
     const { data: exercises, error: exercisesError } = await supabase
       .from("workout_exercises")
-      .select("*")
+      .select("*, muscle_group") // Asegurar que muscle_group se selecciona explícitamente
       .eq("workout_id", workout.id)
       .order("exercise_order")
 
@@ -51,6 +51,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const exercisesWithSets = await Promise.all(
       (exercises || []).map(async (exercise) => {
         console.log(`🔍 Cargando series para ejercicio: ${exercise.exercise_name}`)
+        console.log(`   Muscle group: ${exercise.muscle_group}`) // Log del muscle_group cargado
         console.log(`   Estado del ejercicio: is_completed=${exercise.is_completed}`)
 
         // Obtener series del ejercicio
@@ -84,25 +85,27 @@ export async function GET(request: Request, { params }: { params: { id: string }
           reps: sr.reps || exercise.reps,
           weight: sr.weight || 0,
           custom_data: sr.custom_data || {},
-          is_completed: Boolean(sr.is_completed), // ✅ ASEGURAR que sea boolean
+          is_completed: Boolean(sr.is_completed),
         }))
 
         // Formatear ejercicio para el frontend
         const formattedExercise = {
           id: exercise.id.toString(),
           exercise_name: exercise.exercise_name,
+          muscle_group: exercise.muscle_group, // ASEGURAR que muscle_group se incluye
           sets: exercise.sets,
           reps: exercise.reps,
-          rest_time: exercise.rest_time,
+          rest_time: exercise.rest_seconds,
           weight: exercise.weight || 0,
           custom_data: exercise.custom_data || {},
-          is_saved: true, // Los ejercicios cargados de BD siempre están guardados
-          is_expanded: Boolean(exercise.is_expanded), // ✅ ASEGURAR que sea boolean
-          is_completed: Boolean(exercise.is_completed), // ✅ ASEGURAR que sea boolean
+          is_saved: true,
+          is_expanded: Boolean(exercise.is_expanded),
+          is_completed: Boolean(exercise.is_completed),
           set_records: formattedSetRecords,
         }
 
         console.log(`✅ Ejercicio formateado: ${exercise.exercise_name}`)
+        console.log(`   Muscle group formateado: ${formattedExercise.muscle_group}`) // Verificar que se mantiene
         console.log(
           `   is_completed: ${formattedExercise.is_completed} (tipo: ${typeof formattedExercise.is_completed})`,
         )
@@ -118,7 +121,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     exercisesWithSets.forEach((ex, index) => {
       const completedSets = ex.set_records?.filter((sr) => sr.is_completed).length || 0
       console.log(
-        `   ${index + 1}. ${ex.exercise_name}: ${ex.is_completed ? "COMPLETADO" : "PENDIENTE"} (${completedSets}/${ex.set_records?.length || 0} series)`,
+        `   ${index + 1}. ${ex.exercise_name} (${ex.muscle_group || "Sin grupo"}): ${ex.is_completed ? "COMPLETADO" : "PENDIENTE"} (${completedSets}/${ex.set_records?.length || 0} series)`,
       )
     })
 

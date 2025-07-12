@@ -82,16 +82,18 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       const exercise = exercises[i]
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
+      console.log(`   Grupo muscular: ${exercise.muscle_group}`) // Log del muscle_group
       console.log(
         `   Estado: is_saved=${exercise.is_saved}, is_completed=${exercise.is_completed}, set_records=${exercise.set_records?.length || 0}`,
       )
 
-      // Crear ejercicio en workout_exercises con estado guardado y completado
+      // Crear ejercicio en workout_exercises con estado guardado y completado Y muscle_group
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
           workout_id: workout.id,
           exercise_name: exercise.exercise_name,
+          muscle_group: exercise.muscle_group || null, // ASEGURAR que muscle_group se incluye
           sets: exercise.sets,
           reps: exercise.reps,
           rest_seconds: exercise.rest_time,
@@ -113,6 +115,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
       createdExercises.push(createdExercise)
       console.log(`✅ Ejercicio ${i + 1} creado exitosamente con ID:`, createdExercise.id)
+      console.log(`   Muscle group guardado: ${createdExercise.muscle_group}`) // Verificar que se guardó
 
       // Guardar registros de series si el ejercicio está guardado
       if (exercise.is_saved && exercise.set_records && exercise.set_records.length > 0) {
@@ -256,13 +259,15 @@ export async function POST(request: Request) {
       const exercise = exercises[i]
 
       console.log(`📝 Creando ejercicio ${i + 1}/${exercises.length}:`, exercise.exercise_name)
+      console.log(`   Grupo muscular: ${exercise.muscle_group}`) // Log del muscle_group
 
-      // Crear ejercicio en workout_exercises con estado guardado y completado
+      // Crear ejercicio en workout_exercises con estado guardado y completado Y muscle_group
       const { data: createdExercise, error: exerciseError } = await supabase
         .from("workout_exercises")
         .insert({
           workout_id: workout.id,
           exercise_name: exercise.exercise_name,
+          muscle_group: exercise.muscle_group || null, // ASEGURAR que muscle_group se incluye
           sets: exercise.sets,
           reps: exercise.reps,
           rest_seconds: exercise.rest_time,
@@ -284,6 +289,7 @@ export async function POST(request: Request) {
 
       createdExercises.push(createdExercise)
       console.log(`✅ Ejercicio ${i + 1} creado exitosamente`)
+      console.log(`   Muscle group guardado: ${createdExercise.muscle_group}`) // Verificar que se guardó
 
       // Guardar registros de series si el ejercicio está guardado
       if (exercise.is_saved && exercise.set_records && exercise.set_records.length > 0) {
