@@ -26,7 +26,15 @@ export default async function HomePage() {
               </h1>
               <p className="text-sm text-gray-600 mt-1">Planifica y registra tus entrenamientos</p>
             </div>
-            <SignOutButton />
+            <div className="flex gap-3">
+              <a
+                href="/stats"
+                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-sm"
+              >
+                📊 Estadísticas
+              </a>
+              <SignOutButton />
+            </div>
           </div>
         </div>
       </header>

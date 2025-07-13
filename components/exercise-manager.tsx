@@ -53,6 +53,7 @@ const getMuscleGroupColor = (muscleGroup: string): string => {
     Antebrazos: "bg-purple-100 text-purple-800 border-purple-300",
     Cuádriceps: "bg-yellow-100 text-yellow-800 border-yellow-300",
     Isquiotibiales: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    Glúteo: "bg-yellow-100 text-yellow-800 border-yellow-300",
     Gemelos: "bg-yellow-100 text-yellow-800 border-yellow-300",
     Abductores: "bg-yellow-100 text-yellow-800 border-yellow-300",
     Abdominales: "bg-orange-100 text-orange-800 border-orange-300",
