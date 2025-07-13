@@ -189,41 +189,46 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="bg-gradient-to-r from-blue-50 to-purple-50 -m-6 p-6 mb-6 rounded-t-lg">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
+        <DialogHeader className="bg-gradient-to-r from-blue-50 to-purple-50 -mx-3 sm:-mx-6 -mt-3 sm:-mt-6 p-3 sm:p-6 mb-3 sm:mb-6 rounded-t-lg flex-shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
-              <Dumbbell className="w-7 h-7 mr-3 text-blue-600" />
-              Gestionar Ejercicios Personalizados
+            <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
+              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 mr-2 sm:mr-3 text-blue-600" />
+              <span className="hidden sm:inline">Gestionar Ejercicios Personalizados</span>
+              <span className="sm:hidden">Ejercicios</span>
             </DialogTitle>
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-auto space-y-4 sm:space-y-6 min-h-0">
           {/* Crear nuevo ejercicio */}
           <Card className="border-2 border-green-200 bg-green-50/50">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-green-800 flex items-center">
-                <Plus className="w-5 h-5 mr-2" />
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg font-semibold text-green-800 flex items-center">
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Crear Nuevo Ejercicio
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="new-name">Nombre del ejercicio</Label>
+                  <Label htmlFor="new-name" className="text-sm">
+                    Nombre del ejercicio
+                  </Label>
                   <Input
                     id="new-name"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Ej: Press de banca inclinado"
-                    className="bg-white"
+                    className="bg-white mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="new-muscle-group">Grupo muscular *</Label> {/* ✅ MODIFICADO: Obligatorio */}
+                  <Label htmlFor="new-muscle-group" className="text-sm">
+                    Grupo muscular *
+                  </Label>
                   <Select value={newMuscleGroup} onValueChange={setNewMuscleGroup}>
-                    <SelectTrigger className="bg-white">
+                    <SelectTrigger className="bg-white mt-1">
                       <SelectValue placeholder="Seleccionar grupo muscular" />
                     </SelectTrigger>
                     <SelectContent>
@@ -242,8 +247,8 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
               </div>
               <Button
                 onClick={handleCreate}
-                className="bg-green-600 hover:bg-green-700"
-                disabled={!newName.trim() || !newMuscleGroup} // ✅ MODIFICADO: Validar ambos campos
+                className="w-full bg-green-600 hover:bg-green-700"
+                disabled={!newName.trim() || !newMuscleGroup}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Crear Ejercicio
@@ -254,7 +259,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
           {/* Mensaje de estado */}
           {message && (
             <div
-              className={`p-3 rounded-lg text-sm font-medium ${
+              className={`p-2 sm:p-3 rounded-lg text-xs sm:text-sm font-medium ${
                 message.includes("✅")
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-700 border border-red-200"
@@ -266,10 +271,11 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
 
           {/* Lista de ejercicios */}
           <Card className="border-2 border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
-                <Dumbbell className="w-5 h-5 mr-2" />
-                Tus Ejercicios Personalizados ({exercises.length})
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
+                <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="hidden sm:inline">Tus Ejercicios Personalizados ({exercises.length})</span>
+                <span className="sm:hidden">Ejercicios ({exercises.length})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -280,19 +286,24 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
               ) : exercises.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Dumbbell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>No tienes ejercicios personalizados aún</p>
-                  <p className="text-sm">Crea uno usando el formulario de arriba</p>
+                  <p className="text-sm sm:text-base">No tienes ejercicios personalizados aún</p>
+                  <p className="text-xs sm:text-sm">Crea uno usando el formulario de arriba</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {exercises.map((exercise) => (
                     <div
                       key={exercise.id}
-                      className="flex items-center justify-between p-4 bg-white border-2 border-gray-100 rounded-lg hover:border-blue-200 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white border-2 border-gray-100 rounded-lg hover:border-blue-200 transition-colors gap-3 sm:gap-0"
                     >
                       {editingId === exercise.id ? (
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 mr-4">
-                          <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="bg-white" />
+                        <div className="flex-1 space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
+                          <Input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="bg-white"
+                            placeholder="Nombre del ejercicio"
+                          />
                           <Select value={editMuscleGroup} onValueChange={setEditMuscleGroup}>
                             <SelectTrigger className="bg-white">
                               <SelectValue placeholder="Seleccionar grupo muscular" />
@@ -311,12 +322,14 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                           </Select>
                         </div>
                       ) : (
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-3">
-                            <h3 className="font-semibold text-gray-900">{exercise.name}</h3>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                              {exercise.name}
+                            </h3>
                             <Badge
                               variant="outline"
-                              className={`text-xs ${getMuscleGroupColor(exercise.muscle_group)}`}
+                              className={`text-xs self-start sm:self-auto ${getMuscleGroupColor(exercise.muscle_group)}`}
                             >
                               {exercise.muscle_group}
                             </Badge>
@@ -329,27 +342,28 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                         </div>
                       )}
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 self-end sm:self-auto">
                         {editingId === exercise.id ? (
                           <>
                             <Button
                               onClick={handleSaveEdit}
                               size="sm"
-                              className="bg-green-600 hover:bg-green-700"
-                              disabled={!editName.trim() || !editMuscleGroup} // ✅ NUEVO: Validar ambos campos
+                              className="bg-green-600 hover:bg-green-700 h-8 px-2 sm:px-3"
+                              disabled={!editName.trim() || !editMuscleGroup}
                             >
-                              <Save className="w-4 h-4" />
+                              <Save className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                             <Button
                               onClick={() => {
                                 setEditingId(null)
                                 setEditName("")
-                                setEditMuscleGroup("") // ✅ NUEVO: Limpiar estado
+                                setEditMuscleGroup("")
                               }}
                               size="sm"
                               variant="outline"
+                              className="h-8 px-2 sm:px-3"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                           </>
                         ) : (
@@ -358,17 +372,17 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                               onClick={() => handleEdit(exercise)}
                               size="sm"
                               variant="outline"
-                              className="hover:bg-blue-50 hover:border-blue-300"
+                              className="hover:bg-blue-50 hover:border-blue-300 h-8 px-2 sm:px-3"
                             >
-                              <Edit2 className="w-4 h-4" />
+                              <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                             <Button
                               onClick={() => handleDelete(exercise.id, exercise.name)}
                               size="sm"
                               variant="outline"
-                              className="hover:bg-red-50 hover:border-red-300 text-red-600"
+                              className="hover:bg-red-50 hover:border-red-300 text-red-600 h-8 px-2 sm:px-3"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                           </>
                         )}

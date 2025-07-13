@@ -247,21 +247,23 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       {saving && <LoadingOverlay message="Guardando entrenamiento..." />}
 
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center">
-              <Dumbbell className="w-8 h-8 mr-3 text-blue-600" />
-              {workout ? "Editar Entrenamiento" : "Nuevo Entrenamiento"} - {date.toLocaleDateString("es-ES")}
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-7xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
+          <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
+            <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center">
+              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mr-2 sm:mr-3 text-blue-600" />
+              <span className="truncate">
+                {workout ? "Editar Entrenamiento" : "Nuevo Entrenamiento"} - {date.toLocaleDateString("es-ES")}
+              </span>
             </DialogTitle>
           </DialogHeader>
 
           {message && (
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm font-medium">
+            <div className="flex-shrink-0 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-xs sm:text-sm font-medium">
               {message}
             </div>
           )}
 
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
             <Toolbar
               exercises={exercises}
               activeColumnsCount={activeColumns.length}
@@ -270,7 +272,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
               onOpenExerciseManager={() => setShowExerciseManager(true)}
             />
 
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto min-h-0">
               <ExerciseList
                 exercises={exercises}
                 activeColumns={activeColumns}
@@ -299,14 +301,14 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             </div>
           </div>
 
-          <div className="flex-shrink-0 p-4 bg-gray-50 border-t flex justify-between">
-            <Button onClick={onClose} variant="outline" className="border-2 bg-transparent">
+          <div className="flex-shrink-0 p-2 sm:p-4 bg-gray-50 border-t flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
+            <Button onClick={onClose} variant="outline" className="border-2 bg-transparent order-2 sm:order-1">
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
-              className="bg-green-600 hover:bg-green-700 text-white min-w-[120px]"
+              className="bg-green-600 hover:bg-green-700 text-white min-w-[120px] order-1 sm:order-2"
             >
               {saving ? (
                 <>

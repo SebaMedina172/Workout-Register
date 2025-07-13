@@ -178,10 +178,10 @@ export default function WorkoutCalendar() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-16">
+      <div className="flex justify-center items-center py-8 sm:py-16">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent"></div>
-          <p className="text-gray-600 font-medium">Cargando calendario...</p>
+          <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-blue-600 border-t-transparent"></div>
+          <p className="text-gray-600 font-medium text-sm sm:text-base">Cargando calendario...</p>
         </div>
       </div>
     )
@@ -189,19 +189,19 @@ export default function WorkoutCalendar() {
 
   return (
     <div className="relative">
-      {/* Estilos CSS personalizados */}
+      {/* Estilos CSS personalizados optimizados */}
       <style jsx>{`
         .calendar-day-planned {
           background: linear-gradient(135deg, #10b981, #059669) !important;
           color: white !important;
-          border: 2px solid #059669 !important;
+          border: 1px solid #059669 !important;
           font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2) !important;
         }
         
         .calendar-day-planned:hover {
           background: linear-gradient(135deg, #34d399, #10b981) !important;
-          box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
@@ -209,14 +209,14 @@ export default function WorkoutCalendar() {
         .calendar-day-completed {
           background: linear-gradient(135deg, #6b7280, #4b5563) !important;
           color: white !important;
-          border: 2px solid #4b5563 !important;
+          border: 1px solid #4b5563 !important;
           font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3) !important;
+          box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2) !important;
         }
         
         .calendar-day-completed:hover {
           background: linear-gradient(135deg, #9ca3af, #6b7280) !important;
-          box-shadow: 0 6px 16px rgba(107, 114, 128, 0.4) !important;
+          box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
@@ -224,14 +224,14 @@ export default function WorkoutCalendar() {
         .calendar-day-incomplete {
           background: linear-gradient(135deg, #f59e0b, #d97706) !important;
           color: white !important;
-          border: 2px solid #d97706 !important;
+          border: 1px solid #d97706 !important;
           font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
         
         .calendar-day-incomplete:hover {
           background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
-          box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4) !important;
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
@@ -239,14 +239,14 @@ export default function WorkoutCalendar() {
         .calendar-day-rest {
           background: linear-gradient(135deg, #f97316, #ea580c) !important;
           color: white !important;
-          border: 2px solid #ea580c !important;
+          border: 1px solid #ea580c !important;
           font-weight: bold !important;
-          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
+          box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2) !important;
         }
         
         .calendar-day-rest:hover {
           background: linear-gradient(135deg, #fb923c, #f97316) !important;
-          box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4) !important;
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
@@ -259,10 +259,10 @@ export default function WorkoutCalendar() {
           height: 100% !important;
           width: 100% !important;
           gap: 2px !important;
+          padding: 2px !important;
         }
         
         .calendar-day-number {
-          font-size: 1.125rem !important;
           font-weight: bold !important;
           line-height: 1 !important;
           flex-shrink: 0 !important;
@@ -270,59 +270,114 @@ export default function WorkoutCalendar() {
         
         .calendar-day-icon {
           flex-shrink: 0 !important;
-          height: 16px !important;
-          width: 16px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
         }
+
+        /* Mobile styles - Enfoque más conservador */
+        @media (max-width: 640px) {
+          .calendar-day-content {
+            gap: 2px !important;
+            padding: 2px !important;
+          }
+          
+          .calendar-day-number {
+            font-size: 0.875rem !important;
+          }
+          
+          .calendar-day-icon {
+            height: 12px !important;
+            width: 12px !important;
+          }
+          
+          .calendar-day-planned,
+          .calendar-day-completed,
+          .calendar-day-incomplete,
+          .calendar-day-rest {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+          }
+          
+          .calendar-day-planned:hover,
+          .calendar-day-completed:hover,
+          .calendar-day-incomplete:hover,
+          .calendar-day-rest:hover {
+            transform: none !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+          }
+        }
+
+        /* Tablet styles */
+        @media (min-width: 641px) and (max-width: 1024px) {
+          .calendar-day-number {
+            font-size: 0.875rem !important;
+          }
+          
+          .calendar-day-icon {
+            height: 12px !important;
+            width: 12px !important;
+          }
+        }
+
+        /* Desktop styles */
+        @media (min-width: 1025px) {
+          .calendar-day-number {
+            font-size: 1rem !important;
+          }
+          
+          .calendar-day-icon {
+            height: 14px !important;
+            width: 14px !important;
+          }
+        }
       `}</style>
 
-      {/* Calendario principal */}
-      <div className="p-4 md:p-8">
-        {/* Botón Hoy */}
-        <div className="flex justify-center mb-4">
+      {/* Calendario principal con espaciado inteligente */}
+      <div className="p-2 sm:p-4 md:p-6 lg:p-8">
+        {/* Botón Hoy - Espaciado reducido en móvil */}
+        <div className="flex justify-center mb-2 sm:mb-4">
           <Button
             onClick={goToToday}
             size="sm"
-            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-6 py-2 rounded-lg text-sm"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base"
           >
             📅 Ir a Hoy
           </Button>
         </div>
 
+        {/* Contenedor del calendario */}
         <div className="flex justify-center">
-          <div className="w-full max-w-6xl">
+          <div className="w-full max-w-4xl lg:max-w-6xl">
             <Calendar
               mode="single"
               selected={selectedDate}
               month={currentMonth}
               onMonthChange={setCurrentMonth}
               onSelect={handleDateSelect}
-              className="rounded-2xl border-0 shadow-none w-full"
+              className="rounded-xl sm:rounded-2xl border-0 shadow-none w-full"
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
-                month: "space-y-4 w-full",
-                caption: "flex justify-center pt-1 relative items-center mb-6",
-                caption_label: "text-3xl font-bold text-gray-900",
+                month: "space-y-2 sm:space-y-4 w-full",
+                caption: "flex justify-center pt-1 relative items-center mb-2 sm:mb-4 md:mb-6",
+                caption_label: "text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900",
                 nav: "space-x-1 flex items-center",
                 nav_button:
-                  "h-12 w-12 bg-white hover:bg-gray-50 border-2 border-gray-200 rounded-xl transition-all duration-200 hover:border-blue-300 hover:shadow-md flex items-center justify-center",
+                  "h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 bg-white hover:bg-gray-50 border border-gray-200 sm:border-2 rounded-lg sm:rounded-xl transition-all duration-200 hover:border-blue-300 hover:shadow-md flex items-center justify-center",
                 nav_button_previous: "absolute left-1",
                 nav_button_next: "absolute right-1",
                 table: "w-full border-collapse",
-                head_row: "flex w-full mb-2",
+                head_row: "flex w-full mb-1 sm:mb-2",
                 head_cell:
-                  "text-gray-600 rounded-lg w-full h-14 font-bold text-base flex items-center justify-center bg-gray-50 mx-1",
-                row: "flex w-full mt-2",
-                cell: "relative p-1 w-full",
-                day: "h-20 w-full p-1 font-bold text-lg rounded-xl border-2 border-gray-200 transition-all duration-200 flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+                  "text-gray-600 rounded-md sm:rounded-lg w-full h-8 sm:h-10 md:h-12 lg:h-14 font-semibold sm:font-bold text-xs sm:text-sm md:text-base flex items-center justify-center bg-gray-50 mx-0.5 sm:mx-1",
+                row: "flex w-full mt-1 sm:mt-2",
+                cell: "relative p-0.5 sm:p-1 w-full",
+                day: "h-14 sm:h-16 md:h-18 lg:h-20 xl:h-22 w-full p-1 font-bold text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl border border-gray-200 sm:border-2 transition-all duration-200 flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2",
                 day_selected:
                   "bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-blue-500 shadow-lg",
                 day_today:
-                  "bg-gradient-to-br from-orange-400 to-orange-500 text-white border-orange-400 shadow-lg font-black",
-                day_outside: "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed",
-                day_disabled: "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed",
+                  "bg-gradient-to-br from-orange-400 to-orange-500 text-white border-orange-400 shadow-lg font-black ring-1 sm:ring-2 ring-orange-300 ring-offset-1 sm:ring-offset-2",
+                day_outside: "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100",
+                day_disabled: "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100",
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
                 day_hidden: "invisible",
               }}
@@ -337,7 +392,7 @@ export default function WorkoutCalendar() {
                       {...props}
                       date={date}
                       displayMonth={displayMonth}
-                      workout={workout}
+                      workout={workout || null}
                       isSelected={isSelected}
                       isToday={isToday}
                       onClick={() => handleDateSelect(date)}
@@ -354,7 +409,7 @@ export default function WorkoutCalendar() {
       {showDayActions && selectedDate && (
         <DayActionsDialog
           selectedDate={selectedDate}
-          selectedWorkout={selectedWorkout}
+          selectedWorkout={selectedWorkout || null}
           onClose={() => setShowDayActions(false)}
           onCreateWorkout={handleCreateWorkout}
           onEditWorkout={handleEditWorkout}

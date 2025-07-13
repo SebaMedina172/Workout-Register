@@ -92,54 +92,54 @@ export default function StatsContainer() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-64" />
-          <div className="flex gap-2">
-            <Skeleton className="h-10 w-10" />
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-10" />
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <Skeleton className="h-6 sm:h-8 w-48 sm:w-64" />
+          <div className="flex gap-2 justify-center sm:justify-end">
+            <Skeleton className="h-8 sm:h-10 w-8 sm:w-10" />
+            <Skeleton className="h-8 sm:h-10 w-20 sm:w-32" />
+            <Skeleton className="h-8 sm:h-10 w-8 sm:w-10" />
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className={i === 4 ? "sm:col-span-2" : ""}>
               <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-20 sm:w-24" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-6 sm:h-8 w-12 sm:w-16" />
               </CardContent>
             </Card>
           ))}
         </div>
-        <Skeleton className="h-96 w-full" /> {/* Placeholder for the main chart */}
-        <Skeleton className="h-48 w-full" /> {/* Placeholder for weekly progress */}
+        <Skeleton className="h-64 sm:h-80 lg:h-96 w-full" />
+        <Skeleton className="h-32 sm:h-40 lg:h-48 w-full" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header de navegación */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="text-center sm:text-left">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
             {format(weekStart, "'Semana del' dd 'de' MMMM", { locale: es })}
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 mt-1">
             {format(weekStart, "dd/MM", { locale: es })} - {format(weekEnd, "dd/MM/yyyy", { locale: es })}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-center sm:justify-end">
           <Button
             variant="ghost"
             size="icon"
             onClick={goToPreviousWeek}
-            className="rounded-full shadow-md hover:bg-gray-100 transition-all duration-200"
+            className="rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10"
           >
-            <ChevronLeft className="h-5 w-5 text-gray-600" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
           </Button>
 
           <Button
@@ -147,19 +147,19 @@ export default function StatsContainer() {
             size="sm"
             onClick={goToCurrentWeek}
             className={cn(
-              "relative overflow-hidden rounded-lg px-4 py-2 text-sm font-medium text-white shadow-lg transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl group",
+              "relative overflow-hidden rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white shadow-lg transition-all duration-300 ease-out hover:scale-105 hover:shadow-xl group",
               {
                 "opacity-50 cursor-not-allowed": isCurrentWeek,
               },
             )}
             style={{
-              background: "linear-gradient(45deg, #6366F1, #9333EA)", // Indigo to Purple
+              background: "linear-gradient(45deg, #6366F1, #9333EA)",
             }}
             disabled={isCurrentWeek}
           >
             <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             <span className="relative flex items-center z-10">
-              <Calendar className="h-4 w-4 mr-1" />
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
               Hoy
             </span>
           </Button>
@@ -168,9 +168,9 @@ export default function StatsContainer() {
             variant="ghost"
             size="icon"
             onClick={goToNextWeek}
-            className="rounded-full shadow-md hover:bg-gray-100 transition-all duration-200"
+            className="rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10"
           >
-            <ChevronRight className="h-5 w-5 text-gray-600" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
           </Button>
         </div>
       </div>

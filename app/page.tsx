@@ -1,48 +1,130 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
+"use client"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Dumbbell, BarChart3, Menu, X } from "lucide-react"
 import WorkoutCalendar from "@/components/workout-calendar"
+import StatsContainer from "@/components/stats-container"
 import SignOutButton from "@/components/sign-out-button"
 
-export default async function HomePage() {
-  // Verificar si el usuario está autenticado
-  const supabase = createServerComponentClient({ cookies })
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+export default function HomePage() {
+  const [currentView, setCurrentView] = useState<"calendar" | "stats">("calendar")
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  if (!session) {
-    redirect("/auth")
-  }
+  // Close mobile menu when view changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [currentView])
+
+  // Close mobile menu on window resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Mi Entrenamiento
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">Planifica y registra tus entrenamientos</p>
+          <div className="flex justify-between items-center h-16">
+            {/* Logo and Title */}
+            <div className="flex items-center space-x-3">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                <Dumbbell className="h-6 w-6 text-white" />
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-gray-900">Mi Entrenamiento</h1>
+                <p className="text-sm text-gray-600 hidden md:block">Tracker de Entrenamientos</p>
+              </div>
+              <div className="sm:hidden">
+                <h1 className="text-lg font-bold text-gray-900">Mi Entrenamiento</h1>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <a
-                href="/stats"
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-sm"
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-4">
+              <Button
+                onClick={() => setCurrentView("calendar")}
+                variant={currentView === "calendar" ? "default" : "ghost"}
+                className={`relative overflow-hidden transition-all duration-300 ${
+                  currentView === "calendar"
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:from-blue-600 hover:to-blue-700"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                }`}
               >
-                📊 Estadísticas
-              </a>
+                <Dumbbell className="h-4 w-4 mr-2" />
+                Calendario
+              </Button>
+              <Button
+                onClick={() => setCurrentView("stats")}
+                variant={currentView === "stats" ? "default" : "ghost"}
+                className={`relative overflow-hidden transition-all duration-300 ${
+                  currentView === "stats"
+                    ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg hover:from-purple-600 hover:to-purple-700"
+                    : "text-gray-700 hover:text-purple-600 hover:bg-purple-50"
+                }`}
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Estadísticas
+              </Button>
               <SignOutButton />
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2">
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
             </div>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 py-3 space-y-2">
+              <Button
+                onClick={() => setCurrentView("calendar")}
+                variant={currentView === "calendar" ? "default" : "ghost"}
+                className={`w-full justify-start transition-all duration-300 ${
+                  currentView === "calendar"
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                }`}
+              >
+                <Dumbbell className="h-4 w-4 mr-2" />
+                Calendario
+              </Button>
+              <Button
+                onClick={() => setCurrentView("stats")}
+                variant={currentView === "stats" ? "default" : "ghost"}
+                className={`w-full justify-start transition-all duration-300 ${
+                  currentView === "stats"
+                    ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg"
+                    : "text-gray-700 hover:text-purple-600 hover:bg-purple-50"
+                }`}
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Estadísticas
+              </Button>
+              {/* Botón Cerrar Sesión en el menú móvil */}
+              <div className="pt-2 border-t border-gray-100">
+                <SignOutButton />
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
-          <WorkoutCalendar />
-        </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {currentView === "calendar" && <WorkoutCalendar />}
+        {currentView === "stats" && <StatsContainer />}
       </main>
     </div>
   )

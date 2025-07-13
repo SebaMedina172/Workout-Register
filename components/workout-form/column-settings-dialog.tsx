@@ -40,24 +40,27 @@ export const ColumnSettingsDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold flex items-center">
-            <Settings className="w-6 h-6 mr-2 text-purple-600" />
-            Configurar Columnas Personalizadas
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-2xl h-[95vh] sm:h-[80vh] overflow-hidden flex flex-col p-3 sm:p-6">
+        <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
+          <DialogTitle className="text-lg sm:text-xl font-bold flex items-center">
+            <Settings className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-purple-600" />
+            <span className="hidden sm:inline">Configurar Columnas Personalizadas</span>
+            <span className="sm:hidden">Columnas</span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto space-y-6">
+        <div className="flex-1 overflow-auto space-y-4 sm:space-y-6 min-h-0">
           {/* Crear nueva columna */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Crear Nueva Columna</CardTitle>
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg">Crear Nueva Columna</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="columnName">Nombre de la columna</Label>
+                  <Label htmlFor="columnName" className="text-sm">
+                    Nombre de la columna
+                  </Label>
                   <Input
                     id="columnName"
                     value={newColumnName}
@@ -67,7 +70,9 @@ export const ColumnSettingsDialog = ({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="columnType">Tipo de dato</Label>
+                  <Label htmlFor="columnType" className="text-sm">
+                    Tipo de dato
+                  </Label>
                   <Select value={newColumnType} onValueChange={(value: any) => setNewColumnType(value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
@@ -93,42 +98,48 @@ export const ColumnSettingsDialog = ({
 
           {/* Lista de columnas existentes */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Columnas Disponibles</CardTitle>
-              <p className="text-sm text-gray-600">
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg">Columnas Disponibles</CardTitle>
+              <p className="text-xs sm:text-sm text-gray-600">
                 Activa/desactiva las columnas que quieres ver en este entrenamiento específico
               </p>
             </CardHeader>
             <CardContent>
               {customColumns.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No hay columnas personalizadas creadas</p>
+                <p className="text-gray-500 text-center py-6 sm:py-8 text-sm">No hay columnas personalizadas creadas</p>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {customColumns.map((column) => (
-                    <div key={column.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-2">
+                    <div
+                      key={column.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-3 sm:gap-0"
+                    >
+                      <div className="flex items-center space-x-3 min-w-0 flex-1">
+                        <div className="flex items-center space-x-2 flex-shrink-0">
                           <Checkbox
                             checked={column.is_active}
                             onCheckedChange={(checked) => onToggleColumnVisibility(column.id, !!checked)}
-                            className="w-5 h-5"
+                            className="w-4 h-4 sm:w-5 sm:h-5"
                           />
                           {column.is_active ? (
-                            <Eye className="w-4 h-4 text-green-600" />
+                            <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                           ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
+                            <EyeOff className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                           )}
                         </div>
-                        <div>
-                          <div className="font-medium">{column.column_name}</div>
-                          <div className="text-sm text-gray-500">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-sm sm:text-base truncate">{column.column_name}</div>
+                          <div className="text-xs sm:text-sm text-gray-500">
                             {column.column_type === "text" && "📝 Texto"}
                             {column.column_type === "number" && "🔢 Número"}
                             {column.column_type === "boolean" && "✅ Sí/No"}
                           </div>
                         </div>
                       </div>
-                      <Badge variant={column.is_active ? "default" : "secondary"}>
+                      <Badge
+                        variant={column.is_active ? "default" : "secondary"}
+                        className="text-xs self-start sm:self-auto"
+                      >
                         {column.is_active ? "Activa" : "Inactiva"}
                       </Badge>
                     </div>
@@ -139,7 +150,7 @@ export const ColumnSettingsDialog = ({
           </Card>
         </div>
 
-        <div className="flex-shrink-0 pt-4 border-t">
+        <div className="flex-shrink-0 pt-3 sm:pt-4 border-t">
           <Button onClick={onClose} className="w-full">
             Cerrar
           </Button>
