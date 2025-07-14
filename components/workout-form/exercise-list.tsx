@@ -1,9 +1,12 @@
 "use client"
 
 import type React from "react"
-import { ExerciseSkeleton } from "./exercise-skeleton"
+
 import { EditingExercise } from "./editing-exercise"
 import { SavedExercise } from "./saved-exercise"
+import { ExerciseSkeleton } from "./exercise-skeleton"
+import { MobileExerciseCard } from "./mobile-exercise-card"
+import { useIsMobile } from "@/hooks/use-mobile"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
 
 interface ExerciseListProps {
@@ -60,18 +63,63 @@ export const ExerciseList = ({
   onWeightChange,
   onCreateExercise,
 }: ExerciseListProps) => {
+  const isMobile = useIsMobile()
+
   if (!initialDataLoaded) {
     return (
-      <div className="space-y-4 p-4">
-        {[1, 2, 3].map((i) => (
+      <div className="space-y-2 sm:space-y-4">
+        {Array.from({ length: 3 }).map((_, i) => (
           <ExerciseSkeleton key={i} />
         ))}
       </div>
     )
   }
 
+  // Vista móvil - tarjetas individuales
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        {exercises.map((exercise, index) => (
+          <div
+            key={exercise.id}
+            draggable
+            onDragStart={(e) => onDragStart(e, index)}
+            onDragOver={(e) => onDragOver(e, index)}
+            onDragLeave={onDragLeave}
+            onDrop={(e) => onDrop(e, index)}
+            onDragEnd={onDragEnd}
+            className={`transition-all duration-200 ${draggedIndex === index ? "opacity-50 scale-95" : ""} ${
+              dragOverIndex === index ? "transform translate-y-1" : ""
+            }`}
+          >
+            <MobileExerciseCard
+              exercise={exercise}
+              index={index}
+              exercises={exercises}
+              activeColumns={activeColumns}
+              userExercises={userExercises}
+              searchValue={exerciseSearches[exercise.id] || ""}
+              onSearchChange={(value) => onSearchChange(exercise.id, value)}
+              onUpdateExercise={onUpdateExercise}
+              onSaveExercise={onSaveExercise}
+              onRemoveExercise={onRemoveExercise}
+              onEditExercise={onEditExercise}
+              onToggleExpansion={onToggleExpansion}
+              onToggleCompletion={onToggleCompletion}
+              onToggleSetCompletion={onToggleSetCompletion}
+              onUpdateSetRecord={onUpdateSetRecord}
+              onWeightChange={onWeightChange}
+              onCreateExercise={onCreateExercise}
+            />
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Vista desktop/tablet - tabla tradicional
   return (
-    <div className="bg-white">
+    <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
       {exercises.map((exercise, index) => (
         <div
           key={exercise.id}
@@ -81,9 +129,9 @@ export const ExerciseList = ({
           onDragLeave={onDragLeave}
           onDrop={(e) => onDrop(e, index)}
           onDragEnd={onDragEnd}
-          className={`border-b transition-all duration-200 ${
-            dragOverIndex === index ? "border-blue-400 bg-blue-50" : "border-gray-200"
-          } ${draggedIndex === index ? "opacity-50" : ""}`}
+          className={`transition-all duration-200 ${draggedIndex === index ? "opacity-50 scale-95" : ""} ${
+            dragOverIndex === index ? "transform translate-y-1" : ""
+          } ${index !== exercises.length - 1 ? "border-b border-gray-200" : ""}`}
         >
           {exercise.is_saved ? (
             <SavedExercise
