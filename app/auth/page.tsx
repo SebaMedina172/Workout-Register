@@ -12,6 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Dumbbell, Mail, Lock, User, CheckCircle, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 export default function AuthPage() {
   const [email, setEmail] = useState("")
@@ -31,6 +33,7 @@ export default function AuthPage() {
 
   const router = useRouter()
   const supabase = createClientComponentClient()
+  const { t } = useLanguage()
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -45,22 +48,22 @@ export default function AuthPage() {
     const errors: typeof validationErrors = {}
 
     if (!email) {
-      errors.email = "El correo electrónico es requerido"
+      errors.email = t.auth.emailRequired
     } else if (!validateEmail(email)) {
-      errors.email = "Ingresa un correo electrónico válido"
+      errors.email = t.auth.validEmailRequired
     }
 
     if (!password) {
-      errors.password = "La contraseña es requerida"
+      errors.password = t.auth.passwordRequired
     } else if (!validatePassword(password)) {
-      errors.password = "La contraseña debe tener al menos 6 caracteres"
+      errors.password = t.auth.passwordMinLength
     }
 
     if (isSignUp) {
       if (!confirmPassword) {
-        errors.confirmPassword = "Confirma tu contraseña"
+        errors.confirmPassword = t.auth.confirmPasswordRequired
       } else if (password !== confirmPassword) {
-        errors.confirmPassword = "Las contraseñas no coinciden"
+        errors.confirmPassword = t.auth.passwordsDontMatch
       }
     }
 
@@ -86,7 +89,7 @@ export default function AuthPage() {
         setMessage(error.message)
         setMessageType("error")
       } else {
-        setMessage("¡Bienvenido de vuelta!")
+        setMessage(t.auth.welcomeBack)
         setMessageType("success")
         setTimeout(() => {
           router.push("/")
@@ -94,7 +97,7 @@ export default function AuthPage() {
         }, 1000)
       }
     } catch (error) {
-      setMessage("Error inesperado al iniciar sesión")
+      setMessage(t.auth.unexpectedSignInError)
       setMessageType("error")
     } finally {
       setLoading(false)
@@ -119,11 +122,11 @@ export default function AuthPage() {
         setMessage(error.message)
         setMessageType("error")
       } else {
-        setMessage("¡Cuenta creada exitosamente! Revisa tu email para confirmar tu cuenta.")
+        setMessage(t.auth.accountCreatedSuccess)
         setMessageType("success")
       }
     } catch (error) {
-      setMessage("Error inesperado al crear la cuenta")
+      setMessage(t.auth.unexpectedSignUpError)
       setMessageType("error")
     } finally {
       setLoading(false)
@@ -147,7 +150,7 @@ export default function AuthPage() {
         setMessageType("error")
       }
     } catch (error) {
-      setMessage("Error al conectar con Google")
+      setMessage(t.auth.googleConnectionError)
       setMessageType("error")
     } finally {
       setGoogleLoading(false)
@@ -161,38 +164,42 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
+    <div className="min-h-screen flex flex-col lg:flex-row relative">
+      {/* Language Switcher - Fixed position top right */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSwitcher />
+      </div>
+
       {/* Left side - Hero Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden flex items-center justify-center p-12">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-slate-900/40" />
+
         <div className="relative z-10 flex flex-col items-center text-white text-center max-w-md mx-auto">
           <div className="mb-8">
             <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
               <Dumbbell className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold mb-4">Mi Entrenamiento</h1>
-          <p className="text-xl text-slate-300 leading-relaxed">
-            Lleva el control de tus rutinas de ejercicio y alcanza tus objetivos fitness
-          </p>
+          <h1 className="text-4xl font-bold mb-4">{t.auth.appTitle}</h1>
+          <p className="text-xl text-slate-300 leading-relaxed">{t.auth.appDescription}</p>
           <div className="mt-12 grid grid-cols-1 gap-6 max-w-sm mx-auto">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-4 h-4 text-green-400" />
               </div>
-              <span className="text-slate-300">Rutinas personalizadas</span>
+              <span className="text-slate-300">{t.auth.customRoutines}</span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-4 h-4 text-blue-400" />
               </div>
-              <span className="text-slate-300">Seguimiento de progreso</span>
+              <span className="text-slate-300">{t.auth.progressTracking}</span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
                 <CheckCircle className="w-4 h-4 text-purple-400" />
               </div>
-              <span className="text-slate-300">Estadísticas detalladas</span>
+              <span className="text-slate-300">{t.auth.detailedStats}</span>
             </div>
           </div>
         </div>
@@ -202,20 +209,18 @@ export default function AuthPage() {
       <div className="flex-1 flex items-center justify-center p-4 lg:p-8 bg-slate-50">
         <div className="w-full max-w-md">
           {/* Mobile header */}
-          <div className="lg:hidden text-center mb-8">
+          <div className="lg:hidden text-center mb-8 pt-12">
             <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Dumbbell className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Mi Entrenamiento</h1>
-            <p className="text-slate-600 mt-2">Accede a tu cuenta</p>
+            <h1 className="text-2xl font-bold text-slate-900">{t.auth.appTitle}</h1>
+            <p className="text-slate-600 mt-2">{t.auth.accessYourAccount}</p>
           </div>
 
           <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
             <CardHeader className="space-y-1 pb-6">
-              <CardTitle className="text-2xl font-bold text-center text-slate-900">Bienvenido</CardTitle>
-              <CardDescription className="text-center text-slate-600">
-                Inicia sesión en tu cuenta o crea una nueva
-              </CardDescription>
+              <CardTitle className="text-2xl font-bold text-center text-slate-900">{t.auth.welcome}</CardTitle>
+              <CardDescription className="text-center text-slate-600">{t.auth.signInToAccount}</CardDescription>
             </CardHeader>
             <CardContent>
               {/* Google Sign In Button */}
@@ -247,13 +252,13 @@ export default function AuthPage() {
                     />
                   </svg>
                 )}
-                Continuar con Google
+                {t.auth.continueWithGoogle}
               </Button>
 
               <div className="relative mb-6">
                 <Separator />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-white px-3 text-sm text-slate-500">o continúa con email</span>
+                  <span className="bg-white px-3 text-sm text-slate-500">{t.auth.orContinueWithEmail}</span>
                 </div>
               </div>
 
@@ -261,11 +266,11 @@ export default function AuthPage() {
                 <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100">
                   <TabsTrigger value="signin" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
                     <User className="w-4 h-4 mr-2" />
-                    Iniciar Sesión
+                    {t.auth.signIn}
                   </TabsTrigger>
                   <TabsTrigger value="signup" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
                     <Mail className="w-4 h-4 mr-2" />
-                    Registrarse
+                    {t.auth.signUp}
                   </TabsTrigger>
                 </TabsList>
 
@@ -273,7 +278,7 @@ export default function AuthPage() {
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-slate-700 font-medium">
-                        Correo electrónico
+                        {t.auth.email}
                       </Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -301,7 +306,7 @@ export default function AuthPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password" className="text-slate-700 font-medium">
-                        Contraseña
+                        {t.auth.password}
                       </Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -342,10 +347,10 @@ export default function AuthPage() {
                       {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Iniciando sesión...
+                          {t.auth.signingIn}
                         </>
                       ) : (
-                        "Iniciar Sesión"
+                        t.auth.signIn
                       )}
                     </Button>
                   </form>
@@ -355,7 +360,7 @@ export default function AuthPage() {
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="signup-email" className="text-slate-700 font-medium">
-                        Correo electrónico
+                        {t.auth.email}
                       </Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -383,14 +388,14 @@ export default function AuthPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-password" className="text-slate-700 font-medium">
-                        Contraseña
+                        {t.auth.password}
                       </Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                         <Input
                           id="signup-password"
                           type={showPassword ? "text" : "password"}
-                          placeholder="Mínimo 6 caracteres"
+                          placeholder={t.auth.passwordMinLength}
                           value={password}
                           onChange={(e) => {
                             setPassword(e.target.value)
@@ -419,14 +424,14 @@ export default function AuthPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="confirm-password" className="text-slate-700 font-medium">
-                        Confirmar contraseña
+                        {t.auth.confirmPassword}
                       </Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                         <Input
                           id="confirm-password"
                           type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Repite tu contraseña"
+                          placeholder={t.auth.confirmPassword}
                           value={confirmPassword}
                           onChange={(e) => {
                             setConfirmPassword(e.target.value)
@@ -455,13 +460,13 @@ export default function AuthPage() {
                       )}
                     </div>
                     <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-2 font-medium">Tu contraseña debe contener:</p>
+                      <p className="text-xs text-slate-600 mb-2 font-medium">{t.auth.passwordRequirements}</p>
                       <ul className="text-xs text-slate-500 space-y-1">
                         <li className={`flex items-center ${password.length >= 6 ? "text-green-600" : ""}`}>
                           <CheckCircle
                             className={`w-3 h-3 mr-2 ${password.length >= 6 ? "text-green-500" : "text-slate-400"}`}
                           />
-                          Al menos 6 caracteres
+                          {t.auth.atLeast6Characters}
                         </li>
                         <li
                           className={`flex items-center ${password && confirmPassword && password === confirmPassword ? "text-green-600" : ""}`}
@@ -469,7 +474,7 @@ export default function AuthPage() {
                           <CheckCircle
                             className={`w-3 h-3 mr-2 ${password && confirmPassword && password === confirmPassword ? "text-green-500" : "text-slate-400"}`}
                           />
-                          Las contraseñas coinciden
+                          {t.auth.passwordsMatch}
                         </li>
                       </ul>
                     </div>
@@ -481,10 +486,10 @@ export default function AuthPage() {
                       {loading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Creando cuenta...
+                          {t.auth.creatingAccount}
                         </>
                       ) : (
-                        "Crear Cuenta"
+                        t.auth.createAccount
                       )}
                     </Button>
                   </form>
@@ -510,9 +515,7 @@ export default function AuthPage() {
             </CardContent>
           </Card>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
-            Al continuar, aceptas nuestros términos de servicio y política de privacidad
-          </p>
+          <p className="text-center text-sm text-slate-500 mt-6">{t.auth.termsAndPrivacy}</p>
         </div>
       </div>
     </div>
