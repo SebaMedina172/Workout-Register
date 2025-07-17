@@ -7,6 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { GripVertical, Save, Trash2 } from "lucide-react"
 import { ExerciseSelector } from "./exercise-selector"
 import { getMuscleGroupColor } from "./utils"
+import { useLanguage } from "@/lib/i18n/context"
+import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
 import { DEFAULT_EXERCISES } from "./constants"
 
@@ -42,6 +44,8 @@ export const EditingExercise = ({
   onWeightChange,
   onCreateExercise,
 }: EditingExerciseProps) => {
+  const { t } = useLanguage()
+  const { translateMuscleGroup } = useMuscleGroupTranslation()
   const isFirstUnlocked = index === 0 || exercises[index - 1].is_saved
 
   const handleExerciseSelect = async (value: string) => {
@@ -95,12 +99,12 @@ export const EditingExercise = ({
               }}
             >
               <div className="text-center">📏</div>
-              <div>🏋️ Ejercicio</div>
-              <div>💪 Grupo</div>
-              <div>📊 Series</div>
-              <div>🔄 Reps</div>
-              <div>⚖️ Peso (kg)</div>
-              <div>⏱️ Descanso (seg)</div>
+              <div>🏋️ {t.workoutForm.exerciseName}</div>
+              <div>💪 {t.workoutForm.muscleGroup}</div>
+              <div>📊 {t.workoutForm.sets}</div>
+              <div>🔄 {t.workoutForm.reps}</div>
+              <div>⚖️ {t.workoutForm.weight}</div>
+              <div>⏱️ {t.workoutForm.restTime}</div>
               {activeColumns.map((column) => (
                 <div key={column.id} className="text-center">
                   {column.column_type === "text" && "📝"}
@@ -110,7 +114,7 @@ export const EditingExercise = ({
                   <span className="sm:hidden">{column.column_name.slice(0, 3)}</span>
                 </div>
               ))}
-              <div>🔧 Acciones</div>
+              <div>🔧 {t.workoutForm.saveExercise}</div>
             </div>
           </div>
         </div>
@@ -149,11 +153,11 @@ export const EditingExercise = ({
                   variant="outline"
                   className={`text-xs text-center ${getMuscleGroupColor(exercise.muscle_group)}`}
                 >
-                  <span className="hidden sm:inline">{exercise.muscle_group}</span>
-                  <span className="sm:hidden">{exercise.muscle_group.slice(0, 6)}</span>
+                  <span className="hidden sm:inline">{translateMuscleGroup(exercise.muscle_group)}</span>
+                  <span className="sm:hidden">{translateMuscleGroup(exercise.muscle_group).slice(0, 6)}</span>
                 </Badge>
               ) : (
-                <span className="text-gray-400 text-xs">Sin grupo</span>
+                <span className="text-gray-400 text-xs">{t.workoutForm.selectMuscleGroup}</span>
               )}
             </div>
 
@@ -186,7 +190,7 @@ export const EditingExercise = ({
                   e.target.value = ""
                 }
               }}
-              placeholder="Libre"
+              placeholder={t.calendar.freeWeight}
               className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10"
             />
 

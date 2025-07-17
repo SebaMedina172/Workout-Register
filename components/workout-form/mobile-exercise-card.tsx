@@ -24,8 +24,10 @@ import {
 } from "lucide-react"
 import { ExerciseSelector } from "./exercise-selector"
 import { formatWeight, getMuscleGroupColor } from "./utils"
+import { useLanguage } from "@/lib/i18n/context"
+import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
-import { DEFAULT_EXERCISES } from "./constants" // Import DEFAULT_EXERCISES
+import { DEFAULT_EXERCISES } from "./constants"
 
 interface MobileExerciseCardProps {
   exercise: WorkoutExercise
@@ -69,6 +71,8 @@ export const MobileExerciseCard = ({
   onWeightChange,
   onCreateExercise,
 }: MobileExerciseCardProps) => {
+  const { t } = useLanguage()
+  const { translateMuscleGroup } = useMuscleGroupTranslation()
   const [showCustomFields, setShowCustomFields] = useState(false)
 
   const handleExerciseSelect = async (value: string) => {
@@ -95,13 +99,9 @@ export const MobileExerciseCard = ({
 
     if (selectedExercise) {
       onUpdateExercise(exercise.id, "exercise_name", selectedExercise.name)
-      onUpdateExercise(exercise.id, "muscle_group", selectedExercise.muscle_group) // <-- FIX: Update muscle_group here
+      onUpdateExercise(exercise.id, "muscle_group", selectedExercise.muscle_group)
     } else {
       onUpdateExercise(exercise.id, "exercise_name", value)
-      // If not found in predefined or user exercises, muscle_group might be unknown or needs to be set manually later
-      // For now, we'll clear it or keep it as is if it's not found.
-      // Depending on your backend, you might want to set a default or null.
-      // For this fix, we assume it's always found or handled by the CREATE_ logic.
     }
   }
 
@@ -114,7 +114,9 @@ export const MobileExerciseCard = ({
             <div className="flex items-center space-x-2">
               <GripVertical className="w-4 h-4 text-gray-400" />
               <Dumbbell className="w-4 h-4 text-blue-600" />
-              <span className="font-semibold text-blue-900">Ejercicio #{index + 1}</span>
+              <span className="font-semibold text-blue-900">
+                {t.workoutForm.exerciseName} #{index + 1}
+              </span>
             </div>
             <div className="flex space-x-1">
               <Button
@@ -141,7 +143,7 @@ export const MobileExerciseCard = ({
         <CardContent className="space-y-4">
           {/* Selector de ejercicio */}
           <div>
-            <Label className="text-sm font-medium">Ejercicio</Label>
+            <Label className="text-sm font-medium">{t.workoutForm.exerciseName}</Label>
             <ExerciseSelector
               exerciseId={exercise.id}
               selectedExercise={exercise.exercise_name}
@@ -155,10 +157,10 @@ export const MobileExerciseCard = ({
           {/* Grupo muscular */}
           {exercise.muscle_group && (
             <div>
-              <Label className="text-sm font-medium">Grupo muscular</Label>
+              <Label className="text-sm font-medium">{t.workoutForm.muscleGroup}</Label>
               <div className="mt-1">
                 <Badge variant="outline" className={getMuscleGroupColor(exercise.muscle_group)}>
-                  {exercise.muscle_group}
+                  {translateMuscleGroup(exercise.muscle_group)}
                 </Badge>
               </div>
             </div>
@@ -167,7 +169,7 @@ export const MobileExerciseCard = ({
           {/* Campos básicos en grid */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm font-medium">Series</Label>
+              <Label className="text-sm font-medium">{t.workoutForm.sets}</Label>
               <Input
                 type="number"
                 min="1"
@@ -177,7 +179,7 @@ export const MobileExerciseCard = ({
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">Repeticiones</Label>
+              <Label className="text-sm font-medium">{t.workoutForm.reps}</Label>
               <Input
                 type="number"
                 min="1"
@@ -187,7 +189,7 @@ export const MobileExerciseCard = ({
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">Peso (kg)</Label>
+              <Label className="text-sm font-medium">{t.workoutForm.weight}</Label>
               <Input
                 type="number"
                 min="0"
@@ -199,12 +201,12 @@ export const MobileExerciseCard = ({
                     e.target.value = ""
                   }
                 }}
-                placeholder="Libre"
+                placeholder={t.calendar.freeWeight}
                 className="mt-1 text-center font-semibold"
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">Descanso (seg)</Label>
+              <Label className="text-sm font-medium">{t.workoutForm.restTime}</Label>
               <Input
                 type="number"
                 min="0"
@@ -224,12 +226,12 @@ export const MobileExerciseCard = ({
                   {showCustomFields ? (
                     <>
                       <ChevronDown className="w-4 h-4 mr-2" />
-                      Ocultar campos personalizados
+                      {t.columnSettings.close} {t.columnSettings.availableColumns.toLowerCase()}
                     </>
                   ) : (
                     <>
                       <ChevronRight className="w-4 h-4 mr-2" />
-                      Mostrar campos personalizados ({activeColumns.length})
+                      {t.columnSettings.availableColumns} ({activeColumns.length})
                     </>
                   )}
                 </Button>
@@ -251,7 +253,9 @@ export const MobileExerciseCard = ({
                           }
                         />
                         <span className="text-sm text-gray-600">
-                          {exercise.custom_data?.[column.column_name] ? "Sí" : "No"}
+                          {exercise.custom_data?.[column.column_name]
+                            ? t.columnSettings.active
+                            : t.columnSettings.inactive}
                         </span>
                       </div>
                     ) : (
@@ -260,7 +264,7 @@ export const MobileExerciseCard = ({
                         value={exercise.custom_data?.[column.column_name] || ""}
                         onChange={(e) => onUpdateExercise(exercise.id, `custom_${column.column_name}`, e.target.value)}
                         className="mt-1"
-                        placeholder={column.column_type === "number" ? "0" : "Escribe aquí..."}
+                        placeholder={column.column_type === "number" ? "0" : t.workoutForm.notes + "..."}
                       />
                     )}
                   </div>
@@ -316,7 +320,7 @@ export const MobileExerciseCard = ({
               <div className="flex flex-wrap items-center gap-1 mt-1">
                 {exercise.muscle_group && (
                   <Badge variant="outline" className={`text-xs ${getMuscleGroupColor(exercise.muscle_group)}`}>
-                    {exercise.muscle_group}
+                    {translateMuscleGroup(exercise.muscle_group)}
                   </Badge>
                 )}
                 <Badge variant="outline" className="text-xs bg-white">
@@ -324,7 +328,8 @@ export const MobileExerciseCard = ({
                 </Badge>
                 <Badge variant="outline" className="text-xs bg-white">
                   <Clock className="w-3 h-3 mr-1" />
-                  {exercise.rest_time}s
+                  {exercise.rest_time}
+                  {t.calendar.seconds}
                 </Badge>
               </div>
             </div>
@@ -359,7 +364,7 @@ export const MobileExerciseCard = ({
       <Collapsible open={exercise.is_expanded} onOpenChange={() => onToggleExpansion(exercise.id)}>
         <CollapsibleTrigger asChild>
           <Button variant="ghost" className="w-full justify-between px-6 py-2 text-sm">
-            <span>Ver series individuales</span>
+            <span>{t.workoutForm.sets}</span>
             {exercise.is_expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </Button>
         </CollapsibleTrigger>
@@ -385,14 +390,14 @@ export const MobileExerciseCard = ({
                     <span
                       className={`font-semibold text-sm ${setRecord.is_completed ? "text-green-700" : "text-gray-600"}`}
                     >
-                      Serie #{setRecord.set_number}
+                      {t.workoutForm.setNumber.replace("{number}", setRecord.set_number.toString())}
                     </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-medium text-gray-600">Repeticiones</Label>
+                    <Label className="text-xs font-medium text-gray-600">{t.workoutForm.reps}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -406,7 +411,7 @@ export const MobileExerciseCard = ({
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-gray-600">Peso (kg)</Label>
+                    <Label className="text-xs font-medium text-gray-600">{t.workoutForm.weight}</Label>
                     <Input
                       type="number"
                       min="0"
@@ -418,7 +423,7 @@ export const MobileExerciseCard = ({
                           e.target.value = ""
                         }
                       }}
-                      placeholder="Libre"
+                      placeholder={t.calendar.freeWeight}
                       className={`mt-1 text-center font-semibold text-sm h-8 ${
                         setRecord.is_completed ? "line-through text-green-700" : ""
                       }`}
@@ -446,7 +451,9 @@ export const MobileExerciseCard = ({
                               className="w-4 h-4"
                             />
                             <span className="text-xs text-gray-600">
-                              {setRecord.custom_data?.[column.column_name] ? "Sí" : "No"}
+                              {setRecord.custom_data?.[column.column_name]
+                                ? t.columnSettings.active
+                                : t.columnSettings.inactive}
                             </span>
                           </div>
                         ) : (

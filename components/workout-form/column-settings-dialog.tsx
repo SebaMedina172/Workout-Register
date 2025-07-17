@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Settings, Eye, EyeOff } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 import type { CustomColumn } from "./types"
 
 interface ColumnSettingsDialogProps {
@@ -27,6 +28,7 @@ export const ColumnSettingsDialog = ({
   onAddColumn,
   onToggleColumnVisibility,
 }: ColumnSettingsDialogProps) => {
+  const { t } = useLanguage()
   const [newColumnName, setNewColumnName] = useState("")
   const [newColumnType, setNewColumnType] = useState<"text" | "number" | "boolean">("text")
 
@@ -44,8 +46,8 @@ export const ColumnSettingsDialog = ({
         <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
           <DialogTitle className="text-lg sm:text-xl font-bold flex items-center">
             <Settings className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-purple-600" />
-            <span className="hidden sm:inline">Configurar Columnas Personalizadas</span>
-            <span className="sm:hidden">Columnas</span>
+            <span className="hidden sm:inline">{t.columnSettings.title}</span>
+            <span className="sm:hidden">{t.columnSettings.titleShort}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -53,34 +55,34 @@ export const ColumnSettingsDialog = ({
           {/* Crear nueva columna */}
           <Card>
             <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">Crear Nueva Columna</CardTitle>
+              <CardTitle className="text-base sm:text-lg">{t.columnSettings.createNewColumn}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 <div>
                   <Label htmlFor="columnName" className="text-sm">
-                    Nombre de la columna
+                    {t.columnSettings.columnName}
                   </Label>
                   <Input
                     id="columnName"
                     value={newColumnName}
                     onChange={(e) => setNewColumnName(e.target.value)}
-                    placeholder="Ej: RIR, RPE, Notas..."
+                    placeholder={t.columnSettings.columnNamePlaceholder}
                     className="mt-1"
                   />
                 </div>
                 <div>
                   <Label htmlFor="columnType" className="text-sm">
-                    Tipo de dato
+                    {t.columnSettings.dataType}
                   </Label>
                   <Select value={newColumnType} onValueChange={(value: any) => setNewColumnType(value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="text">📝 Texto</SelectItem>
-                      <SelectItem value="number">🔢 Número</SelectItem>
-                      <SelectItem value="boolean">✅ Sí/No</SelectItem>
+                      <SelectItem value="text">{t.columnSettings.text}</SelectItem>
+                      <SelectItem value="number">{t.columnSettings.number}</SelectItem>
+                      <SelectItem value="boolean">{t.columnSettings.boolean}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -91,7 +93,7 @@ export const ColumnSettingsDialog = ({
                 className="w-full bg-purple-600 hover:bg-purple-700"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Crear Columna
+                {t.columnSettings.createColumn}
               </Button>
             </CardContent>
           </Card>
@@ -99,14 +101,12 @@ export const ColumnSettingsDialog = ({
           {/* Lista de columnas existentes */}
           <Card>
             <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">Columnas Disponibles</CardTitle>
-              <p className="text-xs sm:text-sm text-gray-600">
-                Activa/desactiva las columnas que quieres ver en este entrenamiento específico
-              </p>
+              <CardTitle className="text-base sm:text-lg">{t.columnSettings.availableColumns}</CardTitle>
+              <p className="text-xs sm:text-sm text-gray-600">{t.columnSettings.toggleDescription}</p>
             </CardHeader>
             <CardContent>
               {customColumns.length === 0 ? (
-                <p className="text-gray-500 text-center py-6 sm:py-8 text-sm">No hay columnas personalizadas creadas</p>
+                <p className="text-gray-500 text-center py-6 sm:py-8 text-sm">{t.columnSettings.noCustomColumns}</p>
               ) : (
                 <div className="space-y-2 sm:space-y-3">
                   {customColumns.map((column) => (
@@ -130,9 +130,9 @@ export const ColumnSettingsDialog = ({
                         <div className="min-w-0 flex-1">
                           <div className="font-medium text-sm sm:text-base truncate">{column.column_name}</div>
                           <div className="text-xs sm:text-sm text-gray-500">
-                            {column.column_type === "text" && "📝 Texto"}
-                            {column.column_type === "number" && "🔢 Número"}
-                            {column.column_type === "boolean" && "✅ Sí/No"}
+                            {column.column_type === "text" && t.columnSettings.text}
+                            {column.column_type === "number" && t.columnSettings.number}
+                            {column.column_type === "boolean" && t.columnSettings.boolean}
                           </div>
                         </div>
                       </div>
@@ -140,7 +140,7 @@ export const ColumnSettingsDialog = ({
                         variant={column.is_active ? "default" : "secondary"}
                         className="text-xs self-start sm:self-auto"
                       >
-                        {column.is_active ? "Activa" : "Inactiva"}
+                        {column.is_active ? t.columnSettings.active : t.columnSettings.inactive}
                       </Badge>
                     </div>
                   ))}
@@ -152,7 +152,7 @@ export const ColumnSettingsDialog = ({
 
         <div className="flex-shrink-0 pt-3 sm:pt-4 border-t">
           <Button onClick={onClose} className="w-full">
-            Cerrar
+            {t.columnSettings.close}
           </Button>
         </div>
       </DialogContent>

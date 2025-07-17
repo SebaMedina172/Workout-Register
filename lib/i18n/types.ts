@@ -216,6 +216,8 @@ export interface Translations {
     weight: string
     restTime: string
     notes: string
+    edit: string
+    bodyweight: string
 
     // Exercise actions
     saveExercise: string
@@ -292,5 +294,46 @@ export interface Translations {
     postponedSuccessfully: string
     errorPostponing: string
     connectionErrorPostponing: string
+  }
+  exerciseManager: {
+    title: string
+    titleShort: string
+    createNewExercise: string
+    exerciseName: string
+    exerciseNamePlaceholder: string
+    muscleGroup: string
+    muscleGroupRequired: string
+    selectMuscleGroup: string
+    createExercise: string
+    yourCustomExercises: string
+    yourCustomExercisesShort: string
+    noCustomExercises: string
+    createOneAbove: string
+    createdDate: string
+    exerciseCreatedSuccessfully: string
+    exerciseUpdatedSuccessfully: string
+    exerciseDeletedSuccessfully: string
+    errorCreatingExercise: string
+    errorUpdatingExercise: string
+    errorDeletingExercise: string
+    confirmDelete: string
+  }
+  columnSettings: {
+    title: string
+    titleShort: string
+    createNewColumn: string
+    columnName: string
+    columnNamePlaceholder: string
+    dataType: string
+    text: string
+    number: string
+    boolean: string
+    createColumn: string
+    availableColumns: string
+    toggleDescription: string
+    noCustomColumns: string
+    active: string
+    inactive: string
+    close: string
   }
 }

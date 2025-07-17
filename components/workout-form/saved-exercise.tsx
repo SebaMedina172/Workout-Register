@@ -8,6 +8,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { GripVertical, Lock, Target, Clock, Edit, ChevronDown, ChevronRight, CheckCircle2, Circle } from "lucide-react"
 import { formatWeight, getMuscleGroupColor } from "./utils"
 import type { WorkoutExercise, CustomColumn } from "./types"
+import { useLanguage } from "@/lib/i18n/context"
+import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 
 interface SavedExerciseProps {
   exercise: WorkoutExercise
@@ -30,6 +32,8 @@ export const SavedExercise = ({
   onEditExercise,
   onWeightChange,
 }: SavedExerciseProps) => {
+  const { t } = useLanguage()
+  const { translateMuscleGroup } = useMuscleGroupTranslation()
   const completedSets = exercise.set_records?.filter((sr) => sr.is_completed === true).length || 0
   const totalSets = exercise.set_records?.length || 0
 
@@ -88,8 +92,8 @@ export const SavedExercise = ({
             {/* Badge de grupo muscular */}
             {exercise.muscle_group && (
               <Badge variant="outline" className={`text-center ${getMuscleGroupColor(exercise.muscle_group)}`}>
-                <span className="hidden sm:inline">{exercise.muscle_group}</span>
-                <span className="sm:hidden">{exercise.muscle_group.slice(0, 6)}</span>
+                <span className="hidden sm:inline">{translateMuscleGroup(exercise.muscle_group)}</span>
+                <span className="sm:hidden">{translateMuscleGroup(exercise.muscle_group).slice(0, 6)}</span>
               </Badge>
             )}
 
@@ -113,7 +117,7 @@ export const SavedExercise = ({
                     : "bg-gray-100 text-gray-600 border-gray-300"
               }`}
             >
-              {completedSets}/{totalSets} series
+              {completedSets}/{totalSets} {t.workoutForm.sets}
             </Badge>
 
             <Button
@@ -123,7 +127,7 @@ export const SavedExercise = ({
               className="hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200 h-8 px-2 sm:px-3"
             >
               <Edit className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 mr-0 sm:mr-1" />
-              <span className="hidden sm:inline">Editar</span>
+              <span className="hidden sm:inline">{t.workoutForm.edit}</span>
             </Button>
           </div>
         </div>
@@ -145,10 +149,10 @@ export const SavedExercise = ({
                   gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")}`,
                 }}
               >
-                <div className="text-center">✅ Hecho</div>
-                <div className="text-center">📊 Serie</div>
-                <div className="text-center">🔄 Reps</div>
-                <div className="text-center">⚖️ Peso (kg)</div>
+                <div className="text-center">{t.workoutForm.completed}</div>
+                <div className="text-center">{t.workoutForm.sets}</div>
+                <div className="text-center">{t.workoutForm.reps}</div>
+                <div className="text-center">{t.workoutForm.weight}</div>
                 {activeColumns.map((column) => (
                   <div key={column.id} className="text-center">
                     {column.column_type === "text" && "📝"}
@@ -218,7 +222,7 @@ export const SavedExercise = ({
                       e.target.value = ""
                     }
                   }}
-                  placeholder="Libre"
+                  placeholder={t.workoutForm.bodyweight}
                   className={`text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
                     setRecord.is_completed ? "line-through text-green-700" : ""
                   }`}

@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Trash2, Edit2, Plus, Save, X, Dumbbell } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
+import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 
 // ✅ NUEVO: Grupos musculares disponibles
 const MUSCLE_GROUPS = [
@@ -63,6 +65,8 @@ const getMuscleGroupColor = (muscleGroup: string): string => {
 }
 
 export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseManagerProps) {
+  const { t, language } = useLanguage()
+  const { translateMuscleGroup } = useMuscleGroupTranslation()
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState("")
@@ -91,7 +95,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`¿Estás seguro de eliminar el ejercicio "${name}"?`)) return
+    if (!confirm(t.exerciseManager.confirmDelete.replace("{name}", name))) return
 
     try {
       const response = await fetch(`/api/user-exercises/${id}`, {
@@ -100,7 +104,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
 
       if (response.ok) {
         const data = await response.json()
-        setMessage(`✅ ${data.message}`)
+        setMessage(t.exerciseManager.exerciseDeletedSuccessfully)
         setTimeout(() => setMessage(""), 3000)
         await loadExercises()
         onExerciseChange()
@@ -111,7 +115,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
       }
     } catch (error) {
       console.error("Error deleting exercise:", error)
-      setMessage("❌ Error de conexión")
+      setMessage(t.exerciseManager.errorDeletingExercise)
       setTimeout(() => setMessage(""), 3000)
     }
   }
@@ -136,7 +140,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
       })
 
       if (response.ok) {
-        setMessage("✅ Ejercicio actualizado exitosamente")
+        setMessage(t.exerciseManager.exerciseUpdatedSuccessfully)
         setTimeout(() => setMessage(""), 3000)
         await loadExercises()
         onExerciseChange()
@@ -150,7 +154,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
       }
     } catch (error) {
       console.error("Error updating exercise:", error)
-      setMessage("❌ Error de conexión")
+      setMessage(t.exerciseManager.errorUpdatingExercise)
       setTimeout(() => setMessage(""), 3000)
     }
   }
@@ -169,7 +173,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
       })
 
       if (response.ok) {
-        setMessage("✅ Ejercicio creado exitosamente")
+        setMessage(t.exerciseManager.exerciseCreatedSuccessfully)
         setTimeout(() => setMessage(""), 3000)
         await loadExercises()
         onExerciseChange()
@@ -182,7 +186,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
       }
     } catch (error) {
       console.error("Error creating exercise:", error)
-      setMessage("❌ Error de conexión")
+      setMessage(t.exerciseManager.errorCreatingExercise)
       setTimeout(() => setMessage(""), 3000)
     }
   }
@@ -194,8 +198,8 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
               <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 mr-2 sm:mr-3 text-blue-600" />
-              <span className="hidden sm:inline">Gestionar Ejercicios Personalizados</span>
-              <span className="sm:hidden">Ejercicios</span>
+              <span className="hidden sm:inline">{t.exerciseManager.title}</span>
+              <span className="sm:hidden">{t.exerciseManager.titleShort}</span>
             </DialogTitle>
           </div>
         </DialogHeader>
@@ -206,37 +210,37 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
             <CardHeader className="pb-2 sm:pb-4">
               <CardTitle className="text-base sm:text-lg font-semibold text-green-800 flex items-center">
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Crear Nuevo Ejercicio
+                {t.exerciseManager.createNewExercise}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 <div>
                   <Label htmlFor="new-name" className="text-sm">
-                    Nombre del ejercicio
+                    {t.exerciseManager.exerciseName}
                   </Label>
                   <Input
                     id="new-name"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Ej: Press de banca inclinado"
+                    placeholder={t.exerciseManager.exerciseNamePlaceholder}
                     className="bg-white mt-1"
                   />
                 </div>
                 <div>
                   <Label htmlFor="new-muscle-group" className="text-sm">
-                    Grupo muscular *
+                    {t.exerciseManager.muscleGroupRequired}
                   </Label>
                   <Select value={newMuscleGroup} onValueChange={setNewMuscleGroup}>
                     <SelectTrigger className="bg-white mt-1">
-                      <SelectValue placeholder="Seleccionar grupo muscular" />
+                      <SelectValue placeholder={t.exerciseManager.selectMuscleGroup} />
                     </SelectTrigger>
                     <SelectContent>
                       {MUSCLE_GROUPS.map((group) => (
                         <SelectItem key={group} value={group}>
                           <div className="flex items-center">
                             <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
-                              {group}
+                              {translateMuscleGroup(group)}
                             </Badge>
                           </div>
                         </SelectItem>
@@ -251,7 +255,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                 disabled={!newName.trim() || !newMuscleGroup}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Crear Ejercicio
+                {t.exerciseManager.createExercise}
               </Button>
             </CardContent>
           </Card>
@@ -274,8 +278,12 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
             <CardHeader className="pb-2 sm:pb-4">
               <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
                 <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                <span className="hidden sm:inline">Tus Ejercicios Personalizados ({exercises.length})</span>
-                <span className="sm:hidden">Ejercicios ({exercises.length})</span>
+                <span className="hidden sm:inline">
+                  {t.exerciseManager.yourCustomExercises} ({exercises.length})
+                </span>
+                <span className="sm:hidden">
+                  {t.exerciseManager.yourCustomExercisesShort} ({exercises.length})
+                </span>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -286,8 +294,8 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
               ) : exercises.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Dumbbell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-sm sm:text-base">No tienes ejercicios personalizados aún</p>
-                  <p className="text-xs sm:text-sm">Crea uno usando el formulario de arriba</p>
+                  <p className="text-sm sm:text-base">{t.exerciseManager.noCustomExercises}</p>
+                  <p className="text-xs sm:text-sm">{t.exerciseManager.createOneAbove}</p>
                 </div>
               ) : (
                 <div className="space-y-2 sm:space-y-3">
@@ -302,18 +310,18 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             className="bg-white"
-                            placeholder="Nombre del ejercicio"
+                            placeholder={t.exerciseManager.exerciseName}
                           />
                           <Select value={editMuscleGroup} onValueChange={setEditMuscleGroup}>
                             <SelectTrigger className="bg-white">
-                              <SelectValue placeholder="Seleccionar grupo muscular" />
+                              <SelectValue placeholder={t.exerciseManager.selectMuscleGroup} />
                             </SelectTrigger>
                             <SelectContent>
                               {MUSCLE_GROUPS.map((group) => (
                                 <SelectItem key={group} value={group}>
                                   <div className="flex items-center">
                                     <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
-                                      {group}
+                                      {translateMuscleGroup(group)}
                                     </Badge>
                                   </div>
                                 </SelectItem>
@@ -331,12 +339,13 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                               variant="outline"
                               className={`text-xs self-start sm:self-auto ${getMuscleGroupColor(exercise.muscle_group)}`}
                             >
-                              {exercise.muscle_group}
+                              {translateMuscleGroup(exercise.muscle_group)}
                             </Badge>
                           </div>
                           <div className="flex items-center mt-1">
                             <span className="text-xs text-gray-500">
-                              Creado: {new Date(exercise.created_at).toLocaleDateString("es-ES")}
+                              {t.exerciseManager.createdDate}{" "}
+                              {new Date(exercise.created_at).toLocaleDateString(language === "es" ? "es-ES" : "en-US")}
                             </span>
                           </div>
                         </div>

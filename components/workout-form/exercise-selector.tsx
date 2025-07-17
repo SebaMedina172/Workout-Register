@@ -6,6 +6,8 @@ import { Separator } from "@/components/ui/separator"
 import { Plus, Search } from "lucide-react"
 import { DEFAULT_EXERCISES, MUSCLE_GROUPS } from "./constants"
 import { getMuscleGroupColor } from "./utils"
+import { useLanguage } from "@/lib/i18n/context"
+import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import type { UserExercise } from "./types"
 import { useRef, useEffect } from "react"
 
@@ -26,6 +28,8 @@ export const ExerciseSelector = ({
   onSearchChange,
   onExerciseSelect,
 }: ExerciseSelectorProps) => {
+  const { t } = useLanguage()
+  const { translateMuscleGroup } = useMuscleGroupTranslation()
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Combinar ejercicios predefinidos y personalizados
@@ -50,19 +54,16 @@ export const ExerciseSelector = ({
   return (
     <Select value={selectedExercise} onValueChange={onExerciseSelect}>
       <SelectTrigger className="w-full bg-white border-2 hover:border-blue-300 transition-colors">
-        <SelectValue placeholder="🔍 Seleccionar ejercicio" />
+        <SelectValue placeholder={`🔍 ${t.workoutForm.selectExercise}`} />
       </SelectTrigger>
-      <SelectContent 
-        className="max-h-60" 
-        onPointerDown={(e) => e.stopPropagation()}
-      >
+      <SelectContent className="max-h-60" onPointerDown={(e) => e.stopPropagation()}>
         {/* Campo de búsqueda */}
         <div className="p-3 border-b bg-gray-50" onPointerDown={(e) => e.stopPropagation()}>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             <Input
               ref={searchInputRef}
-              placeholder="🔍 Buscar ejercicio..."
+              placeholder={`🔍 ${t.workoutForm.selectExercise}...`}
               value={searchValue}
               onChange={(e) => {
                 e.stopPropagation()
@@ -74,9 +75,9 @@ export const ExerciseSelector = ({
               onKeyDown={(e) => {
                 e.stopPropagation()
                 // Permitir navegación con flechas en la lista
-                if (e.key === 'ArrowDown') {
+                if (e.key === "ArrowDown") {
                   e.preventDefault()
-                  const firstItem = document.querySelector('[data-radix-select-item]') as HTMLElement
+                  const firstItem = document.querySelector("[data-radix-select-item]") as HTMLElement
                   firstItem?.focus()
                 }
               }}
@@ -92,12 +93,7 @@ export const ExerciseSelector = ({
         {/* Lista de ejercicios filtrados */}
         <div className="max-h-40 overflow-y-auto">
           {filteredExercises.map((ex) => (
-            <SelectItem 
-              key={ex.name} 
-              value={ex.name} 
-              className="py-2"
-              onPointerDown={(e) => e.stopPropagation()}
-            >
+            <SelectItem key={ex.name} value={ex.name} className="py-2" onPointerDown={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between w-full">
                 <span className="font-medium">{ex.name}</span>
               </div>
@@ -112,7 +108,9 @@ export const ExerciseSelector = ({
             <>
               <Separator />
               <div className="p-2 bg-blue-50" onPointerDown={(e) => e.stopPropagation()}>
-                <p className="text-sm font-semibold text-blue-700 mb-2">Crear "{searchValue.trim()}" en:</p>
+                <p className="text-sm font-semibold text-blue-700 mb-2">
+                  {t.workoutForm.createCustomExercise} "{searchValue.trim()}":
+                </p>
                 {MUSCLE_GROUPS.map((group) => (
                   <SelectItem
                     key={group}
@@ -123,7 +121,7 @@ export const ExerciseSelector = ({
                     <div className="flex items-center">
                       <Plus className="w-3 h-3 mr-2" />
                       <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
-                        {group}
+                        {translateMuscleGroup(group)}
                       </Badge>
                     </div>
                   </SelectItem>
