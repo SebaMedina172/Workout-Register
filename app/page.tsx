@@ -53,7 +53,7 @@ export default function HomePage() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-4">
-                            <LanguageSwitcher />
+              <LanguageSwitcher />
               <Button
                 onClick={() => setCurrentView("calendar")}
                 variant={currentView === "calendar" ? "default" : "ghost"}
