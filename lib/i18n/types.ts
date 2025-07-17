@@ -91,4 +91,21 @@ export interface Translations {
     signOut: string
     calendar: string
   }
+  muscleGroups: {
+    Pecho: string
+    Espalda: string
+    "Deltoides anterior": string
+    "Deltoides medio": string
+    "Deltoides posterior": string
+    Bíceps: string
+    Tríceps: string
+    Antebrazos: string
+    Cuádriceps: string
+    Isquiotibiales: string
+    Glúteo: string
+    Gemelos: string
+    Abductores: string
+    Abdominales: string
+    Oblicuos: string
+  }
 }

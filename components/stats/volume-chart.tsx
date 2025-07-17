@@ -4,6 +4,7 @@ import type React from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLanguage } from "@/lib/i18n/context"
+import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 
 interface MuscleGroupData {
   name: string
@@ -46,13 +47,17 @@ const COLORS = [
 
 const VolumeChart: React.FC<VolumeChartProps> = ({ data }) => {
   const { t } = useLanguage()
-  const totalSets = data.reduce((sum, entry) => sum + entry.sets, 0)
+  const { translateMuscleGroupData } = useMuscleGroupTranslation()
+
+  // Traducir los datos de grupos musculares
+  const translatedData = translateMuscleGroupData(data)
+  const totalSets = translatedData.reduce((sum, entry) => sum + entry.sets, 0)
 
   // Filter out muscle groups with 0 sets for the chart, but keep them for "no trabajados"
-  const chartData = data.filter((entry) => entry.sets > 0)
+  const chartData = translatedData.filter((entry) => entry.sets > 0)
 
   // Identify muscle groups with 0 sets
-  const notWorkedGroups = data.filter((entry) => entry.sets === 0)
+  const notWorkedGroups = translatedData.filter((entry) => entry.sets === 0)
 
   // Custom label for the center of the donut chart
   const renderCentralText = ({ cx, cy }: { cx: number; cy: number }) => {
