@@ -178,4 +178,119 @@ export interface Translations {
     sat: string
     sun: string
   }
+  workoutForm: {
+    // Main titles
+    newWorkout: string
+    editWorkout: string
+    loadingWorkoutData: string
+    savingWorkout: string
+
+    // Messages
+    workoutSavedSuccessfully: string
+    exerciseCreatedSuccessfully: string
+    columnCreatedSuccessfully: string
+    columnActivated: string
+    columnDeactivated: string
+    errorCreatingExercise: string
+    errorCreatingColumn: string
+    errorSavingWorkout: string
+    connectionError: string
+    addAtLeastOneExercise: string
+
+    // Buttons
+    cancel: string
+    save: string
+    saving: string
+    addExercise: string
+    columnSettings: string
+    exerciseManager: string
+
+    // Exercise form
+    exerciseName: string
+    selectExercise: string
+    createCustomExercise: string
+    muscleGroup: string
+    selectMuscleGroup: string
+    sets: string
+    reps: string
+    weight: string
+    restTime: string
+    notes: string
+
+    // Exercise actions
+    saveExercise: string
+    editExercise: string
+    removeExercise: string
+    expandExercise: string
+    collapseExercise: string
+    markAsCompleted: string
+    markAsIncomplete: string
+
+    // Column settings
+    columnSettingsTitle: string
+    addCustomColumn: string
+    columnName: string
+    columnType: string
+    text: string
+    number: string
+    boolean: string
+    addColumn: string
+    activeColumns: string
+    inactiveColumns: string
+    activate: string
+    deactivate: string
+    close: string
+
+    // Exercise manager
+    exerciseManagerTitle: string
+    addNewExercise: string
+    editExerciseTitle: string
+    deleteExercise: string
+    confirmDeleteExercise: string
+    exerciseDeletedSuccessfully: string
+    errorDeletingExercise: string
+
+    // Toolbar
+    exercisesCount: string
+    activeColumnsCount: string
+
+    // Drag and drop
+    dragToReorder: string
+
+    // Set records
+    setNumber: string
+    completed: string
+    incomplete: string
+    addSet: string
+    removeSet: string
+
+    // Validation
+    exerciseNameRequired: string
+    muscleGroupRequired: string
+    setsRequired: string
+    repsRequired: string
+    invalidNumber: string
+    minimumValue: string
+    maximumValue: string
+  }
+  postponeDialog: {
+    title: string
+    subtitle: string
+    currentWorkout: string
+    exercisesScheduled: string
+    postponeBy: string
+    newDate: string
+    postponeMode: string
+    singleWorkout: string
+    singleWorkoutDescription: string
+    allFollowing: string
+    allFollowingDescription: string
+    cancel: string
+    postpone: string
+    postponing: string
+    daysMinimum: string
+    postponedSuccessfully: string
+    errorPostponing: string
+    connectionErrorPostponing: string
+  }
 }

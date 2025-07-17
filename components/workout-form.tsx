@@ -16,6 +16,8 @@ import { Toolbar } from "./workout-form/toolbar"
 import { useWorkoutData } from "@/hooks/use-workout-data"
 import { useExerciseActions } from "@/hooks/use-exercise-actions"
 import { saveColumnVisibilityConfig, handleWeightChange } from "@/utils/workout-utils"
+import { useLanguage } from "@/lib/i18n/context"
+import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 
 import type { Workout } from "./workout-form/types"
 
@@ -27,6 +29,9 @@ interface WorkoutFormProps {
 }
 
 export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutFormProps) {
+  const { t } = useLanguage()
+  const { formatDate } = useCalendarTranslation()
+
   // Estado de la UI
   const [exerciseSearches, setExerciseSearches] = useState<Record<string, string>>({})
   const [showColumnSettings, setShowColumnSettings] = useState(false)
@@ -92,13 +97,13 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       if (response.ok) {
         const newExercise = await response.json()
         setUserExercises((prev) => [...prev, newExercise])
-        setMessage(`✅ Ejercicio "${exerciseName}" creado exitosamente`)
+        setMessage(t.workoutForm.exerciseCreatedSuccessfully.replace("{name}", exerciseName))
         setTimeout(() => setMessage(""), 3000)
         return { name: exerciseName.trim(), muscle_group: muscleGroup }
       }
     } catch (error) {
       console.error("Error adding custom exercise:", error)
-      setMessage(`❌ Error al crear el ejercicio`)
+      setMessage(t.workoutForm.errorCreatingExercise)
       setTimeout(() => setMessage(""), 3000)
     }
     return null
@@ -123,12 +128,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         await loadUserData()
         setNewColumnName("")
         setNewColumnType("text")
-        setMessage(`✅ Columna "${newColumnName.trim()}" creada exitosamente`)
+        setMessage(t.workoutForm.columnCreatedSuccessfully.replace("{name}", newColumnName.trim()))
         setTimeout(() => setMessage(""), 3000)
       }
     } catch (error) {
       console.error("Error adding custom column:", error)
-      setMessage(`❌ Error al crear la columna`)
+      setMessage(t.workoutForm.errorCreatingColumn)
       setTimeout(() => setMessage(""), 3000)
     }
   }
@@ -138,7 +143,10 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     setCustomColumns(customColumns.map((col) => (col.id === columnId ? { ...col, is_active: isActive } : col)))
 
     const column = customColumns.find((col) => col.id === columnId)
-    setMessage(`✅ Columna "${column?.column_name}" ${isActive ? "activada" : "desactivada"} para este entrenamiento`)
+    const message = isActive
+      ? t.workoutForm.columnActivated.replace("{name}", column?.column_name || "")
+      : t.workoutForm.columnDeactivated.replace("{name}", column?.column_name || "")
+    setMessage(message)
     setTimeout(() => setMessage(""), 3000)
   }
 
@@ -193,7 +201,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   const handleSave = async () => {
     const validExercises = exercises.filter((ex) => ex.exercise_name.trim() !== "")
     if (validExercises.length === 0) {
-      alert("Debes agregar al menos un ejercicio")
+      alert(t.workoutForm.addAtLeastOneExercise)
       return
     }
 
@@ -224,27 +232,27 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           await saveColumnVisibilityConfig(workoutIdForColumns, customColumns)
         }
 
-        setMessage("✅ Entrenamiento guardado exitosamente")
+        setMessage(t.workoutForm.workoutSavedSuccessfully)
         setTimeout(() => onSave(), 1000)
       } else {
         const errorData = await response.json()
-        alert(`Error al guardar el entrenamiento: ${errorData.error || "Error desconocido"}`)
+        alert(`${t.workoutForm.errorSavingWorkout}: ${errorData.error || "Error desconocido"}`)
       }
     } catch (error) {
       console.error("Error saving workout:", error)
-      alert("Error al guardar el entrenamiento")
+      alert(t.workoutForm.connectionError)
     } finally {
       setSaving(false)
     }
   }
 
   if (loadingData) {
-    return <LoadingOverlay message="Cargando datos del entrenamiento..." />
+    return <LoadingOverlay message={t.workoutForm.loadingWorkoutData} />
   }
 
   return (
     <>
-      {saving && <LoadingOverlay message="Guardando entrenamiento..." />}
+      {saving && <LoadingOverlay message={t.workoutForm.savingWorkout} />}
 
       <Dialog open={true} onOpenChange={onClose}>
         <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-7xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
@@ -252,7 +260,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center">
               <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mr-2 sm:mr-3 text-blue-600" />
               <span className="truncate">
-                {workout ? "Editar Entrenamiento" : "Nuevo Entrenamiento"} - {date.toLocaleDateString("es-ES")}
+                {workout ? t.workoutForm.editWorkout : t.workoutForm.newWorkout} - {formatDate(date)}
               </span>
             </DialogTitle>
           </DialogHeader>
@@ -303,7 +311,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
 
           <div className="flex-shrink-0 p-2 sm:p-4 bg-gray-50 border-t flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
             <Button onClick={onClose} variant="outline" className="border-2 bg-transparent order-2 sm:order-1">
-              Cancelar
+              {t.workoutForm.cancel}
             </Button>
             <Button
               onClick={handleSave}
@@ -313,12 +321,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Guardando...
+                  {t.workoutForm.saving}
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  Guardar
+                  {t.workoutForm.save}
                 </>
               )}
             </Button>

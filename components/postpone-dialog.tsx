@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { X, Calendar, Clock } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
+import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 
 interface Workout {
   id: string
@@ -24,6 +26,9 @@ interface PostponeDialogProps {
 }
 
 export default function PostponeDialog({ workout, onClose, onPostpone }: PostponeDialogProps) {
+  const { t } = useLanguage()
+  const { formatDate } = useCalendarTranslation()
+
   const [days, setDays] = useState(1)
   const [mode, setMode] = useState<"single" | "all">("single")
   const [loading, setLoading] = useState(false)
@@ -32,7 +37,7 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
     e.preventDefault()
 
     if (days < 1) {
-      alert("El número de días debe ser mayor a 0")
+      alert(t.postponeDialog.daysMinimum)
       return
     }
 
@@ -56,36 +61,26 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
         onPostpone()
       } else {
         console.error("❌ Error aplazando entrenamiento:", data)
-        alert(`Error: ${data.error || "Error desconocido"}`)
+        alert(`${t.postponeDialog.errorPostponing} ${data.error || "Error desconocido"}`)
       }
     } catch (error) {
       console.error("💥 Error en solicitud de aplazamiento:", error)
-      alert("Error de conexión al aplazar entrenamiento")
+      alert(t.postponeDialog.connectionErrorPostponing)
     } finally {
       setLoading(false)
     }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString + "T12:00:00") // Usar mediodía para evitar problemas de timezone
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
   }
 
   const calculateNewDate = (originalDate: string, daysToAdd: number) => {
     const [year, month, day] = originalDate.split("-").map(Number)
     const date = new Date(year, month - 1, day, 12, 0, 0)
     date.setDate(date.getDate() + daysToAdd)
-    return date.toLocaleDateString("es-ES", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
+    return formatDate(date)
+  }
+
+  const formatWorkoutDate = (dateString: string) => {
+    const date = new Date(dateString + "T12:00:00") // Usar mediodía para evitar problemas de timezone
+    return formatDate(date)
   }
 
   return (
@@ -98,8 +93,8 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
                 <Clock className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <CardTitle className="text-xl font-bold text-gray-900">Aplazar Entrenamiento</CardTitle>
-                <p className="text-sm text-gray-600 mt-1">Mover a una fecha posterior</p>
+                <CardTitle className="text-xl font-bold text-gray-900">{t.postponeDialog.title}</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">{t.postponeDialog.subtitle}</p>
               </div>
             </div>
             <Button
@@ -118,11 +113,13 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
           <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border">
             <div className="flex items-center mb-2">
               <Calendar className="w-4 h-4 text-gray-600 mr-2" />
-              <span className="text-sm font-medium text-gray-600">Entrenamiento actual:</span>
+              <span className="text-sm font-medium text-gray-600">{t.postponeDialog.currentWorkout}</span>
             </div>
-            <p className="font-semibold text-gray-900">{formatDate(workout.date)}</p>
+            <p className="font-semibold text-gray-900">{formatWorkoutDate(workout.date)}</p>
             {workout.type === "workout" && (
-              <p className="text-sm text-gray-600 mt-1">{workout.exercises.length} ejercicios programados</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {t.postponeDialog.exercisesScheduled.replace("{count}", workout.exercises.length.toString())}
+              </p>
             )}
           </div>
 
@@ -130,7 +127,7 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
             {/* Número de días */}
             <div className="space-y-2">
               <Label htmlFor="days" className="text-sm font-semibold text-gray-700">
-                Aplazar por (días):
+                {t.postponeDialog.postponeBy}
               </Label>
               <Input
                 id="days"
@@ -145,7 +142,8 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
               {days > 0 && (
                 <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-700">
-                    <span className="font-semibold">Nueva fecha:</span> {calculateNewDate(workout.date, days)}
+                    <span className="font-semibold">{t.postponeDialog.newDate}</span>{" "}
+                    {calculateNewDate(workout.date, days)}
                   </p>
                 </div>
               )}
@@ -153,24 +151,24 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
 
             {/* Modo de aplazamiento */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-700">Modo de aplazamiento:</Label>
+              <Label className="text-sm font-semibold text-gray-700">{t.postponeDialog.postponeMode}</Label>
               <RadioGroup value={mode} onValueChange={(value) => setMode(value as "single" | "all")} disabled={loading}>
                 <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
                   <RadioGroupItem value="single" id="single" />
                   <div className="flex-1">
                     <Label htmlFor="single" className="font-medium text-gray-900 cursor-pointer">
-                      Solo este entrenamiento
+                      {t.postponeDialog.singleWorkout}
                     </Label>
-                    <p className="text-sm text-gray-600">Mover únicamente el entrenamiento seleccionado</p>
+                    <p className="text-sm text-gray-600">{t.postponeDialog.singleWorkoutDescription}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
                   <RadioGroupItem value="all" id="all" />
                   <div className="flex-1">
                     <Label htmlFor="all" className="font-medium text-gray-900 cursor-pointer">
-                      Este y entrenamientos posteriores
+                      {t.postponeDialog.allFollowing}
                     </Label>
-                    <p className="text-sm text-gray-600">Mover este entrenamiento y todos los siguientes</p>
+                    <p className="text-sm text-gray-600">{t.postponeDialog.allFollowingDescription}</p>
                   </div>
                 </div>
               </RadioGroup>
@@ -185,7 +183,7 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
                 className="flex-1 h-12 border-2 border-gray-300 hover:border-gray-400 font-semibold bg-transparent"
                 disabled={loading}
               >
-                Cancelar
+                {t.postponeDialog.cancel}
               </Button>
               <Button
                 type="submit"
@@ -195,12 +193,12 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
                 {loading ? (
                   <div className="flex items-center space-x-2">
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    <span>Aplazando...</span>
+                    <span>{t.postponeDialog.postponing}</span>
                   </div>
                 ) : (
                   <>
                     <Clock className="w-4 h-4 mr-2" />
-                    Aplazar
+                    {t.postponeDialog.postpone}
                   </>
                 )}
               </Button>

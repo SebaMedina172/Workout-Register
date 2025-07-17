@@ -7,7 +7,7 @@ import { translations } from "./translations"
 
 interface LanguageContextType {
   language: Language
-  setLanguage: (language: Language) => void
+  setLanguage: (lang: Language) => void
   t: Translations
 }
 
@@ -15,35 +15,38 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("es") // Default to Spanish
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
+  // Load saved language on mount
   useEffect(() => {
-    // Load saved language from localStorage
-    const savedLanguage = localStorage.getItem("language") as Language
+    const savedLanguage = localStorage.getItem("preferred-language") as Language
     if (savedLanguage && (savedLanguage === "es" || savedLanguage === "en")) {
       setLanguageState(savedLanguage)
     }
-    // If no saved language, keep default "es"
-    setIsLoaded(true)
+    setIsLoading(false)
   }, [])
 
-  const setLanguage = (newLanguage: Language) => {
-    setLanguageState(newLanguage)
-    localStorage.setItem("language", newLanguage)
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang)
+    localStorage.setItem("preferred-language", lang)
   }
 
-  const t = translations[language]
+  const value = {
+    language,
+    setLanguage,
+    t: translations[language],
+  }
 
-  // Don't render children until language is loaded to prevent flash
-  if (!isLoaded) {
+  // Show loading state to prevent flash of wrong language
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
       </div>
     )
   }
 
-  return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
 
 export function useLanguage() {

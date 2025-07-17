@@ -1,66 +1,79 @@
+"use client"
+
 import { useLanguage } from "./context"
 
 export function useCalendarTranslation() {
-  const { language, t } = useLanguage()
+  const { t, language } = useLanguage()
 
-  const monthNames = {
-    es: [
-      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ],
-    en: [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+  const getMonthName = (monthIndex: number): string => {
+    const months = [
+      t.calendar.january,
+      t.calendar.february,
+      t.calendar.march,
+      t.calendar.april,
+      t.calendar.may,
+      t.calendar.june,
+      t.calendar.july,
+      t.calendar.august,
+      t.calendar.september,
+      t.calendar.october,
+      t.calendar.november,
+      t.calendar.december,
     ]
+    return months[monthIndex] || ""
   }
 
-  // Always start with Monday (1) for both languages to maintain consistency
-  const dayNames = {
-    es: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
-    en: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-  }
-
-  const dayNamesShort = {
-    es: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
-    en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  }
-
-  const getMonthName = (monthIndex: number) => {
-    return monthNames[language][monthIndex]
-  }
-
-  const getDayName = (dayIndex: number, short: boolean = false) => {
-    const names = short ? dayNamesShort[language] : dayNames[language]
-    return names[dayIndex]
-  }
-
-  // Get day names in Monday-first order for consistent calendar display
-  const getWeekDayNames = (short: boolean = false) => {
-    const names = short ? dayNamesShort[language] : dayNames[language]
-    // Reorder to start with Monday: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
-    return [names[1], names[2], names[3], names[4], names[5], names[6], names[0]]
-  }
-
-  const formatDate = (date: Date, format: "full" | "short" = "full") => {
-    const day = date.getDate()
-    const month = getMonthName(date.getMonth())
-    const year = date.getFullYear()
-    const dayName = getDayName(date.getDay())
-
-    if (format === "short") {
-      return language === "es" ? `${day}/${date.getMonth() + 1}/${year}` : `${date.getMonth() + 1}/${day}/${year}`
+  const getDayName = (dayIndex: number, short = false): string => {
+    if (short) {
+      const shortDays = [
+        t.calendar.sun,
+        t.calendar.mon,
+        t.calendar.tue,
+        t.calendar.wed,
+        t.calendar.thu,
+        t.calendar.fri,
+        t.calendar.sat,
+      ]
+      return shortDays[dayIndex] || ""
+    } else {
+      const fullDays = [
+        t.calendar.sunday,
+        t.calendar.monday,
+        t.calendar.tuesday,
+        t.calendar.wednesday,
+        t.calendar.thursday,
+        t.calendar.friday,
+        t.calendar.saturday,
+      ]
+      return fullDays[dayIndex] || ""
     }
+  }
 
-    return language === "es" 
-      ? `${dayName}, ${day} de ${month.toLowerCase()} de ${year}`
-      : `${dayName}, ${month} ${day}, ${year}`
+  const formatDate = (date: Date): string => {
+    const dayName = getDayName(date.getDay())
+    const day = date.getDate()
+    const monthName = getMonthName(date.getMonth())
+    const year = date.getFullYear()
+
+    if (language === "es") {
+      return `${dayName}, ${day} de ${monthName} de ${year}`
+    } else {
+      return `${dayName}, ${monthName} ${day}, ${year}`
+    }
+  }
+
+  const formatWeight = (weight: number | undefined | null): string => {
+    if (!weight || weight === 0) {
+      return t.calendar.freeWeight
+    }
+    return `${weight} kg`
   }
 
   return {
     getMonthName,
     getDayName,
-    getWeekDayNames,
     formatDate,
-    t: t.calendar
+    formatWeight,
+    t: t.calendar,
   }
 }

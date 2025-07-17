@@ -181,6 +181,121 @@ export const translations: Record<"es" | "en", Translations> = {
       sat: "Sáb",
       sun: "Dom",
     },
+    workoutForm: {
+      // Main titles
+      newWorkout: "Nuevo Entrenamiento",
+      editWorkout: "Editar Entrenamiento",
+      loadingWorkoutData: "Cargando datos del entrenamiento...",
+      savingWorkout: "Guardando entrenamiento...",
+
+      // Messages
+      workoutSavedSuccessfully: "✅ Entrenamiento guardado exitosamente",
+      exerciseCreatedSuccessfully: '✅ Ejercicio "{name}" creado exitosamente',
+      columnCreatedSuccessfully: '✅ Columna "{name}" creada exitosamente',
+      columnActivated: '✅ Columna "{name}" activada para este entrenamiento',
+      columnDeactivated: '✅ Columna "{name}" desactivada para este entrenamiento',
+      errorCreatingExercise: "❌ Error al crear el ejercicio",
+      errorCreatingColumn: "❌ Error al crear la columna",
+      errorSavingWorkout: "Error al guardar el entrenamiento",
+      connectionError: "Error al guardar el entrenamiento",
+      addAtLeastOneExercise: "Debes agregar al menos un ejercicio",
+
+      // Buttons
+      cancel: "Cancelar",
+      save: "Guardar",
+      saving: "Guardando...",
+      addExercise: "Agregar Ejercicio",
+      columnSettings: "Configurar Columnas",
+      exerciseManager: "Gestor de Ejercicios",
+
+      // Exercise form
+      exerciseName: "Nombre del ejercicio",
+      selectExercise: "Seleccionar ejercicio",
+      createCustomExercise: "Crear ejercicio personalizado",
+      muscleGroup: "Grupo muscular",
+      selectMuscleGroup: "Seleccionar grupo muscular",
+      sets: "Series",
+      reps: "Repeticiones",
+      weight: "Peso (kg)",
+      restTime: "Descanso (seg)",
+      notes: "Notas",
+
+      // Exercise actions
+      saveExercise: "Guardar",
+      editExercise: "Editar",
+      removeExercise: "Eliminar",
+      expandExercise: "Expandir",
+      collapseExercise: "Contraer",
+      markAsCompleted: "Marcar como completado",
+      markAsIncomplete: "Marcar como incompleto",
+
+      // Column settings
+      columnSettingsTitle: "Configuración de Columnas",
+      addCustomColumn: "Agregar Columna Personalizada",
+      columnName: "Nombre de la columna",
+      columnType: "Tipo de columna",
+      text: "Texto",
+      number: "Número",
+      boolean: "Sí/No",
+      addColumn: "Agregar Columna",
+      activeColumns: "Columnas Activas",
+      inactiveColumns: "Columnas Inactivas",
+      activate: "Activar",
+      deactivate: "Desactivar",
+      close: "Cerrar",
+
+      // Exercise manager
+      exerciseManagerTitle: "Gestor de Ejercicios",
+      addNewExercise: "Agregar Nuevo Ejercicio",
+      editExerciseTitle: "Editar Ejercicio",
+      deleteExercise: "Eliminar Ejercicio",
+      confirmDeleteExercise: "¿Estás seguro de que quieres eliminar este ejercicio?",
+      exerciseDeletedSuccessfully: "Ejercicio eliminado exitosamente",
+      errorDeletingExercise: "Error al eliminar el ejercicio",
+
+      // Toolbar
+      exercisesCount: "{count} ejercicios",
+      activeColumnsCount: "{count} columnas activas",
+
+      // Drag and drop
+      dragToReorder: "Arrastra para reordenar",
+
+      // Set records
+      setNumber: "Serie {number}",
+      completed: "Completado",
+      incomplete: "Incompleto",
+      addSet: "Agregar Serie",
+      removeSet: "Eliminar Serie",
+
+      // Validation
+      exerciseNameRequired: "El nombre del ejercicio es requerido",
+      muscleGroupRequired: "El grupo muscular es requerido",
+      setsRequired: "Las series son requeridas",
+      repsRequired: "Las repeticiones son requeridas",
+      invalidNumber: "Debe ser un número válido",
+      minimumValue: "El valor mínimo es {min}",
+      maximumValue: "El valor máximo es {max}",
+    },
+    postponeDialog: {
+      title: "Aplazar Entrenamiento",
+      subtitle: "Mover a una fecha posterior",
+      currentWorkout: "Entrenamiento actual:",
+      exercisesScheduled: "{count} ejercicios programados",
+      postponeBy: "Aplazar por (días):",
+      newDate: "Nueva fecha:",
+      postponeMode: "Modo de aplazamiento:",
+      singleWorkout: "Solo este entrenamiento",
+      singleWorkoutDescription: "Mover únicamente el entrenamiento seleccionado",
+      allFollowing: "Este y entrenamientos posteriores",
+      allFollowingDescription: "Mover este entrenamiento y todos los siguientes",
+      cancel: "Cancelar",
+      postpone: "Aplazar",
+      postponing: "Aplazando...",
+      daysMinimum: "El número de días debe ser mayor a 0",
+      postponedSuccessfully: "✅ Entrenamiento aplazado exitosamente",
+      errorPostponing: "❌ Error aplazando entrenamiento:",
+      connectionErrorPostponing: "Error de conexión al aplazar entrenamiento",
+    },
   },
   en: {
     auth: {
@@ -361,6 +476,121 @@ export const translations: Record<"es" | "en", Translations> = {
       fri: "Fri",
       sat: "Sat",
       sun: "Sun",
+    },
+    workoutForm: {
+      // Main titles
+      newWorkout: "New Workout",
+      editWorkout: "Edit Workout",
+      loadingWorkoutData: "Loading workout data...",
+      savingWorkout: "Saving workout...",
+
+      // Messages
+      workoutSavedSuccessfully: "✅ Workout saved successfully",
+      exerciseCreatedSuccessfully: '✅ Exercise "{name}" created successfully',
+      columnCreatedSuccessfully: '✅ Column "{name}" created successfully',
+      columnActivated: '✅ Column "{name}" activated for this workout',
+      columnDeactivated: '✅ Column "{name}" deactivated for this workout',
+      errorCreatingExercise: "❌ Error creating exercise",
+      errorCreatingColumn: "❌ Error creating column",
+      errorSavingWorkout: "Error saving workout",
+      connectionError: "Error saving workout",
+      addAtLeastOneExercise: "You must add at least one exercise",
+
+      // Buttons
+      cancel: "Cancel",
+      save: "Save",
+      saving: "Saving...",
+      addExercise: "Add Exercise",
+      columnSettings: "Column Settings",
+      exerciseManager: "Exercise Manager",
+
+      // Exercise form
+      exerciseName: "Exercise name",
+      selectExercise: "Select exercise",
+      createCustomExercise: "Create custom exercise",
+      muscleGroup: "Muscle group",
+      selectMuscleGroup: "Select muscle group",
+      sets: "Sets",
+      reps: "Reps",
+      weight: "Weight (kg)",
+      restTime: "Rest (sec)",
+      notes: "Notes",
+
+      // Exercise actions
+      saveExercise: "Save",
+      editExercise: "Edit",
+      removeExercise: "Remove",
+      expandExercise: "Expand",
+      collapseExercise: "Collapse",
+      markAsCompleted: "Mark as completed",
+      markAsIncomplete: "Mark as incomplete",
+
+      // Column settings
+      columnSettingsTitle: "Column Settings",
+      addCustomColumn: "Add Custom Column",
+      columnName: "Column name",
+      columnType: "Column type",
+      text: "Text",
+      number: "Number",
+      boolean: "Yes/No",
+      addColumn: "Add Column",
+      activeColumns: "Active Columns",
+      inactiveColumns: "Inactive Columns",
+      activate: "Activate",
+      deactivate: "Deactivate",
+      close: "Close",
+
+      // Exercise manager
+      exerciseManagerTitle: "Exercise Manager",
+      addNewExercise: "Add New Exercise",
+      editExerciseTitle: "Edit Exercise",
+      deleteExercise: "Delete Exercise",
+      confirmDeleteExercise: "Are you sure you want to delete this exercise?",
+      exerciseDeletedSuccessfully: "Exercise deleted successfully",
+      errorDeletingExercise: "Error deleting exercise",
+
+      // Toolbar
+      exercisesCount: "{count} exercises",
+      activeColumnsCount: "{count} active columns",
+
+      // Drag and drop
+      dragToReorder: "Drag to reorder",
+
+      // Set records
+      setNumber: "Set {number}",
+      completed: "Completed",
+      incomplete: "Incomplete",
+      addSet: "Add Set",
+      removeSet: "Remove Set",
+
+      // Validation
+      exerciseNameRequired: "Exercise name is required",
+      muscleGroupRequired: "Muscle group is required",
+      setsRequired: "Sets are required",
+      repsRequired: "Reps are required",
+      invalidNumber: "Must be a valid number",
+      minimumValue: "Minimum value is {min}",
+      maximumValue: "Maximum value is {max}",
+    },
+    postponeDialog: {
+      title: "Postpone Workout",
+      subtitle: "Move to a later date",
+      currentWorkout: "Current workout:",
+      exercisesScheduled: "{count} exercises scheduled",
+      postponeBy: "Postpone by (days):",
+      newDate: "New date:",
+      postponeMode: "Postpone mode:",
+      singleWorkout: "Only this workout",
+      singleWorkoutDescription: "Move only the selected workout",
+      allFollowing: "This and following workouts",
+      allFollowingDescription: "Move this workout and all following ones",
+      cancel: "Cancel",
+      postpone: "Postpone",
+      postponing: "Postponing...",
+      daysMinimum: "Number of days must be greater than 0",
+      postponedSuccessfully: "✅ Workout postponed successfully",
+      errorPostponing: "❌ Error postponing workout:",
+      connectionErrorPostponing: "Connection error while postponing workout",
     },
   },
 }
