@@ -6,8 +6,11 @@ import { Dumbbell, BarChart3, Menu, X } from "lucide-react"
 import WorkoutCalendar from "@/components/workout-calendar"
 import StatsContainer from "@/components/stats-container"
 import SignOutButton from "@/components/sign-out-button"
+import { useLanguage } from "@/lib/i18n/context"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 export default function HomePage() {
+  const { t } = useLanguage()
   const [currentView, setCurrentView] = useState<"calendar" | "stats">("calendar")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -50,6 +53,7 @@ export default function HomePage() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-4">
+                            <LanguageSwitcher />
               <Button
                 onClick={() => setCurrentView("calendar")}
                 variant={currentView === "calendar" ? "default" : "ghost"}
@@ -60,7 +64,7 @@ export default function HomePage() {
                 }`}
               >
                 <Dumbbell className="h-4 w-4 mr-2" />
-                Calendario
+                {t.navigation.calendar}
               </Button>
               <Button
                 onClick={() => setCurrentView("stats")}
@@ -72,7 +76,7 @@ export default function HomePage() {
                 }`}
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
-                Estadísticas
+                {t.stats.statistics}
               </Button>
               <SignOutButton />
             </nav>
@@ -88,6 +92,9 @@ export default function HomePage() {
           {/* Mobile Navigation Menu */}
           {isMobileMenuOpen && (
             <div className="md:hidden border-t border-gray-200 py-3 space-y-2">
+              <div className="w-full flex justify-start">
+                <LanguageSwitcher />
+              </div>
               <Button
                 onClick={() => setCurrentView("calendar")}
                 variant={currentView === "calendar" ? "default" : "ghost"}
@@ -98,7 +105,7 @@ export default function HomePage() {
                 }`}
               >
                 <Dumbbell className="h-4 w-4 mr-2" />
-                Calendario
+                {t.navigation.calendar}
               </Button>
               <Button
                 onClick={() => setCurrentView("stats")}
@@ -110,7 +117,7 @@ export default function HomePage() {
                 }`}
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
-                Estadísticas
+                {t.stats.statistics}
               </Button>
               {/* Botón Cerrar Sesión en el menú móvil */}
               <div className="pt-2 border-t border-gray-100">

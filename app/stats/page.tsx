@@ -4,8 +4,12 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import StatsContainer from "@/components/stats-container"
 import Link from "next/link"
+import { useLanguage } from "@/lib/i18n/context"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 export default function StatsPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       {/* Header */}
@@ -25,15 +29,20 @@ export default function StatsPage() {
                   <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                   <span className="relative flex items-center z-10">
                     <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Calendario</span>
-                    <span className="sm:hidden">Volver</span>
+                    <span className="hidden sm:inline">{t.stats.calendar}</span>
+                    <span className="sm:hidden">{t.stats.back}</span>
                   </span>
                 </Button>
               </Link>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">📊 Estadísticas</h1>
-                <p className="text-sm text-gray-600 hidden sm:block">Análisis de tu progreso semanal</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">📊 {t.stats.statistics}</h1>
+                <p className="text-sm text-gray-600 hidden sm:block">{t.stats.weeklyProgressAnalysis}</p>
               </div>
+            </div>
+
+            {/* Language Switcher */}
+            <div className="flex items-center space-x-2">
+              <LanguageSwitcher />
             </div>
           </div>
         </div>

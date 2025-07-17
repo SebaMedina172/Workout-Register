@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns"
-import { es } from "date-fns/locale"
+import { es, enUS } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -11,6 +11,7 @@ import VolumeChart from "@/components/stats/volume-chart"
 import WeeklyProgress from "@/components/stats/weekly-progress"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface WeeklyStats {
   summary: {
@@ -35,9 +36,12 @@ interface WeeklyStats {
 }
 
 export default function StatsContainer() {
+  const { t, language } = useLanguage()
   const [currentWeek, setCurrentWeek] = useState(new Date())
   const [stats, setStats] = useState<WeeklyStats | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const locale = language === "es" ? es : enUS
 
   // Calcular inicio y fin de semana
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }) // Lunes
@@ -50,18 +54,18 @@ export default function StatsContainer() {
       const startDate = format(weekStart, "yyyy-MM-dd")
       const endDate = format(weekEnd, "yyyy-MM-dd")
 
-      console.log(`📊 Cargando estadísticas del ${startDate} al ${endDate}`)
+      console.log(t.stats.loadingStats.replace("{startDate}", startDate).replace("{endDate}", endDate))
 
       const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
       if (response.ok) {
         const data = await response.json()
         setStats(data)
-        console.log("✅ Estadísticas cargadas:", data)
+        console.log(t.stats.statsLoaded, data)
       } else {
-        console.error("❌ Error cargando estadísticas")
+        console.error(t.stats.errorLoadingStats)
       }
     } catch (error) {
-      console.error("💥 Error:", error)
+      console.error(t.stats.error, error)
     } finally {
       setLoading(false)
     }
@@ -125,10 +129,12 @@ export default function StatsContainer() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="text-center sm:text-left">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-            {format(weekStart, "'Semana del' dd 'de' MMMM", { locale: es })}
+            {language === "es"
+              ? format(weekStart, "'Semana del' dd 'de' MMMM", { locale })
+              : format(weekStart, "'Week of' MMMM dd", { locale })}
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            {format(weekStart, "dd/MM", { locale: es })} - {format(weekEnd, "dd/MM/yyyy", { locale: es })}
+            {format(weekStart, "dd/MM", { locale })} - {format(weekEnd, "dd/MM/yyyy", { locale })}
           </p>
         </div>
 
@@ -160,7 +166,7 @@ export default function StatsContainer() {
             <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
             <span className="relative flex items-center z-10">
               <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-              Hoy
+              {t.stats.today}
             </span>
           </Button>
 

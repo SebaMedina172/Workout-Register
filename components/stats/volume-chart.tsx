@@ -1,6 +1,9 @@
+"use client"
+
 import type React from "react"
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts" // Added Tooltip import
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface MuscleGroupData {
   name: string
@@ -42,6 +45,7 @@ const COLORS = [
 ]
 
 const VolumeChart: React.FC<VolumeChartProps> = ({ data }) => {
+  const { t } = useLanguage()
   const totalSets = data.reduce((sum, entry) => sum + entry.sets, 0)
 
   // Filter out muscle groups with 0 sets for the chart, but keep them for "no trabajados"
@@ -58,7 +62,7 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ data }) => {
           {totalSets}
         </tspan>
         <tspan x={cx} y={cy + 20} className="text-xs sm:text-sm fill-gray-500">
-          series totales
+          {t.stats.totalSets}
         </tspan>
       </text>
     )
@@ -72,8 +76,12 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ data }) => {
       return (
         <div className="rounded-lg border bg-background p-2 shadow-sm">
           <p className="text-sm font-medium">{dataEntry.name}</p>
-          <p className="text-xs text-muted-foreground">Series: {dataEntry.sets}</p>
-          <p className="text-xs text-muted-foreground">Porcentaje: {percentage}%</p>
+          <p className="text-xs text-muted-foreground">
+            {t.stats.sets}: {dataEntry.sets}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {t.stats.percentage}: {percentage}%
+          </p>
         </div>
       )
     }
@@ -84,7 +92,7 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ data }) => {
     <Card className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-xl transition-all duration-300 ease-out group">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
       <CardHeader className="relative z-10 pb-2 p-4 sm:p-6">
-        <CardTitle className="text-lg sm:text-2xl font-bold text-gray-900">Series por Grupo Muscular</CardTitle>
+        <CardTitle className="text-lg sm:text-2xl font-bold text-gray-900">{t.stats.setsByMuscleGroup}</CardTitle>
       </CardHeader>
       <CardContent className="relative z-10 flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6">
         <div className="w-full lg:w-2/3 h-[300px] sm:h-[350px] lg:h-[400px] flex items-center justify-center">
@@ -106,12 +114,12 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ data }) => {
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="white" strokeWidth={2} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} /> {/* Added Custom Tooltip */}
+              <Tooltip content={<CustomTooltip />} />
             </PieChart>
           </ResponsiveContainer>
         </div>
         <div className="w-full lg:w-1/3 mt-6 lg:mt-0 lg:ml-8">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Distribución:</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">{t.stats.distribution}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-x-4 gap-y-2">
             {chartData.map((entry, index) => (
               <div key={`legend-${index}`} className="flex items-center text-xs sm:text-sm text-gray-700">
@@ -127,7 +135,7 @@ const VolumeChart: React.FC<VolumeChartProps> = ({ data }) => {
           </div>
           {notWorkedGroups.length > 0 && (
             <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">No trabajados:</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-2">{t.stats.notWorked}</h3>
               <div className="flex flex-wrap gap-x-3 sm:gap-x-4 gap-y-2">
                 {notWorkedGroups.map((entry, index) => (
                   <span key={`not-worked-${index}`} className="text-xs sm:text-sm text-gray-500 italic">

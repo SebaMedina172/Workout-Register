@@ -36,4 +36,59 @@ export interface Translations {
     passwordsMatch: string
     termsAndPrivacy: string
   }
+  stats: {
+    statistics: string
+    calendar: string
+    back: string
+    weeklyProgressAnalysis: string
+    trainingDays: string
+    restDays: string
+    unregistered: string
+    missedDays: string
+    planCompliance: string
+    trainingTime: string
+    consistency: string
+    ofTotalDays: string
+    scheduledCorrectly: string
+    unplannedDays: string
+    plannedButNotExecuted: string
+    plannedVsExecuted: string
+    estimatedMinutes: string
+    daysWithRegisteredActivity: string
+    excellent: string
+    good: string
+    improve: string
+    setsByMuscleGroup: string
+    distribution: string
+    notWorked: string
+    totalSets: string
+    sets: string
+    percentage: string
+    weeklyProgress: string
+    completed: string
+    rest: string
+    planned: string
+    missed: string
+    scheduledDay: string
+    toComplete: string
+    notCompleted: string
+    unplanned: string
+    weekOf: string
+    today: string
+    loadingStats: string
+    statsLoaded: string
+    errorLoadingStats: string
+    error: string
+    mon: string
+    tue: string
+    wed: string
+    thu: string
+    fri: string
+    sat: string
+    sun: string
+  }
+  navigation: {
+    signOut: string
+    calendar: string
+  }
 }
