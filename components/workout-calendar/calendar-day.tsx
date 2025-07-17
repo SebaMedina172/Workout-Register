@@ -2,6 +2,7 @@
 
 import { Dumbbell, Coffee } from "lucide-react"
 import { getWorkoutCompletionStatus } from "./utils"
+import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 import type { Workout } from "./types"
 
 interface CalendarDayProps {
@@ -15,6 +16,7 @@ interface CalendarDayProps {
 
 export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, onClick }: CalendarDayProps) => {
   const isOutside = date.getMonth() !== displayMonth.getMonth()
+  const { formatDate, t } = useCalendarTranslation()
 
   // Determinar el estado visual del día
   const getDayStatus = () => {
@@ -71,19 +73,23 @@ export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, 
     baseClass += " bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md"
   }
 
-  const ariaLabel = `${date.getDate()} de ${date.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}${
-    status
-      ? ` - ${
-          status === "planned"
-            ? "Entrenamiento planificado"
-            : status === "completed"
-              ? "Entrenamiento completado"
-              : status === "incomplete"
-                ? "Entrenamiento incompleto"
-                : "Descanso"
-        }`
-      : ""
-  }`
+  const getAriaLabel = () => {
+    const formattedDate = formatDate(date)
+    if (status) {
+      const statusText =
+        status === "planned"
+          ? t.workoutPlanned
+          : status === "completed"
+            ? t.workoutCompleted
+            : status === "incomplete"
+              ? t.workoutIncomplete
+              : status === "rest"
+                ? t.restDay
+                : ""
+      return `${formattedDate} - ${statusText}`
+    }
+    return formattedDate
+  }
 
   return (
     <button
@@ -94,7 +100,7 @@ export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, 
       role="gridcell"
       tabIndex={isOutside ? -1 : 0}
       aria-selected={isSelected}
-      aria-label={ariaLabel}
+      aria-label={getAriaLabel()}
     >
       <div className="calendar-day-content">
         <div className="calendar-day-number text-sm sm:text-base md:text-lg font-bold">{date.getDate()}</div>

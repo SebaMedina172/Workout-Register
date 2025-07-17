@@ -110,6 +110,77 @@ export const translations: Record<"es" | "en", Translations> = {
       Abdominales: "Abdominales",
       Oblicuos: "Oblicuos",
     },
+    calendar: {
+      // Calendar navigation
+      goToToday: "Ir a Hoy",
+      loadingCalendar: "Cargando calendario...",
+
+      // Day status
+      workoutPlanned: "Entrenamiento planificado",
+      workoutCompleted: "Entrenamiento completado",
+      workoutIncomplete: "Entrenamiento incompleto",
+      restDay: "Descanso",
+
+      // Day actions dialog
+      manageWorkout: "Gestiona tu entrenamiento",
+      restDayTitle: "Día de Descanso",
+      restDayDescription:
+        "Este día está marcado como descanso. Es importante permitir que tu cuerpo se recupere para obtener mejores resultados en tus próximos entrenamientos.",
+      muscleRecovery: "Recuperación muscular",
+      activeRest: "Descanso activo",
+      exercisesScheduled: "Ejercicios programados:",
+      moreExercises: "+{count} ejercicios más...",
+
+      // Action buttons
+      createWorkout: "Crear Entrenamiento",
+      markAsRest: "Marcar como Descanso",
+      edit: "Editar",
+      postpone: "Aplazar",
+      clearDay: "Limpiar Día",
+
+      // Status badges
+      completed: "✅ Completado",
+      incomplete: "⚠️ Incompleto",
+      planned: "💪 Planificado",
+      rest: "🛌 Descanso",
+
+      // Weight and exercise info
+      freeWeight: "Libre",
+      sets: "series",
+      seconds: "s",
+
+      // Months
+      january: "enero",
+      february: "febrero",
+      march: "marzo",
+      april: "abril",
+      may: "mayo",
+      june: "junio",
+      july: "julio",
+      august: "agosto",
+      september: "septiembre",
+      october: "octubre",
+      november: "noviembre",
+      december: "diciembre",
+
+      // Days of week (full names)
+      monday: "lunes",
+      tuesday: "martes",
+      wednesday: "miércoles",
+      thursday: "jueves",
+      friday: "viernes",
+      saturday: "sábado",
+      sunday: "domingo",
+
+      // Days of week (short)
+      mon: "Lun",
+      tue: "Mar",
+      wed: "Mié",
+      thu: "Jue",
+      fri: "Vie",
+      sat: "Sáb",
+      sun: "Dom",
+    },
   },
   en: {
     auth: {
@@ -219,6 +290,77 @@ export const translations: Record<"es" | "en", Translations> = {
       Abductores: "Abductors",
       Abdominales: "Abs",
       Oblicuos: "Obliques",
+    },
+    calendar: {
+      // Calendar navigation
+      goToToday: "Go to Today",
+      loadingCalendar: "Loading calendar...",
+
+      // Day status
+      workoutPlanned: "Workout planned",
+      workoutCompleted: "Workout completed",
+      workoutIncomplete: "Workout incomplete",
+      restDay: "Rest day",
+
+      // Day actions dialog
+      manageWorkout: "Manage your workout",
+      restDayTitle: "Rest Day",
+      restDayDescription:
+        "This day is marked as rest. It's important to allow your body to recover for better results in your next workouts.",
+      muscleRecovery: "Muscle recovery",
+      activeRest: "Active rest",
+      exercisesScheduled: "Scheduled exercises:",
+      moreExercises: "+{count} more exercises...",
+
+      // Action buttons
+      createWorkout: "Create Workout",
+      markAsRest: "Mark as Rest",
+      edit: "Edit",
+      postpone: "Postpone",
+      clearDay: "Clear Day",
+
+      // Status badges
+      completed: "✅ Completed",
+      incomplete: "⚠️ Incomplete",
+      planned: "💪 Planned",
+      rest: "🛌 Rest",
+
+      // Weight and exercise info
+      freeWeight: "Free",
+      sets: "sets",
+      seconds: "s",
+
+      // Months
+      january: "January",
+      february: "February",
+      march: "March",
+      april: "April",
+      may: "May",
+      june: "June",
+      july: "July",
+      august: "August",
+      september: "September",
+      october: "October",
+      november: "November",
+      december: "December",
+
+      // Days of week (full names)
+      monday: "Monday",
+      tuesday: "Tuesday",
+      wednesday: "Wednesday",
+      thursday: "Thursday",
+      friday: "Friday",
+      saturday: "Saturday",
+      sunday: "Sunday",
+
+      // Days of week (short)
+      mon: "Mon",
+      tue: "Tue",
+      wed: "Wed",
+      thu: "Thu",
+      fri: "Fri",
+      sat: "Sat",
+      sun: "Sun",
     },
   },
 }

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Edit, Coffee, Trash2, X, Dumbbell, Clock } from "lucide-react"
-import { formatDate, formatWeight, getWorkoutCompletionStatus } from "./utils"
+import { getWorkoutCompletionStatus } from "./utils"
+import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 import type { Workout } from "./types"
 
 interface DayActionsDialogProps {
@@ -28,6 +29,8 @@ export const DayActionsDialog = ({
   onClearDay,
   onPostpone,
 }: DayActionsDialogProps) => {
+  const { formatDate, formatWeight, t } = useCalendarTranslation()
+
   const getDayStatus = (workout: Workout | null, date: Date) => {
     if (!workout) return null
 
@@ -78,16 +81,16 @@ export const DayActionsDialog = ({
                   `}
                   >
                     {selectedWorkout.type === "rest"
-                      ? "🛌 Descanso"
+                      ? t.rest
                       : getDayStatus(selectedWorkout, selectedDate) === "completed"
-                        ? "✅ Completado"
+                        ? t.completed
                         : getDayStatus(selectedWorkout, selectedDate) === "incomplete"
-                          ? "⚠️ Incompleto"
-                          : "💪 Planificado"}
+                          ? t.incomplete
+                          : t.planned}
                   </Badge>
                 )}
               </CardTitle>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">Gestiona tu entrenamiento</p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">{t.manageWorkout}</p>
             </div>
             <Button
               variant="ghost"
@@ -109,20 +112,17 @@ export const DayActionsDialog = ({
                 </div>
               </div>
               <div className="text-center">
-                <h3 className="text-lg sm:text-xl font-bold text-orange-800 mb-2">Día de Descanso</h3>
-                <p className="text-orange-700 text-xs sm:text-sm leading-relaxed">
-                  Este día está marcado como descanso. Es importante permitir que tu cuerpo se recupere para obtener
-                  mejores resultados en tus próximos entrenamientos.
-                </p>
+                <h3 className="text-lg sm:text-xl font-bold text-orange-800 mb-2">{t.restDayTitle}</h3>
+                <p className="text-orange-700 text-xs sm:text-sm leading-relaxed">{t.restDayDescription}</p>
               </div>
               <div className="mt-3 sm:mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-orange-600">
                 <div className="flex items-center">
                   <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
-                  Recuperación muscular
+                  {t.muscleRecovery}
                 </div>
                 <div className="flex items-center">
                   <span className="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
-                  Descanso activo
+                  {t.activeRest}
                 </div>
               </div>
             </div>
@@ -158,7 +158,7 @@ export const DayActionsDialog = ({
                         : "text-green-800"
                   }`}
                 >
-                  Ejercicios programados:
+                  {t.exercisesScheduled}
                 </p>
               </div>
               <ul className="space-y-2 sm:space-y-3">
@@ -214,7 +214,8 @@ export const DayActionsDialog = ({
                           }`}
                         >
                           <Clock className="w-3 h-3 mr-1" />
-                          {exercise.rest_time}s
+                          {exercise.rest_time}
+                          {t.seconds}
                         </span>
                       )}
                     </div>
@@ -230,7 +231,7 @@ export const DayActionsDialog = ({
                           : "text-green-600 border-green-200"
                     }`}
                   >
-                    +{selectedWorkout.exercises.length - 3} ejercicios más...
+                    {t.moreExercises.replace("{count}", (selectedWorkout.exercises.length - 3).toString())}
                   </li>
                 )}
               </ul>
@@ -246,7 +247,7 @@ export const DayActionsDialog = ({
                   className="w-full h-12 sm:h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
                 >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                  Crear Entrenamiento
+                  {t.createWorkout}
                 </Button>
                 <Button
                   onClick={onMarkAsRest}
@@ -254,7 +255,7 @@ export const DayActionsDialog = ({
                   className="w-full h-12 sm:h-14 border-2 border-orange-300 text-orange-700 hover:bg-orange-50 bg-white font-semibold rounded-xl hover:border-orange-400 transition-all duration-200 text-sm sm:text-base"
                 >
                   <Coffee className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                  Marcar como Descanso
+                  {t.markAsRest}
                 </Button>
               </>
             )}
@@ -266,7 +267,7 @@ export const DayActionsDialog = ({
                   className="h-12 sm:h-14 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
                 >
                   <Edit className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                  Editar
+                  {t.edit}
                 </Button>
                 <Button
                   onClick={onPostpone}
@@ -274,7 +275,7 @@ export const DayActionsDialog = ({
                   className="h-12 sm:h-14 border-2 border-blue-300 text-blue-700 hover:bg-blue-50 bg-white font-semibold rounded-xl hover:border-blue-400 transition-all duration-200 text-sm sm:text-base"
                 >
                   <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                  Aplazar
+                  {t.postpone}
                 </Button>
               </div>
             )}
@@ -286,7 +287,7 @@ export const DayActionsDialog = ({
                 className="w-full h-12 sm:h-14 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
               >
                 <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                Limpiar Día
+                {t.clearDay}
               </Button>
             )}
           </div>

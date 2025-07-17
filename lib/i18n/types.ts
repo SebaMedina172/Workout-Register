@@ -108,4 +108,74 @@ export interface Translations {
     Abdominales: string
     Oblicuos: string
   }
+  calendar: {
+    // Calendar navigation
+    goToToday: string
+    loadingCalendar: string
+
+    // Day status
+    workoutPlanned: string
+    workoutCompleted: string
+    workoutIncomplete: string
+    restDay: string
+
+    // Day actions dialog
+    manageWorkout: string
+    restDayTitle: string
+    restDayDescription: string
+    muscleRecovery: string
+    activeRest: string
+    exercisesScheduled: string
+    moreExercises: string
+
+    // Action buttons
+    createWorkout: string
+    markAsRest: string
+    edit: string
+    postpone: string
+    clearDay: string
+
+    // Status badges
+    completed: string
+    incomplete: string
+    planned: string
+    rest: string
+
+    // Weight and exercise info
+    freeWeight: string
+    sets: string
+    seconds: string
+
+    // Months
+    january: string
+    february: string
+    march: string
+    april: string
+    may: string
+    june: string
+    july: string
+    august: string
+    september: string
+    october: string
+    november: string
+    december: string
+
+    // Days of week (full names)
+    monday: string
+    tuesday: string
+    wednesday: string
+    thursday: string
+    friday: string
+    saturday: string
+    sunday: string
+
+    // Days of week (short)
+    mon: string
+    tue: string
+    wed: string
+    thu: string
+    fri: string
+    sat: string
+    sun: string
+  }
 }

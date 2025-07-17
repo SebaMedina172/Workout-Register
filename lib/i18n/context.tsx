@@ -14,7 +14,8 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("es")
+  const [language, setLanguageState] = useState<Language>("es") // Default to Spanish
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
     // Load saved language from localStorage
@@ -22,6 +23,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (savedLanguage && (savedLanguage === "es" || savedLanguage === "en")) {
       setLanguageState(savedLanguage)
     }
+    // If no saved language, keep default "es"
+    setIsLoaded(true)
   }, [])
 
   const setLanguage = (newLanguage: Language) => {
@@ -30,6 +33,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }
 
   const t = translations[language]
+
+  // Don't render children until language is loaded to prevent flash
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
+      </div>
+    )
+  }
 
   return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>
 }

@@ -7,6 +7,8 @@ import WorkoutForm from "./workout-form"
 import PostponeDialog from "./postpone-dialog"
 import { DayActionsDialog } from "./workout-calendar/day-actions-dialog"
 import { CalendarDay } from "./workout-calendar/calendar-day"
+import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
+import { useLanguage } from "@/lib/i18n/context"
 import type { Workout } from "./workout-calendar/types"
 
 export default function WorkoutCalendar() {
@@ -18,6 +20,9 @@ export default function WorkoutCalendar() {
   const [loading, setLoading] = useState(true)
   const [showDayActions, setShowDayActions] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
+
+  const { getDayName, getMonthName, t: calendarT } = useCalendarTranslation()
+  const { language } = useLanguage()
 
   // Cargar entrenamientos al montar el componente
   useEffect(() => {
@@ -181,10 +186,29 @@ export default function WorkoutCalendar() {
       <div className="flex justify-center items-center py-8 sm:py-16">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-blue-600 border-t-transparent"></div>
-          <p className="text-gray-600 font-medium text-sm sm:text-base">Cargando calendario...</p>
+          <p className="text-gray-600 font-medium text-sm sm:text-base">{calendarT.loadingCalendar}</p>
         </div>
       </div>
     )
+  }
+
+  const getWeekDayNames = (mondayFirst: boolean = false): string[] => {
+    const dayNames = [
+      calendarT.sun,
+      calendarT.mon,
+      calendarT.tue,
+      calendarT.wed,
+      calendarT.thu,
+      calendarT.fri,
+      calendarT.sat,
+    ]
+
+    if (mondayFirst) {
+      const mondayToSaturday = dayNames.slice(1)
+      return [...mondayToSaturday, dayNames[0]]
+    }
+
+    return dayNames
   }
 
   return (
@@ -341,7 +365,7 @@ export default function WorkoutCalendar() {
             size="sm"
             className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 font-semibold px-4 sm:px-6 py-2 rounded-lg text-sm sm:text-base"
           >
-            📅 Ir a Hoy
+            📅 {calendarT.goToToday}
           </Button>
         </div>
 
@@ -354,6 +378,7 @@ export default function WorkoutCalendar() {
               month={currentMonth}
               onMonthChange={setCurrentMonth}
               onSelect={handleDateSelect}
+              weekStartsOn={1} // Always start with Monday (1) regardless of locale
               className="rounded-xl sm:rounded-2xl border-0 shadow-none w-full"
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
@@ -380,6 +405,22 @@ export default function WorkoutCalendar() {
                 day_disabled: "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100",
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
                 day_hidden: "invisible",
+              }}
+              formatters={{
+                formatCaption: (date) => {
+                  const monthName = getMonthName(date.getMonth())
+                  const year = date.getFullYear()
+                  return language === "es" ? `${monthName} ${year}` : `${monthName} ${year}`
+                },
+                formatWeekdayName: (date) => {
+                  // Use our custom week day names that maintain Monday-first order
+                  const weekDayNames = getWeekDayNames(true)
+                  // Since weekStartsOn={1}, the days will be in correct order
+                  const dayIndex = date.getDay()
+                  // Adjust for Monday-first: Sunday (0) becomes index 6, Monday (1) becomes 0, etc.
+                  const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1
+                  return weekDayNames[adjustedIndex]
+                },
               }}
               components={{
                 Day: ({ date, displayMonth, ...props }) => {
