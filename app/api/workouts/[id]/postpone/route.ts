@@ -19,24 +19,6 @@ const calculateDate = (dateString: string, daysToAdd: number): string => {
   return result
 }
 
-// Función para verificar estructura de tabla
-const getTableStructure = async (supabase: any, tableName: string) => {
-  const { data, error } = await supabase
-    .from("information_schema.columns")
-    .select("column_name")
-    .eq("table_name", tableName)
-    .eq("table_schema", "public")
-
-  if (error) {
-    console.log(`⚠️ No se pudo obtener estructura de ${tableName}:`, error.message)
-    return []
-  }
-
-  const columns = data?.map((row: any) => row.column_name) || []
-  console.log(`📋 Columnas de ${tableName}:`, columns)
-  return columns
-}
-
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
     const supabase = createRouteHandlerClient({ cookies })
@@ -151,10 +133,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
       const uniqueDates = [...new Set(futureWorkouts.map((w) => w.date))].sort()
       console.log(`📅 Fechas únicas a procesar: ${uniqueDates.length}`)
 
-      // Verificar estructura de tablas
-      const workoutColumns = await getTableStructure(supabase, "workouts")
-      const exerciseColumns = await getTableStructure(supabase, "workout_exercises")
-
       // Obtener todos los datos necesarios antes de eliminar
       const workoutData = []
 
@@ -167,7 +145,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         // Obtener workouts de esta fecha
         const dateWorkouts = futureWorkouts.filter((w) => w.date === currentDate)
 
-        // Obtener ejercicios para cada workout (SIN custom data por ahora)
+        // Obtener ejercicios para cada workout con set records
         const workoutsWithExercises = []
 
         for (const workout of dateWorkouts) {
@@ -180,9 +158,28 @@ export async function POST(request: Request, { params }: { params: { id: string 
             console.log(`⚠️ Error obteniendo ejercicios para ${workout.id}:`, exercisesError.message)
           }
 
+          // Obtener set records para cada ejercicio
+          const exercisesWithSetRecords = []
+          for (const exercise of exercises || []) {
+            const { data: setRecords, error: setRecordsError } = await supabase
+              .from("workout_set_records")
+              .select("*")
+              .eq("exercise_id", exercise.id)
+              .order("set_number", { ascending: true })
+
+            if (setRecordsError) {
+              console.log(`⚠️ Error obteniendo set records para ${exercise.id}:`, setRecordsError.message)
+            }
+
+            exercisesWithSetRecords.push({
+              ...exercise,
+              set_records: setRecords || [],
+            })
+          }
+
           workoutsWithExercises.push({
             workout,
-            exercises: exercises || [],
+            exercises: exercisesWithSetRecords,
           })
         }
 
@@ -196,7 +193,25 @@ export async function POST(request: Request, { params }: { params: { id: string 
       // Eliminar entrenamientos futuros
       console.log("🗑️ Eliminando entrenamientos futuros...")
 
-      // Eliminar ejercicios primero
+      // Eliminar set records primero
+      for (const workout of futureWorkouts) {
+        const { data: exercises } = await supabase.from("workout_exercises").select("id").eq("workout_id", workout.id)
+
+        if (exercises && exercises.length > 0) {
+          const exerciseIds = exercises.map((ex) => ex.id)
+
+          const { error: setRecordsDeleteError } = await supabase
+            .from("workout_set_records")
+            .delete()
+            .in("exercise_id", exerciseIds)
+
+          if (setRecordsDeleteError) {
+            console.log("⚠️ Error eliminando set records:", setRecordsDeleteError.message)
+          }
+        }
+      }
+
+      // Eliminar ejercicios
       const { error: exercisesDeleteError } = await supabase
         .from("workout_exercises")
         .delete()
@@ -241,8 +256,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
             is_rest_day: workout.is_rest_day || false,
           }
 
-          // Agregar campos adicionales solo si existen en la tabla y en el workout original
-          if (workoutColumns.includes("type") && workout.type !== undefined) {
+          // Agregar campos adicionales del workout original
+          if (workout.type !== undefined) {
             workoutToInsert.type = workout.type
           }
 
@@ -263,14 +278,37 @@ export async function POST(request: Request, { params }: { params: { id: string 
           // Recrear ejercicios si no es día de descanso
           if (!workout.is_rest_day && exercises && exercises.length > 0) {
             for (const exercise of exercises) {
-              // Preparar datos del ejercicio
-              const exerciseToInsert = {
+              // Preparar datos del ejercicio preservando todos los campos
+              const exerciseToInsert: any = {
                 workout_id: newWorkout.id,
                 exercise_name: exercise.exercise_name,
                 sets: exercise.sets || 3,
                 reps: exercise.reps || 10,
                 rest_seconds: exercise.rest_seconds || 60,
                 weight: exercise.weight || 0,
+              }
+
+              // Preservar campos adicionales
+              if (exercise.muscle_group !== undefined && exercise.muscle_group !== null) {
+                exerciseToInsert.muscle_group = exercise.muscle_group
+              }
+              if (exercise.rest_time !== undefined && exercise.rest_time !== null) {
+                exerciseToInsert.rest_time = exercise.rest_time
+              }
+              if (exercise.custom_data !== undefined && exercise.custom_data !== null) {
+                exerciseToInsert.custom_data = exercise.custom_data
+              }
+              if (exercise.is_saved !== undefined) {
+                exerciseToInsert.is_saved = exercise.is_saved
+              }
+              if (exercise.is_expanded !== undefined) {
+                exerciseToInsert.is_expanded = exercise.is_expanded
+              }
+              if (exercise.is_completed !== undefined) {
+                exerciseToInsert.is_completed = exercise.is_completed
+              }
+              if (exercise.exercise_order !== undefined && exercise.exercise_order !== null) {
+                exerciseToInsert.exercise_order = exercise.exercise_order
               }
 
               // Crear ejercicio
@@ -287,7 +325,26 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
               console.log(`✅ Ejercicio recreado: ${newExercise.id}`)
 
-              // TODO: Recrear datos personalizados cuando la relación esté corregida
+              // Recrear set records si existen
+              if (exercise.set_records && exercise.set_records.length > 0) {
+                const setRecordsToInsert = exercise.set_records.map((setRecord: any) => ({
+                  exercise_id: newExercise.id,
+                  workout_id: newWorkout.id, // Campo requerido
+                  set_number: setRecord.set_number || 1,
+                  reps: setRecord.reps || 0,
+                  weight: setRecord.weight || 0,
+                  is_completed: setRecord.is_completed || false,
+                  custom_data: setRecord.custom_data || {},
+                }))
+
+                const { error: setRecordError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)
+
+                if (setRecordError) {
+                  console.log(`⚠️ Error creando set records:`, setRecordError.message)
+                } else {
+                  console.log(`✅ Set records recreados: ${setRecordsToInsert.length}`)
+                }
+              }
             }
           }
         }
