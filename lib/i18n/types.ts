@@ -89,6 +89,7 @@ export interface Translations {
   }
   navigation: {
     signOut: string
+    signOutProcess: string
     calendar: string
   }
   muscleGroups: {
@@ -202,8 +203,11 @@ export interface Translations {
     save: string
     saving: string
     addExercise: string
+    addExerciseShort: string
     columnSettings: string
+    columnSettingsShort: string
     exerciseManager: string
+    exerciseManagerShort: string
 
     // Exercise form
     exerciseName: string

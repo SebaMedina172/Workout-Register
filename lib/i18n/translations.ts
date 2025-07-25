@@ -91,6 +91,7 @@ export const translations: Record<"es" | "en", Translations> = {
     },
     navigation: {
       signOut: "Cerrar Sesión",
+      signOutProcess: "Cerrando Sesión...",
       calendar: "Calendario",
     },
     muscleGroups: {
@@ -150,18 +151,18 @@ export const translations: Record<"es" | "en", Translations> = {
       seconds: "s",
 
       // Months
-      january: "enero",
-      february: "febrero",
-      march: "marzo",
-      april: "abril",
-      may: "mayo",
-      june: "junio",
-      july: "julio",
-      august: "agosto",
-      september: "septiembre",
-      october: "octubre",
-      november: "noviembre",
-      december: "diciembre",
+      january: "Enero",
+      february: "Febrero",
+      march: "Marzo",
+      april: "Abril",
+      may: "Mayo",
+      june: "Junio",
+      july: "Julio",
+      august: "Agosto",
+      september: "Septiembre",
+      october: "Octubre",
+      november: "Noviembre",
+      december: "Diciembre",
 
       // Days of week (full names)
       monday: "lunes",
@@ -205,8 +206,11 @@ export const translations: Record<"es" | "en", Translations> = {
       save: "Guardar",
       saving: "Guardando...",
       addExercise: "Agregar Ejercicio",
+      addExerciseShort: "Agregar",
       columnSettings: "Configurar Columnas",
+      columnSettingsShort: "Columnas",
       exerciseManager: "Gestor de Ejercicios",
+      exerciseManagerShort: "Ejercicios",
 
       // Exercise form
       exerciseName: "Nombre del ejercicio",
@@ -430,6 +434,7 @@ export const translations: Record<"es" | "en", Translations> = {
     },
     navigation: {
       signOut: "Sign Out",
+      signOutProcess: "Signing out...",
       calendar: "Calendar",
     },
     muscleGroups: {
@@ -544,8 +549,11 @@ export const translations: Record<"es" | "en", Translations> = {
       save: "Save",
       saving: "Saving...",
       addExercise: "Add Exercise",
+      addExerciseShort: "Add",
       columnSettings: "Column Settings",
+      columnSettingsShort: "Columns",
       exerciseManager: "Exercise Manager",
+      exerciseManagerShort: "Exercises",
 
       // Exercise form
       exerciseName: "Exercise name",

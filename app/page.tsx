@@ -22,7 +22,7 @@ export default function HomePage() {
   // Close mobile menu on window resize to desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1024) {
         setIsMobileMenuOpen(false)
       }
     }
@@ -51,8 +51,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-4">
+            {/* Desktop Navigation - Now only shows on large screens (1024px+) */}
+            <nav className="hidden lg:flex items-center space-x-4">
               <LanguageSwitcher />
               <Button
                 onClick={() => setCurrentView("calendar")}
@@ -81,19 +81,19 @@ export default function HomePage() {
               <SignOutButton />
             </nav>
 
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
+            {/* Mobile Menu Button - Now shows on tablet too (up to 1024px) */}
+            <div className="lg:hidden">
               <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2">
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
           </div>
 
-          {/* Mobile Navigation Menu */}
+          {/* Mobile Navigation Menu - Now shows on tablet too */}
           {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 py-3 space-y-2">
+            <div className="lg:hidden border-t border-gray-200 py-3 space-y-2">
               <div className="w-full flex justify-start">
-                <LanguageSwitcher />
+                
               </div>
               <Button
                 onClick={() => setCurrentView("calendar")}
@@ -119,6 +119,7 @@ export default function HomePage() {
                 <BarChart3 className="h-4 w-4 mr-2" />
                 {t.stats.statistics}
               </Button>
+              <LanguageSwitcher />
               {/* Botón Cerrar Sesión en el menú móvil */}
               <div className="pt-2 border-t border-gray-100">
                 <SignOutButton />

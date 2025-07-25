@@ -45,11 +45,11 @@ export const SavedExercise = ({
           exercise.is_completed ? "bg-green-100 border-green-500" : "bg-green-50 border-green-500"
         }`}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
-          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-            <GripVertical className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
+        {/* Desktop/Tablet layout - original single row */}
+        <div className="hidden sm:flex sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-4 min-w-0 flex-1">
+            <GripVertical className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
 
-            {/* Checkbox para completar ejercicio completo */}
             <Button
               variant="ghost"
               size="sm"
@@ -57,43 +57,40 @@ export const SavedExercise = ({
               className="p-1 h-auto hover:bg-transparent flex-shrink-0"
             >
               {exercise.is_completed ? (
-                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                <CheckCircle2 className="w-6 h-6 text-green-600" />
               ) : (
-                <Circle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 hover:text-green-500 transition-colors" />
+                <Circle className="w-6 h-6 text-gray-400 hover:text-green-500 transition-colors" />
               )}
             </Button>
 
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="p-0 h-auto flex-shrink-0">
                 {exercise.is_expanded ? (
-                  <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                  <ChevronDown className="w-5 h-5 text-gray-600" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                  <ChevronRight className="w-5 h-5 text-gray-600" />
                 )}
               </Button>
             </CollapsibleTrigger>
 
             <div className="flex items-center space-x-2 min-w-0 flex-1">
               {exercise.is_completed ? (
-                <Target className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+                <Target className="w-4 h-4 text-green-600 flex-shrink-0" />
               ) : (
-                <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
+                <Lock className="w-4 h-4 text-green-600 flex-shrink-0" />
               )}
               <span
-                className={`font-semibold text-sm sm:text-base truncate ${exercise.is_completed ? "line-through text-green-700" : "text-gray-900"}`}
+                className={`font-semibold text-base truncate ${exercise.is_completed ? "line-through text-green-700" : "text-gray-900"}`}
               >
                 {exercise.exercise_name}
               </span>
             </div>
           </div>
 
-          {/* Badges y información - responsive */}
-          <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-            {/* Badge de grupo muscular */}
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             {exercise.muscle_group && (
-              <Badge variant="outline" className={`text-center ${getMuscleGroupColor(exercise.muscle_group)}`}>
-                <span className="hidden sm:inline">{translateMuscleGroup(exercise.muscle_group)}</span>
-                <span className="sm:hidden">{translateMuscleGroup(exercise.muscle_group).slice(0, 6)}</span>
+              <Badge variant="outline" className={getMuscleGroupColor(exercise.muscle_group)}>
+                {translateMuscleGroup(exercise.muscle_group)}
               </Badge>
             )}
 
@@ -106,7 +103,6 @@ export const SavedExercise = ({
               {exercise.rest_time}s
             </Badge>
 
-            {/* Badge de progreso */}
             <Badge
               variant="outline"
               className={`${
@@ -124,12 +120,102 @@ export const SavedExercise = ({
               onClick={() => onEditExercise(exercise.id)}
               variant="outline"
               size="sm"
-              className="hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200 h-8 px-2 sm:px-3"
+              className="hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200 h-8 px-3"
             >
-              <Edit className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 mr-0 sm:mr-1" />
-              <span className="hidden sm:inline">{t.workoutForm.edit}</span>
+              <Edit className="w-4 h-4 text-blue-600 mr-1" />
+              {t.workoutForm.edit}
             </Button>
           </div>
+        </div>
+
+        {/* Mobile layout - reorganized for better spacing */}
+        <div className="flex flex-col gap-3 sm:hidden">
+          {/* First row: Controls and exercise name */}
+          <div className="flex items-center space-x-2 min-w-0">
+            <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleCompletion(exercise.id)}
+              className="p-1 h-auto hover:bg-transparent flex-shrink-0"
+            >
+              {exercise.is_completed ? (
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
+              ) : (
+                <Circle className="w-5 h-5 text-gray-400 hover:text-green-500 transition-colors" />
+              )}
+            </Button>
+
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="p-0 h-auto flex-shrink-0">
+                {exercise.is_expanded ? (
+                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              {exercise.is_completed ? (
+                <Target className="w-3 h-3 text-green-600 flex-shrink-0" />
+              ) : (
+                <Lock className="w-3 h-3 text-green-600 flex-shrink-0" />
+              )}
+              <span
+                className={`font-semibold text-sm min-w-0 flex-1 ${exercise.is_completed ? "line-through text-green-700" : "text-gray-900"}`}
+              >
+                {exercise.exercise_name}
+              </span>
+            </div>
+
+            <Button
+              onClick={() => onEditExercise(exercise.id)}
+              variant="outline"
+              size="sm"
+              className="hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200 h-7 px-2 flex-shrink-0"
+            >
+              <Edit className="w-3 h-3 text-blue-600" />
+            </Button>
+          </div>
+
+          {/* Second row: Muscle group badge */}
+          {exercise.muscle_group && (
+            <div className="pl-12">
+              <Badge variant="outline" className={`${getMuscleGroupColor(exercise.muscle_group)} text-xs`}>
+                {translateMuscleGroup(exercise.muscle_group)}
+              </Badge>
+            </div>
+          )}
+
+          {/* Third row: Exercise details */}
+          <div className="pl-12 flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="bg-white text-xs px-2 py-1">
+              {exercise.sets} × {exercise.reps} × {formatWeight(exercise.weight)}
+            </Badge>
+
+            <Badge variant="outline" className="bg-white text-xs px-2 py-1">
+              <Clock className="w-3 h-3 mr-1" />
+              {exercise.rest_time}s
+            </Badge>
+          </div>
+
+          {/* Fourth row: Progress badge
+          <div className="pl-12">
+            <Badge
+              variant="outline"
+              className={`text-xs px-2 py-1 ${
+                exercise.is_completed
+                  ? "bg-green-100 text-green-800 border-green-300"
+                  : completedSets > 0
+                    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                    : "bg-gray-100 text-gray-600 border-gray-300"
+              }`}
+            >
+              {t.workoutForm.progress}: {completedSets}/{totalSets} {t.workoutForm.sets}
+            </Badge>
+          </div> */}
         </div>
       </div>
 
