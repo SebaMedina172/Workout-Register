@@ -91,6 +91,9 @@ export interface Translations {
     signOut: string
     signOutProcess: string
     calendar: string
+    darkMode: string
+    lightMode: string
+    autoMode: string
   }
   muscleGroups: {
     Pecho: string

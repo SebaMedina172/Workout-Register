@@ -93,6 +93,9 @@ export const translations: Record<"es" | "en", Translations> = {
       signOut: "Cerrar Sesión",
       signOutProcess: "Cerrando Sesión...",
       calendar: "Calendario",
+      darkMode: "Modo Oscuro",
+      lightMode: "Modo Claro",
+      autoMode: "Automatico",
     },
     muscleGroups: {
       Pecho: "Pecho",
@@ -436,6 +439,9 @@ export const translations: Record<"es" | "en", Translations> = {
       signOut: "Sign Out",
       signOutProcess: "Signing out...",
       calendar: "Calendar",
+      darkMode: "Dark Mode",
+      lightMode: "Light Mode",
+      autoMode: "System",
     },
     muscleGroups: {
       Pecho: "Chest",
