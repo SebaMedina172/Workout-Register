@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator"
 import { Dumbbell, Mail, Lock, User, CheckCircle, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function AuthPage() {
   const [email, setEmail] = useState("")
@@ -165,62 +166,67 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row relative">
-      {/* Language Switcher - Fixed position top right */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Language Switcher and Theme Toggle - Fixed position top right */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <ThemeToggle />
         <LanguageSwitcher />
       </div>
 
       {/* Left side - Hero Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden flex items-center justify-center p-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-slate-900/40" />
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden flex items-center justify-center p-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-slate-900/40 dark:from-blue-600/10 dark:via-purple-600/10 dark:to-slate-950/20" />
 
-        <div className="relative z-10 flex flex-col items-center text-white text-center max-w-md mx-auto">
+        <div className="relative z-10 flex flex-col items-center text-white dark:text-slate-100 text-center max-w-md mx-auto">
           <div className="mb-8">
-            <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-              <Dumbbell className="w-10 h-10 text-white" />
+            <div className="w-20 h-20 bg-white/10 dark:bg-slate-100/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 dark:border-slate-100/20">
+              <Dumbbell className="w-10 h-10 text-white dark:text-slate-900" />
             </div>
           </div>
           <h1 className="text-4xl font-bold mb-4">{t.auth.appTitle}</h1>
-          <p className="text-xl text-slate-300 leading-relaxed">{t.auth.appDescription}</p>
+          <p className="text-xl text-slate-300 dark:text-slate-400 leading-relaxed">{t.auth.appDescription}</p>
           <div className="mt-12 grid grid-cols-1 gap-6 max-w-sm mx-auto">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-green-400" />
+              <div className="w-8 h-8 bg-green-500/20 dark:bg-green-500/10 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-green-400 dark:text-green-500" />
               </div>
-              <span className="text-slate-300">{t.auth.customRoutines}</span>
+              <span className="text-slate-300 dark:text-slate-400">{t.auth.customRoutines}</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-blue-400" />
+              <div className="w-8 h-8 bg-blue-500/20 dark:bg-blue-500/10 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-blue-400 dark:text-blue-500" />
               </div>
-              <span className="text-slate-300">{t.auth.progressTracking}</span>
+              <span className="text-slate-300 dark:text-slate-400">{t.auth.progressTracking}</span>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 text-purple-400" />
+              <div className="w-8 h-8 bg-purple-500/20 dark:bg-purple-500/10 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 text-purple-400 dark:text-purple-500" />
               </div>
-              <span className="text-slate-300">{t.auth.detailedStats}</span>
+              <span className="text-slate-300 dark:text-slate-400">{t.auth.detailedStats}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Right side - Auth Form */}
-      <div className="flex-1 flex items-center justify-center p-4 lg:p-8 bg-slate-50">
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-8 bg-slate-50 dark:bg-slate-900">
         <div className="w-full max-w-md">
           {/* Mobile header */}
           <div className="lg:hidden text-center mb-8 pt-12">
-            <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Dumbbell className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-slate-900 dark:bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Dumbbell className="w-8 h-8 text-white dark:text-slate-900" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">{t.auth.appTitle}</h1>
-            <p className="text-slate-600 mt-2">{t.auth.accessYourAccount}</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{t.auth.appTitle}</h1>
+            <p className="text-slate-600 dark:text-slate-400 mt-2">{t.auth.accessYourAccount}</p>
           </div>
 
-          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+          <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardHeader className="space-y-1 pb-6">
-              <CardTitle className="text-2xl font-bold text-center text-slate-900">{t.auth.welcome}</CardTitle>
-              <CardDescription className="text-center text-slate-600">{t.auth.signInToAccount}</CardDescription>
+              <CardTitle className="text-2xl font-bold text-center text-slate-900 dark:text-slate-100">
+                {t.auth.welcome}
+              </CardTitle>
+              <CardDescription className="text-center text-slate-600 dark:text-slate-400">
+                {t.auth.signInToAccount}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {/* Google Sign In Button */}
@@ -228,7 +234,7 @@ export default function AuthPage() {
                 onClick={handleGoogleAuth}
                 disabled={googleLoading || loading}
                 variant="outline"
-                className="w-full h-12 mb-6 border-slate-200 hover:bg-slate-50 transition-colors bg-transparent"
+                className="w-full h-12 mb-6 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors bg-transparent"
               >
                 {googleLoading ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -258,17 +264,25 @@ export default function AuthPage() {
               <div className="relative mb-6">
                 <Separator />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-white px-3 text-sm text-slate-500">{t.auth.orContinueWithEmail}</span>
+                  <span className="bg-white dark:bg-slate-800 px-3 text-sm text-slate-500 dark:text-slate-400">
+                    {t.auth.orContinueWithEmail}
+                  </span>
                 </div>
               </div>
 
               <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100">
-                  <TabsTrigger value="signin" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-100 dark:bg-slate-700">
+                  <TabsTrigger
+                    value="signin"
+                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-sm"
+                  >
                     <User className="w-4 h-4 mr-2" />
                     {t.auth.signIn}
                   </TabsTrigger>
-                  <TabsTrigger value="signup" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                  <TabsTrigger
+                    value="signup"
+                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-600 data-[state=active]:shadow-sm"
+                  >
                     <Mail className="w-4 h-4 mr-2" />
                     {t.auth.signUp}
                   </TabsTrigger>
@@ -277,11 +291,11 @@ export default function AuthPage() {
                 <TabsContent value="signin" className="space-y-4">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-slate-700 font-medium">
+                      <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
                         {t.auth.email}
                       </Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" />
                         <Input
                           id="email"
                           type="email"
@@ -291,25 +305,25 @@ export default function AuthPage() {
                             setEmail(e.target.value)
                             clearValidationError("email")
                           }}
-                          className={`pl-10 h-12 border-slate-200 focus:border-slate-400 focus:ring-slate-400 transition-colors ${
+                          className={`pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500 transition-colors ${
                             validationErrors.email ? "border-red-300 focus:border-red-400 focus:ring-red-400" : ""
                           }`}
                           required
                         />
                       </div>
                       {validationErrors.email && (
-                        <p className="text-sm text-red-600 flex items-center mt-1">
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center mt-1">
                           <AlertCircle className="w-4 h-4 mr-1" />
                           {validationErrors.email}
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password" className="text-slate-700 font-medium">
+                      <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">
                         {t.auth.password}
                       </Label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" />
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
@@ -319,7 +333,7 @@ export default function AuthPage() {
                             setPassword(e.target.value)
                             clearValidationError("password")
                           }}
-                          className={`pl-10 pr-10 h-12 border-slate-200 focus:border-slate-400 focus:ring-slate-400 transition-colors ${
+                          className={`pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500 transition-colors ${
                             validationErrors.password ? "border-red-300 focus:border-red-400 focus:ring-red-400" : ""
                           }`}
                           required
@@ -327,13 +341,13 @@ export default function AuthPage() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                       {validationErrors.password && (
-                        <p className="text-sm text-red-600 flex items-center mt-1">
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center mt-1">
                           <AlertCircle className="w-4 h-4 mr-1" />
                           {validationErrors.password}
                         </p>
@@ -341,7 +355,7 @@ export default function AuthPage() {
                     </div>
                     <Button
                       type="submit"
-                      className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium transition-colors"
+                      className="w-full h-12 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium transition-colors"
                       disabled={loading || googleLoading}
                     >
                       {loading ? (
@@ -359,11 +373,11 @@ export default function AuthPage() {
                 <TabsContent value="signup" className="space-y-4">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email" className="text-slate-700 font-medium">
+                      <Label htmlFor="signup-email" className="text-slate-700 dark:text-slate-300 font-medium">
                         {t.auth.email}
                       </Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" />
                         <Input
                           id="signup-email"
                           type="email"
@@ -373,25 +387,25 @@ export default function AuthPage() {
                             setEmail(e.target.value)
                             clearValidationError("email")
                           }}
-                          className={`pl-10 h-12 border-slate-200 focus:border-slate-400 focus:ring-slate-400 transition-colors ${
+                          className={`pl-10 h-12 border-slate-200 dark:border-slate-600 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500 transition-colors ${
                             validationErrors.email ? "border-red-300 focus:border-red-400 focus:ring-red-400" : ""
                           }`}
                           required
                         />
                       </div>
                       {validationErrors.email && (
-                        <p className="text-sm text-red-600 flex items-center mt-1">
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center mt-1">
                           <AlertCircle className="w-4 h-4 mr-1" />
                           {validationErrors.email}
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-slate-700 font-medium">
+                      <Label htmlFor="signup-password" className="text-slate-700 dark:text-slate-300 font-medium">
                         {t.auth.password}
                       </Label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" />
                         <Input
                           id="signup-password"
                           type={showPassword ? "text" : "password"}
@@ -401,7 +415,7 @@ export default function AuthPage() {
                             setPassword(e.target.value)
                             clearValidationError("password")
                           }}
-                          className={`pl-10 pr-10 h-12 border-slate-200 focus:border-slate-400 focus:ring-slate-400 transition-colors ${
+                          className={`pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500 transition-colors ${
                             validationErrors.password ? "border-red-300 focus:border-red-400 focus:ring-red-400" : ""
                           }`}
                           required
@@ -410,24 +424,24 @@ export default function AuthPage() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                         >
                           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                       {validationErrors.password && (
-                        <p className="text-sm text-red-600 flex items-center mt-1">
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center mt-1">
                           <AlertCircle className="w-4 h-4 mr-1" />
                           {validationErrors.password}
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password" className="text-slate-700 font-medium">
+                      <Label htmlFor="confirm-password" className="text-slate-700 dark:text-slate-300 font-medium">
                         {t.auth.confirmPassword}
                       </Label>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-4 h-4" />
                         <Input
                           id="confirm-password"
                           type={showConfirmPassword ? "text" : "password"}
@@ -437,7 +451,7 @@ export default function AuthPage() {
                             setConfirmPassword(e.target.value)
                             clearValidationError("confirmPassword")
                           }}
-                          className={`pl-10 pr-10 h-12 border-slate-200 focus:border-slate-400 focus:ring-slate-400 transition-colors ${
+                          className={`pl-10 pr-10 h-12 border-slate-200 dark:border-slate-600 focus:border-slate-400 dark:focus:border-slate-500 focus:ring-slate-400 dark:focus:ring-slate-500 transition-colors ${
                             validationErrors.confirmPassword
                               ? "border-red-300 focus:border-red-400 focus:ring-red-400"
                               : ""
@@ -447,32 +461,36 @@ export default function AuthPage() {
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                         >
                           {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                       {validationErrors.confirmPassword && (
-                        <p className="text-sm text-red-600 flex items-center mt-1">
+                        <p className="text-sm text-red-600 dark:text-red-400 flex items-center mt-1">
                           <AlertCircle className="w-4 h-4 mr-1" />
                           {validationErrors.confirmPassword}
                         </p>
                       )}
                     </div>
-                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-2 font-medium">{t.auth.passwordRequirements}</p>
-                      <ul className="text-xs text-slate-500 space-y-1">
-                        <li className={`flex items-center ${password.length >= 6 ? "text-green-600" : ""}`}>
+                    <div className="bg-slate-50 dark:bg-slate-700 p-3 rounded-lg border border-slate-200 dark:border-slate-600">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mb-2 font-medium">
+                        {t.auth.passwordRequirements}
+                      </p>
+                      <ul className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
+                        <li
+                          className={`flex items-center ${password.length >= 6 ? "text-green-600 dark:text-green-400" : ""}`}
+                        >
                           <CheckCircle
-                            className={`w-3 h-3 mr-2 ${password.length >= 6 ? "text-green-500" : "text-slate-400"}`}
+                            className={`w-3 h-3 mr-2 ${password.length >= 6 ? "text-green-500 dark:text-green-400" : "text-slate-400 dark:text-slate-500"}`}
                           />
                           {t.auth.atLeast6Characters}
                         </li>
                         <li
-                          className={`flex items-center ${password && confirmPassword && password === confirmPassword ? "text-green-600" : ""}`}
+                          className={`flex items-center ${password && confirmPassword && password === confirmPassword ? "text-green-600 dark:text-green-400" : ""}`}
                         >
                           <CheckCircle
-                            className={`w-3 h-3 mr-2 ${password && confirmPassword && password === confirmPassword ? "text-green-500" : "text-slate-400"}`}
+                            className={`w-3 h-3 mr-2 ${password && confirmPassword && password === confirmPassword ? "text-green-500 dark:text-green-400" : "text-slate-400 dark:text-slate-500"}`}
                           />
                           {t.auth.passwordsMatch}
                         </li>
@@ -480,7 +498,7 @@ export default function AuthPage() {
                     </div>
                     <Button
                       type="submit"
-                      className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-medium transition-colors"
+                      className="w-full h-12 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-900 font-medium transition-colors"
                       disabled={loading || googleLoading}
                     >
                       {loading ? (
@@ -499,15 +517,23 @@ export default function AuthPage() {
               {message && (
                 <Alert
                   className={`mt-6 ${
-                    messageType === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"
+                    messageType === "success"
+                      ? "border-green-200 bg-green-50 dark:border-green-400 dark:bg-green-900/20"
+                      : "border-red-200 bg-red-50 dark:border-red-400 dark:bg-red-900/20"
                   }`}
                 >
                   {messageType === "success" ? (
-                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                   )}
-                  <AlertDescription className={messageType === "success" ? "text-green-800" : "text-red-800"}>
+                  <AlertDescription
+                    className={
+                      messageType === "success"
+                        ? "text-green-800 dark:text-green-300"
+                        : "text-red-800 dark:text-red-300"
+                    }
+                  >
                     {message}
                   </AlertDescription>
                 </Alert>
@@ -515,7 +541,7 @@ export default function AuthPage() {
             </CardContent>
           </Card>
 
-          <p className="text-center text-sm text-slate-500 mt-6">{t.auth.termsAndPrivacy}</p>
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6">{t.auth.termsAndPrivacy}</p>
         </div>
       </div>
     </div>
