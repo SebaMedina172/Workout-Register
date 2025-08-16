@@ -108,13 +108,13 @@ export const MobileExerciseCard = ({
   // Ejercicio no guardado - modo edición
   if (!exercise.is_saved) {
     return (
-      <Card className="border-2 border-blue-200 bg-blue-50/30">
+      <Card className="border-2 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/20">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <GripVertical className="w-4 h-4 text-gray-400" />
-              <Dumbbell className="w-4 h-4 text-blue-600" />
-              <span className="font-semibold text-blue-900">
+              <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <Dumbbell className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="font-semibold text-blue-900 dark:text-blue-100">
                 {t.workoutForm.exerciseName} #{index + 1}
               </span>
             </div>
@@ -123,7 +123,7 @@ export const MobileExerciseCard = ({
                 onClick={() => onSaveExercise(exercise.id)}
                 size="sm"
                 disabled={!exercise.exercise_name.trim() || !exercise.muscle_group}
-                className="h-8 px-2 bg-green-600 hover:bg-green-700"
+                className="h-8 px-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
               >
                 <Save className="w-3 h-3" />
               </Button>
@@ -132,7 +132,7 @@ export const MobileExerciseCard = ({
                 size="sm"
                 variant="outline"
                 disabled={exercises.length === 1}
-                className="h-8 px-2 hover:bg-red-50 hover:border-red-300 text-red-600"
+                className="h-8 px-2 hover:bg-red-50 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 text-red-600 dark:text-red-400 border-gray-200 dark:border-gray-700"
               >
                 <Trash2 className="w-3 h-3" />
               </Button>
@@ -143,7 +143,7 @@ export const MobileExerciseCard = ({
         <CardContent className="space-y-4">
           {/* Selector de ejercicio */}
           <div>
-            <Label className="text-sm font-medium">{t.workoutForm.exerciseName}</Label>
+            <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t.workoutForm.exerciseName}</Label>
             <ExerciseSelector
               exerciseId={exercise.id}
               selectedExercise={exercise.exercise_name}
@@ -157,7 +157,7 @@ export const MobileExerciseCard = ({
           {/* Grupo muscular */}
           {exercise.muscle_group && (
             <div>
-              <Label className="text-sm font-medium">{t.workoutForm.muscleGroup}</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t.workoutForm.muscleGroup}</Label>
               <div className="mt-1">
                 <Badge variant="outline" className={getMuscleGroupColor(exercise.muscle_group)}>
                   {translateMuscleGroup(exercise.muscle_group)}
@@ -169,27 +169,27 @@ export const MobileExerciseCard = ({
           {/* Campos básicos en grid */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm font-medium">{t.workoutForm.sets}</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t.workoutForm.sets}</Label>
               <Input
                 type="number"
                 min="1"
                 value={exercise.sets}
                 onChange={(e) => onUpdateExercise(exercise.id, "sets", Number.parseInt(e.target.value) || 1)}
-                className="mt-1 text-center font-semibold"
+                className="mt-1 text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-gray-200 dark:border-gray-600"
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">{t.workoutForm.reps}</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t.workoutForm.reps}</Label>
               <Input
                 type="number"
                 min="1"
                 value={exercise.reps}
                 onChange={(e) => onUpdateExercise(exercise.id, "reps", Number.parseInt(e.target.value) || 1)}
-                className="mt-1 text-center font-semibold"
+                className="mt-1 text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-gray-200 dark:border-gray-600"
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">{t.workoutForm.weight}</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t.workoutForm.weight}</Label>
               <Input
                 type="number"
                 min="0"
@@ -202,18 +202,18 @@ export const MobileExerciseCard = ({
                   }
                 }}
                 placeholder={t.calendar.freeWeight}
-                className="mt-1 text-center font-semibold"
+                className="mt-1 text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-gray-200 dark:border-gray-600"
               />
             </div>
             <div>
-              <Label className="text-sm font-medium">{t.workoutForm.restTime}</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t.workoutForm.restTime}</Label>
               <Input
                 type="number"
                 min="0"
                 step="15"
                 value={exercise.rest_time}
                 onChange={(e) => onUpdateExercise(exercise.id, "rest_time", Number.parseInt(e.target.value) || 0)}
-                className="mt-1 text-center font-semibold"
+                className="mt-1 text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-gray-200 dark:border-gray-600"
               />
             </div>
           </div>
@@ -222,7 +222,7 @@ export const MobileExerciseCard = ({
           {activeColumns.length > 0 && (
             <Collapsible open={showCustomFields} onOpenChange={setShowCustomFields}>
               <CollapsibleTrigger asChild>
-                <Button variant="outline" className="w-full bg-transparent">
+                <Button variant="outline" className="w-full bg-transparent border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
                   {showCustomFields ? (
                     <>
                       <ChevronDown className="w-4 h-4 mr-2" />
@@ -239,7 +239,7 @@ export const MobileExerciseCard = ({
               <CollapsibleContent className="space-y-3 mt-3">
                 {activeColumns.map((column) => (
                   <div key={column.id}>
-                    <Label className="text-sm font-medium">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">
                       {column.column_type === "text" && "📝"}
                       {column.column_type === "number" && "🔢"}
                       {column.column_type === "boolean" && "✅"} {column.column_name}
@@ -252,7 +252,7 @@ export const MobileExerciseCard = ({
                             onUpdateExercise(exercise.id, `custom_${column.column_name}`, checked)
                           }
                         />
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           {exercise.custom_data?.[column.column_name]
                             ? t.columnSettings.active
                             : t.columnSettings.inactive}
@@ -263,7 +263,7 @@ export const MobileExerciseCard = ({
                         type={column.column_type === "number" ? "number" : "text"}
                         value={exercise.custom_data?.[column.column_name] || ""}
                         onChange={(e) => onUpdateExercise(exercise.id, `custom_${column.column_name}`, e.target.value)}
-                        className="mt-1"
+                        className="mt-1 bg-white dark:bg-gray-800 dark:text-white border-gray-200 dark:border-gray-600"
                         placeholder={column.column_type === "number" ? "0" : t.workoutForm.notes + "..."}
                       />
                     )}
@@ -283,12 +283,16 @@ export const MobileExerciseCard = ({
 
   return (
     <Card
-      className={`border-l-4 ${exercise.is_completed ? "border-green-500 bg-green-50" : "border-green-500 bg-green-50/30"}`}
+      className={`border-l-4 ${
+        exercise.is_completed 
+          ? "border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20" 
+          : "border-green-500 dark:border-green-600 bg-green-50/30 dark:bg-green-900/10"
+      }`}
     >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 min-w-0 flex-1">
-            <GripVertical className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
 
             <Button
               variant="ghost"
@@ -297,21 +301,25 @@ export const MobileExerciseCard = ({
               className="p-1 h-auto hover:bg-transparent flex-shrink-0"
             >
               {exercise.is_completed ? (
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
               ) : (
-                <Circle className="w-5 h-5 text-gray-400 hover:text-green-500" />
+                <Circle className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-300" />
               )}
             </Button>
 
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-2">
                 {exercise.is_completed ? (
-                  <Target className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <Target className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                 ) : (
-                  <Lock className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <Lock className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                 )}
                 <span
-                  className={`font-semibold text-sm truncate ${exercise.is_completed ? "line-through text-green-700" : "text-gray-900"}`}
+                  className={`font-semibold text-sm truncate ${
+                    exercise.is_completed 
+                      ? "line-through text-green-700 dark:text-green-300" 
+                      : "text-gray-900 dark:text-gray-100"
+                  }`}
                 >
                   {exercise.exercise_name}
                 </span>
@@ -323,10 +331,10 @@ export const MobileExerciseCard = ({
                     {translateMuscleGroup(exercise.muscle_group)}
                   </Badge>
                 )}
-                <Badge variant="outline" className="text-xs bg-white">
+                <Badge variant="outline" className="text-xs bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600">
                   {exercise.sets} × {exercise.reps} × {formatWeight(exercise.weight)}
                 </Badge>
-                <Badge variant="outline" className="text-xs bg-white">
+                <Badge variant="outline" className="text-xs bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600">
                   <Clock className="w-3 h-3 mr-1" />
                   {exercise.rest_time}
                   {t.calendar.seconds}
@@ -340,10 +348,10 @@ export const MobileExerciseCard = ({
               variant="outline"
               className={`text-xs ${
                 exercise.is_completed
-                  ? "bg-green-100 text-green-800 border-green-300"
+                  ? "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-300 dark:border-green-600"
                   : completedSets > 0
-                    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
-                    : "bg-gray-100 text-gray-600 border-gray-300"
+                    ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-600"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600"
               }`}
             >
               {completedSets}/{totalSets}
@@ -352,9 +360,9 @@ export const MobileExerciseCard = ({
               onClick={() => onEditExercise(exercise.id)}
               size="sm"
               variant="outline"
-              className="h-8 px-2 hover:bg-blue-50 hover:border-blue-300"
+              className="h-8 px-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 border-gray-200 dark:border-gray-700"
             >
-              <Edit className="w-3 h-3 text-blue-600" />
+              <Edit className="w-3 h-3 text-blue-600 dark:text-blue-400" />
             </Button>
           </div>
         </div>
@@ -363,7 +371,7 @@ export const MobileExerciseCard = ({
       {/* Series expandibles */}
       <Collapsible open={exercise.is_expanded} onOpenChange={() => onToggleExpansion(exercise.id)}>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="w-full justify-between px-6 py-2 text-sm">
+          <Button variant="ghost" className="w-full justify-between px-6 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
             <span>{t.workoutForm.sets}</span>
             {exercise.is_expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </Button>
@@ -372,7 +380,14 @@ export const MobileExerciseCard = ({
         <CollapsibleContent>
           <CardContent className="pt-0 space-y-3">
             {exercise.set_records?.map((setRecord, setIndex) => (
-              <Card key={setRecord.id} className={`p-3 ${setRecord.is_completed ? "bg-green-100" : "bg-white"}`}>
+              <Card 
+                key={setRecord.id} 
+                className={`p-3 ${
+                  setRecord.is_completed 
+                    ? "bg-green-100 dark:bg-green-900/30" 
+                    : "bg-white dark:bg-gray-800"
+                } border-gray-200 dark:border-gray-700`}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
                     <Button
@@ -382,13 +397,17 @@ export const MobileExerciseCard = ({
                       className="p-1 h-auto hover:bg-transparent"
                     >
                       {setRecord.is_completed ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
                       ) : (
-                        <Circle className="w-4 h-4 text-gray-400 hover:text-green-500" />
+                        <Circle className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-300" />
                       )}
                     </Button>
                     <span
-                      className={`font-semibold text-sm ${setRecord.is_completed ? "text-green-700" : "text-gray-600"}`}
+                      className={`font-semibold text-sm ${
+                        setRecord.is_completed 
+                          ? "text-green-700 dark:text-green-300" 
+                          : "text-gray-600 dark:text-gray-300"
+                      }`}
                     >
                       {t.workoutForm.setNumber.replace("{number}", setRecord.set_number.toString())}
                     </span>
@@ -397,7 +416,7 @@ export const MobileExerciseCard = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs font-medium text-gray-600">{t.workoutForm.reps}</Label>
+                    <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">{t.workoutForm.reps}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -405,13 +424,13 @@ export const MobileExerciseCard = ({
                       onChange={(e) =>
                         onUpdateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
                       }
-                      className={`mt-1 text-center font-semibold text-sm h-8 ${
-                        setRecord.is_completed ? "line-through text-green-700" : ""
+                      className={`mt-1 text-center font-semibold text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 ${
+                        setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                       }`}
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-gray-600">{t.workoutForm.weight}</Label>
+                    <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">{t.workoutForm.weight}</Label>
                     <Input
                       type="number"
                       min="0"
@@ -424,8 +443,8 @@ export const MobileExerciseCard = ({
                         }
                       }}
                       placeholder={t.calendar.freeWeight}
-                      className={`mt-1 text-center font-semibold text-sm h-8 ${
-                        setRecord.is_completed ? "line-through text-green-700" : ""
+                      className={`mt-1 text-center font-semibold text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 ${
+                        setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                       }`}
                     />
                   </div>
@@ -436,7 +455,7 @@ export const MobileExerciseCard = ({
                   <div className="mt-3 space-y-2">
                     {activeColumns.map((column) => (
                       <div key={column.id}>
-                        <Label className="text-xs font-medium text-gray-600">
+                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                           {column.column_type === "text" && "📝"}
                           {column.column_type === "number" && "🔢"}
                           {column.column_type === "boolean" && "✅"} {column.column_name}
@@ -450,7 +469,7 @@ export const MobileExerciseCard = ({
                               }
                               className="w-4 h-4"
                             />
-                            <span className="text-xs text-gray-600">
+                            <span className="text-xs text-gray-600 dark:text-gray-300">
                               {setRecord.custom_data?.[column.column_name]
                                 ? t.columnSettings.active
                                 : t.columnSettings.inactive}
@@ -468,8 +487,8 @@ export const MobileExerciseCard = ({
                                 e.target.value,
                               )
                             }
-                            className={`mt-1 text-sm h-8 ${
-                              setRecord.is_completed ? "line-through text-green-700" : ""
+                            className={`mt-1 text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 ${
+                              setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                             }`}
                             placeholder={column.column_type === "number" ? "0" : "..."}
                           />
