@@ -85,39 +85,43 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-200">
-        <CardHeader className="pb-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md animate-in fade-in-0 zoom-in-95 duration-200">
+        <CardHeader className="pb-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Clock className="w-5 h-5 text-blue-600" />
+              <div className="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg">
+                <Clock className="w-5 h-5 text-blue-600 dark:text-blue-300" />
               </div>
               <div>
-                <CardTitle className="text-xl font-bold text-gray-900">{t.postponeDialog.title}</CardTitle>
-                <p className="text-sm text-gray-600 mt-1">{t.postponeDialog.subtitle}</p>
+                <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                  {t.postponeDialog.title}
+                </CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{t.postponeDialog.subtitle}</p>
               </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-10 w-10 p-0 hover:bg-white/50 rounded-full"
+              className="h-10 w-10 p-0 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-full"
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="p-6 space-y-6 dark:bg-gray-900/95">
           {/* Información del entrenamiento */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 p-4 rounded-xl border dark:border-gray-600">
             <div className="flex items-center mb-2">
-              <Calendar className="w-4 h-4 text-gray-600 mr-2" />
-              <span className="text-sm font-medium text-gray-600">{t.postponeDialog.currentWorkout}</span>
+              <Calendar className="w-4 h-4 text-gray-600 dark:text-gray-300 mr-2" />
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                {t.postponeDialog.currentWorkout}
+              </span>
             </div>
-            <p className="font-semibold text-gray-900">{formatWorkoutDate(workout.date)}</p>
+            <p className="font-semibold text-gray-900 dark:text-white">{formatWorkoutDate(workout.date)}</p>
             {workout.type === "workout" && (
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 {t.postponeDialog.exercisesScheduled.replace("{count}", workout.exercises.length.toString())}
               </p>
             )}
@@ -126,7 +130,7 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Número de días */}
             <div className="space-y-2">
-              <Label htmlFor="days" className="text-sm font-semibold text-gray-700">
+              <Label htmlFor="days" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {t.postponeDialog.postponeBy}
               </Label>
               <Input
@@ -136,12 +140,12 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
                 max="365"
                 value={days}
                 onChange={(e) => setDays(Number.parseInt(e.target.value) || 1)}
-                className="text-center text-lg font-bold border-2 focus:border-blue-500"
+                className="text-center text-lg font-bold border-2 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                 disabled={loading}
               />
               {days > 0 && (
-                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-700">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
                     <span className="font-semibold">{t.postponeDialog.newDate}</span>{" "}
                     {calculateNewDate(workout.date, days)}
                   </p>
@@ -151,24 +155,30 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
 
             {/* Modo de aplazamiento */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-700">{t.postponeDialog.postponeMode}</Label>
+              <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {t.postponeDialog.postponeMode}
+              </Label>
               <RadioGroup value={mode} onValueChange={(value) => setMode(value as "single" | "all")} disabled={loading}>
-                <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
+                <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors dark:bg-gray-800/50">
                   <RadioGroupItem value="single" id="single" />
                   <div className="flex-1">
-                    <Label htmlFor="single" className="font-medium text-gray-900 cursor-pointer">
+                    <Label htmlFor="single" className="font-medium text-gray-900 dark:text-white cursor-pointer">
                       {t.postponeDialog.singleWorkout}
                     </Label>
-                    <p className="text-sm text-gray-600">{t.postponeDialog.singleWorkoutDescription}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {t.postponeDialog.singleWorkoutDescription}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-colors">
+                <div className="flex items-center space-x-3 p-3 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors dark:bg-gray-800/50">
                   <RadioGroupItem value="all" id="all" />
                   <div className="flex-1">
-                    <Label htmlFor="all" className="font-medium text-gray-900 cursor-pointer">
+                    <Label htmlFor="all" className="font-medium text-gray-900 dark:text-white cursor-pointer">
                       {t.postponeDialog.allFollowing}
                     </Label>
-                    <p className="text-sm text-gray-600">{t.postponeDialog.allFollowingDescription}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {t.postponeDialog.allFollowingDescription}
+                    </p>
                   </div>
                 </div>
               </RadioGroup>
@@ -180,7 +190,7 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 h-12 border-2 border-gray-300 hover:border-gray-400 font-semibold bg-transparent"
+                className="flex-1 h-12 border-2 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 font-semibold bg-transparent dark:bg-gray-800 dark:text-white"
                 disabled={loading}
               >
                 {t.postponeDialog.cancel}

@@ -42,13 +42,15 @@ export const SavedExercise = ({
       {/* Header del ejercicio guardado */}
       <div
         className={`p-3 sm:p-4 border-l-4 transition-all duration-200 ${
-          exercise.is_completed ? "bg-green-100 border-green-500" : "bg-green-50 border-green-500"
+          exercise.is_completed
+            ? "bg-gray-100 dark:bg-gray-800 border-green-500 dark:border-green-600"
+            : "bg-gray-50 dark:bg-gray-900 border-green-500 dark:border-green-600"
         }`}
       >
         {/* Desktop/Tablet layout - original single row */}
         <div className="hidden sm:flex sm:items-center justify-between gap-3">
           <div className="flex items-center space-x-4 min-w-0 flex-1">
-            <GripVertical className="w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
+            <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
 
             <Button
               variant="ghost"
@@ -57,30 +59,34 @@ export const SavedExercise = ({
               className="p-1 h-auto hover:bg-transparent flex-shrink-0"
             >
               {exercise.is_completed ? (
-                <CheckCircle2 className="w-6 h-6 text-green-600" />
+                <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
               ) : (
-                <Circle className="w-6 h-6 text-gray-400 hover:text-green-500 transition-colors" />
+                <Circle className="w-6 h-6 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-300 transition-colors" />
               )}
             </Button>
 
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="p-0 h-auto flex-shrink-0">
                 {exercise.is_expanded ? (
-                  <ChevronDown className="w-5 h-5 text-gray-600" />
+                  <ChevronDown className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                  <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 )}
               </Button>
             </CollapsibleTrigger>
 
             <div className="flex items-center space-x-2 min-w-0 flex-1">
               {exercise.is_completed ? (
-                <Target className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <Target className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
               ) : (
-                <Lock className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <Lock className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
               )}
               <span
-                className={`font-semibold text-base truncate ${exercise.is_completed ? "line-through text-green-700" : "text-gray-900"}`}
+                className={`font-semibold text-base truncate ${
+                  exercise.is_completed
+                    ? "line-through text-green-700 dark:text-green-300"
+                    : "text-gray-900 dark:text-gray-100"
+                }`}
               >
                 {exercise.exercise_name}
               </span>
@@ -94,11 +100,11 @@ export const SavedExercise = ({
               </Badge>
             )}
 
-            <Badge variant="outline" className="bg-white">
+            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600">
               {exercise.sets} × {exercise.reps} × {formatWeight(exercise.weight)}
             </Badge>
 
-            <Badge variant="outline" className="bg-white">
+            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600">
               <Clock className="w-3 h-3 mr-1" />
               {exercise.rest_time}s
             </Badge>
@@ -107,10 +113,10 @@ export const SavedExercise = ({
               variant="outline"
               className={`${
                 exercise.is_completed
-                  ? "bg-green-100 text-green-800 border-green-300"
+                  ? "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-300 dark:border-green-600"
                   : completedSets > 0
-                    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
-                    : "bg-gray-100 text-gray-600 border-gray-300"
+                    ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-600"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600"
               }`}
             >
               {completedSets}/{totalSets} {t.workoutForm.sets}
@@ -120,9 +126,9 @@ export const SavedExercise = ({
               onClick={() => onEditExercise(exercise.id)}
               variant="outline"
               size="sm"
-              className="hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200 h-8 px-3"
+              className="hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 border-2 transition-all duration-200 h-8 px-3"
             >
-              <Edit className="w-4 h-4 text-blue-600 mr-1" />
+              <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400 mr-1" />
               {t.workoutForm.edit}
             </Button>
           </div>
@@ -132,7 +138,7 @@ export const SavedExercise = ({
         <div className="flex flex-col gap-3 sm:hidden">
           {/* First row: Controls and exercise name */}
           <div className="flex items-center space-x-2 min-w-0">
-            <GripVertical className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
+            <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
 
             <Button
               variant="ghost"
@@ -141,30 +147,34 @@ export const SavedExercise = ({
               className="p-1 h-auto hover:bg-transparent flex-shrink-0"
             >
               {exercise.is_completed ? (
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
               ) : (
-                <Circle className="w-5 h-5 text-gray-400 hover:text-green-500 transition-colors" />
+                <Circle className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-300 transition-colors" />
               )}
             </Button>
 
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="p-0 h-auto flex-shrink-0">
                 {exercise.is_expanded ? (
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                  <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                 ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                  <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                 )}
               </Button>
             </CollapsibleTrigger>
 
             <div className="flex items-center space-x-2 min-w-0 flex-1">
               {exercise.is_completed ? (
-                <Target className="w-3 h-3 text-green-600 flex-shrink-0" />
+                <Target className="w-3 h-3 text-green-600 dark:text-green-400 flex-shrink-0" />
               ) : (
-                <Lock className="w-3 h-3 text-green-600 flex-shrink-0" />
+                <Lock className="w-3 h-3 text-green-600 dark:text-green-400 flex-shrink-0" />
               )}
               <span
-                className={`font-semibold text-sm min-w-0 flex-1 ${exercise.is_completed ? "line-through text-green-700" : "text-gray-900"}`}
+                className={`font-semibold text-sm min-w-0 flex-1 ${
+                  exercise.is_completed
+                    ? "line-through text-green-700 dark:text-green-300"
+                    : "text-gray-900 dark:text-gray-100"
+                }`}
               >
                 {exercise.exercise_name}
               </span>
@@ -174,9 +184,9 @@ export const SavedExercise = ({
               onClick={() => onEditExercise(exercise.id)}
               variant="outline"
               size="sm"
-              className="hover:bg-blue-50 hover:border-blue-300 border-2 transition-all duration-200 h-7 px-2 flex-shrink-0"
+              className="hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 border-2 transition-all duration-200 h-7 px-2 flex-shrink-0"
             >
-              <Edit className="w-3 h-3 text-blue-600" />
+              <Edit className="w-3 h-3 text-blue-600 dark:text-blue-400" />
             </Button>
           </div>
 
@@ -191,31 +201,15 @@ export const SavedExercise = ({
 
           {/* Third row: Exercise details */}
           <div className="pl-12 flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="bg-white text-xs px-2 py-1">
+            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 text-xs px-2 py-1">
               {exercise.sets} × {exercise.reps} × {formatWeight(exercise.weight)}
             </Badge>
 
-            <Badge variant="outline" className="bg-white text-xs px-2 py-1">
+            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 text-xs px-2 py-1">
               <Clock className="w-3 h-3 mr-1" />
               {exercise.rest_time}s
             </Badge>
           </div>
-
-          {/* Fourth row: Progress badge
-          <div className="pl-12">
-            <Badge
-              variant="outline"
-              className={`text-xs px-2 py-1 ${
-                exercise.is_completed
-                  ? "bg-green-100 text-green-800 border-green-300"
-                  : completedSets > 0
-                    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
-                    : "bg-gray-100 text-gray-600 border-gray-300"
-              }`}
-            >
-              {t.workoutForm.progress}: {completedSets}/{totalSets} {t.workoutForm.sets}
-            </Badge>
-          </div> */}
         </div>
       </div>
 
@@ -223,14 +217,16 @@ export const SavedExercise = ({
       <CollapsibleContent>
         <div
           className={`border-l-4 transition-all duration-200 overflow-x-auto ${
-            exercise.is_completed ? "bg-green-50 border-green-500" : "bg-white border-green-500"
+            exercise.is_completed
+              ? "bg-gray-50 dark:bg-gray-800 border-green-500 dark:border-green-600"
+              : "bg-white dark:bg-gray-900 border-green-500 dark:border-green-600"
           }`}
         >
           <div className="min-w-[600px] sm:min-w-0">
             {/* Header de la tabla de series */}
-            <div className="bg-gray-100 border-b">
+            <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
               <div
-                className="grid gap-2 sm:gap-4 p-2 sm:p-3 font-semibold text-xs sm:text-sm text-gray-700"
+                className="grid gap-2 sm:gap-4 p-2 sm:p-3 font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-200"
                 style={{
                   gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")}`,
                 }}
@@ -256,7 +252,11 @@ export const SavedExercise = ({
               <div
                 key={setRecord.id}
                 className={`grid gap-2 sm:gap-4 p-2 sm:p-3 items-center transition-all duration-200 ${
-                  setRecord.is_completed ? "bg-green-100" : setIndex % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  setRecord.is_completed
+                    ? "bg-gray-200 dark:bg-gray-600"
+                    : setIndex % 2 === 0
+                      ? "bg-gray-50 dark:bg-gray-800"
+                      : "bg-white dark:bg-gray-900"
                 }`}
                 style={{
                   gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")}`,
@@ -271,15 +271,17 @@ export const SavedExercise = ({
                     className="p-1 h-auto hover:bg-transparent"
                   >
                     {setRecord.is_completed ? (
-                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
                     ) : (
-                      <Circle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 hover:text-green-500 transition-colors" />
+                      <Circle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-300 transition-colors" />
                     )}
                   </Button>
                 </div>
 
                 <div
-                  className={`text-center font-semibold text-xs sm:text-sm ${setRecord.is_completed ? "text-green-700" : "text-gray-600"}`}
+                  className={`text-center font-semibold text-xs sm:text-sm ${
+                    setRecord.is_completed ? "text-green-700 dark:text-green-300" : "text-gray-600 dark:text-gray-300"
+                  }`}
                 >
                   #{setRecord.set_number}
                 </div>
@@ -291,8 +293,8 @@ export const SavedExercise = ({
                   onChange={(e) =>
                     onUpdateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
                   }
-                  className={`text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
-                    setRecord.is_completed ? "line-through text-green-700" : ""
+                  className={`text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
+                    setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                   }`}
                 />
 
@@ -309,8 +311,8 @@ export const SavedExercise = ({
                     }
                   }}
                   placeholder={t.workoutForm.bodyweight}
-                  className={`text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
-                    setRecord.is_completed ? "line-through text-green-700" : ""
+                  className={`text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
+                    setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                   }`}
                 />
 
@@ -334,8 +336,8 @@ export const SavedExercise = ({
                         onChange={(e) =>
                           onUpdateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, e.target.value)
                         }
-                        className={`text-center bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
-                          setRecord.is_completed ? "line-through text-green-700" : ""
+                        className={`text-center bg-white dark:bg-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
+                          setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                         }`}
                         placeholder={column.column_type === "number" ? "0" : "..."}
                       />

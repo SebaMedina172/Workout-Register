@@ -45,23 +45,40 @@ interface ExerciseManagerProps {
 // ✅ NUEVO: Función para obtener color del badge según grupo muscular
 const getMuscleGroupColor = (muscleGroup: string): string => {
   const colorMap: Record<string, string> = {
-    Pecho: "bg-red-100 text-red-800 border-red-300",
-    Espalda: "bg-green-100 text-green-800 border-green-300",
-    "Deltoides anterior": "bg-blue-100 text-blue-800 border-blue-300",
-    "Deltoides medio": "bg-blue-100 text-blue-800 border-blue-300",
-    "Deltoides posterior": "bg-blue-100 text-blue-800 border-blue-300",
-    Bíceps: "bg-purple-100 text-purple-800 border-purple-300",
-    Tríceps: "bg-purple-100 text-purple-800 border-purple-300",
-    Antebrazos: "bg-purple-100 text-purple-800 border-purple-300",
-    Cuádriceps: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    Isquiotibiales: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    Glúteo: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    Gemelos: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    Abductores: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    Abdominales: "bg-orange-100 text-orange-800 border-orange-300",
-    Oblicuos: "bg-orange-100 text-orange-800 border-orange-300",
+    Pecho: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border-red-300 dark:border-red-700",
+    Espalda:
+      "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700",
+    "Deltoides anterior":
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700",
+    "Deltoides medio":
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700",
+    "Deltoides posterior":
+      "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700",
+    Bíceps:
+      "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-700",
+    Tríceps:
+      "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-700",
+    Antebrazos:
+      "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-700",
+    Cuádriceps:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700",
+    Isquiotibiales:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700",
+    Glúteo:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700",
+    Gemelos:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700",
+    Abductores:
+      "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700",
+    Abdominales:
+      "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-700",
+    Oblicuos:
+      "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-300 dark:border-orange-700",
   }
-  return colorMap[muscleGroup] || "bg-gray-100 text-gray-800 border-gray-300"
+  return (
+    colorMap[muscleGroup] ||
+    "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600"
+  )
 }
 
 export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseManagerProps) {
@@ -193,11 +210,11 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
-        <DialogHeader className="bg-gradient-to-r from-blue-50 to-purple-50 -mx-3 sm:-mx-6 -mt-3 sm:-mt-6 p-3 sm:p-6 mb-3 sm:mb-6 rounded-t-lg flex-shrink-0">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6 dark:bg-gray-900 dark:border-gray-700">
+        <DialogHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 -mx-3 sm:-mx-6 -mt-3 sm:-mt-6 p-3 sm:p-6 mb-3 sm:mb-6 rounded-t-lg flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
-              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 mr-2 sm:mr-3 text-blue-600" />
+              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 mr-2 sm:mr-3 text-blue-600 dark:text-blue-400" />
               <span className="hidden sm:inline">{t.exerciseManager.title}</span>
               <span className="sm:hidden">{t.exerciseManager.titleShort}</span>
             </DialogTitle>
@@ -206,9 +223,9 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
 
         <div className="flex-1 overflow-auto space-y-4 sm:space-y-6 min-h-0">
           {/* Crear nuevo ejercicio */}
-          <Card className="border-2 border-green-200 bg-green-50/50">
+          <Card className="border-2 border-green-200 dark:border-green-700 bg-green-50/50 dark:bg-green-900/20">
             <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg font-semibold text-green-800 flex items-center">
+              <CardTitle className="text-base sm:text-lg font-semibold text-green-800 dark:text-green-200 flex items-center">
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {t.exerciseManager.createNewExercise}
               </CardTitle>
@@ -216,7 +233,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
             <CardContent className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="new-name" className="text-sm">
+                  <Label htmlFor="new-name" className="text-sm dark:text-gray-200">
                     {t.exerciseManager.exerciseName}
                   </Label>
                   <Input
@@ -224,20 +241,20 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder={t.exerciseManager.exerciseNamePlaceholder}
-                    className="bg-white mt-1"
+                    className="bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="new-muscle-group" className="text-sm">
+                  <Label htmlFor="new-muscle-group" className="text-sm dark:text-gray-200">
                     {t.exerciseManager.muscleGroupRequired}
                   </Label>
                   <Select value={newMuscleGroup} onValueChange={setNewMuscleGroup}>
-                    <SelectTrigger className="bg-white mt-1">
+                    <SelectTrigger className="bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white mt-1">
                       <SelectValue placeholder={t.exerciseManager.selectMuscleGroup} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-600">
                       {MUSCLE_GROUPS.map((group) => (
-                        <SelectItem key={group} value={group}>
+                        <SelectItem key={group} value={group} className="dark:text-white dark:hover:bg-gray-700">
                           <div className="flex items-center">
                             <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
                               {translateMuscleGroup(group)}
@@ -265,8 +282,8 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
             <div
               className={`p-2 sm:p-3 rounded-lg text-xs sm:text-sm font-medium ${
                 message.includes("✅")
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-red-50 text-red-700 border border-red-200"
+                  ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700"
+                  : "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700"
               }`}
             >
               {message}
@@ -274,9 +291,9 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
           )}
 
           {/* Lista de ejercicios */}
-          <Card className="border-2 border-gray-200">
+          <Card className="border-2 border-gray-200 dark:border-gray-700 dark:bg-gray-800">
             <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 flex items-center">
+              <CardTitle className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                 <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 <span className="hidden sm:inline">
                   {t.exerciseManager.yourCustomExercises} ({exercises.length})
@@ -292,8 +309,8 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                   <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
                 </div>
               ) : exercises.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Dumbbell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Dumbbell className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <p className="text-sm sm:text-base">{t.exerciseManager.noCustomExercises}</p>
                   <p className="text-xs sm:text-sm">{t.exerciseManager.createOneAbove}</p>
                 </div>
@@ -302,23 +319,27 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                   {exercises.map((exercise) => (
                     <div
                       key={exercise.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white border-2 border-gray-100 rounded-lg hover:border-blue-200 transition-colors gap-3 sm:gap-0"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-lg hover:border-blue-200 dark:hover:border-blue-500 transition-colors gap-3 sm:gap-0"
                     >
                       {editingId === exercise.id ? (
                         <div className="flex-1 space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-4">
                           <Input
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="bg-white"
+                            className="bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                             placeholder={t.exerciseManager.exerciseName}
                           />
                           <Select value={editMuscleGroup} onValueChange={setEditMuscleGroup}>
-                            <SelectTrigger className="bg-white">
+                            <SelectTrigger className="bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white">
                               <SelectValue placeholder={t.exerciseManager.selectMuscleGroup} />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="dark:bg-gray-800 dark:border-gray-600">
                               {MUSCLE_GROUPS.map((group) => (
-                                <SelectItem key={group} value={group}>
+                                <SelectItem
+                                  key={group}
+                                  value={group}
+                                  className="dark:text-white dark:hover:bg-gray-700"
+                                >
                                   <div className="flex items-center">
                                     <Badge variant="outline" className={`mr-2 text-xs ${getMuscleGroupColor(group)}`}>
                                       {translateMuscleGroup(group)}
@@ -332,7 +353,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                       ) : (
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+                            <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
                               {exercise.name}
                             </h3>
                             <Badge
@@ -343,7 +364,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                             </Badge>
                           </div>
                           <div className="flex items-center mt-1">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               {t.exerciseManager.createdDate}{" "}
                               {new Date(exercise.created_at).toLocaleDateString(language === "es" ? "es-ES" : "en-US")}
                             </span>
@@ -370,7 +391,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                               }}
                               size="sm"
                               variant="outline"
-                              className="h-8 px-2 sm:px-3"
+                              className="h-8 px-2 sm:px-3 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600"
                             >
                               <X className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
@@ -381,7 +402,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                               onClick={() => handleEdit(exercise)}
                               size="sm"
                               variant="outline"
-                              className="hover:bg-blue-50 hover:border-blue-300 h-8 px-2 sm:px-3"
+                              className="hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 dark:border-gray-600 dark:text-gray-200 h-8 px-2 sm:px-3"
                             >
                               <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
@@ -389,7 +410,7 @@ export default function ExerciseManager({ onClose, onExerciseChange }: ExerciseM
                               onClick={() => handleDelete(exercise.id, exercise.name)}
                               size="sm"
                               variant="outline"
-                              className="hover:bg-red-50 hover:border-red-300 text-red-600 h-8 px-2 sm:px-3"
+                              className="hover:bg-red-50 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 text-red-600 dark:text-red-400 dark:border-gray-600 h-8 px-2 sm:px-3"
                             >
                               <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>

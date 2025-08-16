@@ -255,10 +255,10 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       {saving && <LoadingOverlay message={t.workoutForm.savingWorkout} />}
 
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-7xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-7xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6 dark:bg-gray-900 dark:border-gray-700">
           <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
-            <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 flex items-center">
-              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mr-2 sm:mr-3 text-blue-600" />
+            <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+              <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mr-2 sm:mr-3 text-blue-600 dark:text-blue-400" />
               <span className="truncate">
                 {workout ? t.workoutForm.editWorkout : t.workoutForm.newWorkout} - {formatDate(date)}
               </span>
@@ -266,7 +266,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           </DialogHeader>
 
           {message && (
-            <div className="flex-shrink-0 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-xs sm:text-sm font-medium">
+            <div className="flex-shrink-0 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg text-blue-800 dark:text-blue-200 text-xs sm:text-sm font-medium">
               {message}
             </div>
           )}
@@ -309,8 +309,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             </div>
           </div>
 
-          <div className="flex-shrink-0 p-2 sm:p-4 bg-gray-50 border-t flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
-            <Button onClick={onClose} variant="outline" className="border-2 bg-transparent order-2 sm:order-1">
+          <div className="flex-shrink-0 p-2 sm:p-4 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="border-2 bg-transparent dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 order-2 sm:order-1"
+            >
               {t.workoutForm.cancel}
             </Button>
             <Button

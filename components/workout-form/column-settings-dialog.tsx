@@ -42,10 +42,10 @@ export const ColumnSettingsDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-2xl h-[95vh] sm:h-[80vh] overflow-hidden flex flex-col p-3 sm:p-6">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-2xl h-[95vh] sm:h-[80vh] overflow-hidden flex flex-col p-3 sm:p-6 dark:bg-gray-900 dark:border-gray-700">
         <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
-          <DialogTitle className="text-lg sm:text-xl font-bold flex items-center">
-            <Settings className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-purple-600" />
+          <DialogTitle className="text-lg sm:text-xl font-bold flex items-center dark:text-white">
+            <Settings className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-purple-600 dark:text-purple-400" />
             <span className="hidden sm:inline">{t.columnSettings.title}</span>
             <span className="sm:hidden">{t.columnSettings.titleShort}</span>
           </DialogTitle>
@@ -53,14 +53,14 @@ export const ColumnSettingsDialog = ({
 
         <div className="flex-1 overflow-auto space-y-4 sm:space-y-6 min-h-0">
           {/* Crear nueva columna */}
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">{t.columnSettings.createNewColumn}</CardTitle>
+              <CardTitle className="text-base sm:text-lg dark:text-white">{t.columnSettings.createNewColumn}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="columnName" className="text-sm">
+                  <Label htmlFor="columnName" className="text-sm dark:text-gray-300">
                     {t.columnSettings.columnName}
                   </Label>
                   <Input
@@ -68,21 +68,27 @@ export const ColumnSettingsDialog = ({
                     value={newColumnName}
                     onChange={(e) => setNewColumnName(e.target.value)}
                     placeholder={t.columnSettings.columnNamePlaceholder}
-                    className="mt-1"
+                    className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="columnType" className="text-sm">
+                  <Label htmlFor="columnType" className="text-sm dark:text-gray-300">
                     {t.columnSettings.dataType}
                   </Label>
                   <Select value={newColumnType} onValueChange={(value: any) => setNewColumnType(value)}>
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">{t.columnSettings.text}</SelectItem>
-                      <SelectItem value="number">{t.columnSettings.number}</SelectItem>
-                      <SelectItem value="boolean">{t.columnSettings.boolean}</SelectItem>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-600">
+                      <SelectItem value="text" className="dark:text-white dark:hover:bg-gray-700">
+                        {t.columnSettings.text}
+                      </SelectItem>
+                      <SelectItem value="number" className="dark:text-white dark:hover:bg-gray-700">
+                        {t.columnSettings.number}
+                      </SelectItem>
+                      <SelectItem value="boolean" className="dark:text-white dark:hover:bg-gray-700">
+                        {t.columnSettings.boolean}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -99,37 +105,45 @@ export const ColumnSettingsDialog = ({
           </Card>
 
           {/* Lista de columnas existentes */}
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">{t.columnSettings.availableColumns}</CardTitle>
-              <p className="text-xs sm:text-sm text-gray-600">{t.columnSettings.toggleDescription}</p>
+              <CardTitle className="text-base sm:text-lg dark:text-white">
+                {t.columnSettings.availableColumns}
+              </CardTitle>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                {t.columnSettings.toggleDescription}
+              </p>
             </CardHeader>
             <CardContent>
               {customColumns.length === 0 ? (
-                <p className="text-gray-500 text-center py-6 sm:py-8 text-sm">{t.columnSettings.noCustomColumns}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-center py-6 sm:py-8 text-sm">
+                  {t.columnSettings.noCustomColumns}
+                </p>
               ) : (
                 <div className="space-y-2 sm:space-y-3">
                   {customColumns.map((column) => (
                     <div
                       key={column.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-3 sm:gap-0"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border dark:border-gray-600 rounded-lg gap-3 sm:gap-0 dark:bg-gray-700/50"
                     >
                       <div className="flex items-center space-x-3 min-w-0 flex-1">
                         <div className="flex items-center space-x-2 flex-shrink-0">
                           <Checkbox
                             checked={column.is_active}
                             onCheckedChange={(checked) => onToggleColumnVisibility(column.id, !!checked)}
-                            className="w-4 h-4 sm:w-5 sm:h-5"
+                            className="w-4 h-4 sm:w-5 sm:h-5 dark:border-gray-500"
                           />
                           {column.is_active ? (
-                            <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                            <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
                           ) : (
                             <EyeOff className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium text-sm sm:text-base truncate">{column.column_name}</div>
-                          <div className="text-xs sm:text-sm text-gray-500">
+                          <div className="font-medium text-sm sm:text-base truncate dark:text-white">
+                            {column.column_name}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                             {column.column_type === "text" && t.columnSettings.text}
                             {column.column_type === "number" && t.columnSettings.number}
                             {column.column_type === "boolean" && t.columnSettings.boolean}
@@ -138,7 +152,7 @@ export const ColumnSettingsDialog = ({
                       </div>
                       <Badge
                         variant={column.is_active ? "default" : "secondary"}
-                        className="text-xs self-start sm:self-auto"
+                        className="text-xs self-start sm:self-auto dark:bg-gray-600 dark:text-gray-200"
                       >
                         {column.is_active ? t.columnSettings.active : t.columnSettings.inactive}
                       </Badge>
@@ -150,7 +164,7 @@ export const ColumnSettingsDialog = ({
           </Card>
         </div>
 
-        <div className="flex-shrink-0 pt-3 sm:pt-4 border-t">
+        <div className="flex-shrink-0 pt-3 sm:pt-4 border-t dark:border-gray-700">
           <Button onClick={onClose} className="w-full">
             {t.columnSettings.close}
           </Button>

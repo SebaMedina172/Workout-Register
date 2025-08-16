@@ -90,10 +90,10 @@ export const EditingExercise = ({
     <>
       {/* Encabezado de la tabla (solo para el primer ejercicio no guardado) */}
       {isFirstUnlocked && (
-        <div className="bg-gradient-to-r from-gray-100 to-gray-200 border-b-2 border-gray-300 overflow-x-auto">
+        <div className="bg-gray-100 dark:bg-gray-800 border-b-2 border-gray-300 dark:border-gray-600 overflow-x-auto">
           <div className="min-w-[800px] sm:min-w-0">
             <div
-              className="grid gap-2 sm:gap-4 p-2 sm:p-4 font-bold text-xs sm:text-sm text-gray-800"
+              className="grid gap-2 sm:gap-4 p-2 sm:p-4 font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-200"
               style={{
                 gridTemplateColumns: `40px minmax(150px, 3fr) minmax(100px, 1.5fr) 80px 80px 100px 100px ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")} 120px`,
               }}
@@ -121,7 +121,7 @@ export const EditingExercise = ({
       )}
 
       {/* Fila de datos del ejercicio */}
-      <div className="overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 overflow-x-auto">
         <div className="min-w-[800px] sm:min-w-0">
           <div
             className="grid gap-2 sm:gap-4 p-2 sm:p-4 items-center"
@@ -131,7 +131,7 @@ export const EditingExercise = ({
           >
             {/* Drag handle */}
             <div className="flex justify-center items-center">
-              <GripVertical className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 hover:text-gray-600 transition-colors cursor-grab active:cursor-grabbing" />
+              <GripVertical className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing" />
             </div>
 
             {/* Selector de ejercicio */}
@@ -157,7 +157,7 @@ export const EditingExercise = ({
                   <span className="sm:hidden">{translateMuscleGroup(exercise.muscle_group).slice(0, 6)}</span>
                 </Badge>
               ) : (
-                <span className="text-gray-400 text-xs">{t.workoutForm.selectMuscleGroup}</span>
+                <span className="text-gray-400 dark:text-gray-500 text-xs">{t.workoutForm.selectMuscleGroup}</span>
               )}
             </div>
 
@@ -167,7 +167,7 @@ export const EditingExercise = ({
               min="1"
               value={exercise.sets}
               onChange={(e) => onUpdateExercise(exercise.id, "sets", Number.parseInt(e.target.value) || 1)}
-              className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10"
+              className="text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
             />
 
             <Input
@@ -175,7 +175,7 @@ export const EditingExercise = ({
               min="1"
               value={exercise.reps}
               onChange={(e) => onUpdateExercise(exercise.id, "reps", Number.parseInt(e.target.value) || 1)}
-              className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10"
+              className="text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
             />
 
             {/* Campo de peso */}
@@ -191,7 +191,7 @@ export const EditingExercise = ({
                 }
               }}
               placeholder={t.calendar.freeWeight}
-              className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10"
+              className="text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
             />
 
             <Input
@@ -200,7 +200,7 @@ export const EditingExercise = ({
               step="15"
               value={exercise.rest_time}
               onChange={(e) => onUpdateExercise(exercise.id, "rest_time", Number.parseInt(e.target.value) || 0)}
-              className="text-center font-semibold bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10"
+              className="text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
             />
 
             {/* Columnas personalizadas */}
@@ -221,7 +221,7 @@ export const EditingExercise = ({
                     type={column.column_type === "number" ? "number" : "text"}
                     value={exercise.custom_data?.[column.column_name] || ""}
                     onChange={(e) => onUpdateExercise(exercise.id, `custom_${column.column_name}`, e.target.value)}
-                    className="text-center bg-white border-2 hover:border-blue-300 transition-colors text-xs sm:text-sm h-8 sm:h-10"
+                    className="text-center bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
                     placeholder={column.column_type === "number" ? "0" : "..."}
                   />
                 )}
@@ -235,18 +235,18 @@ export const EditingExercise = ({
                 variant="outline"
                 size="sm"
                 disabled={!exercise.exercise_name.trim() || !exercise.muscle_group}
-                className="h-8 sm:h-10 px-2 sm:px-3 hover:bg-green-50 hover:border-green-300 border-2 transition-all duration-200"
+                className="h-8 sm:h-10 px-2 sm:px-3 hover:bg-green-50 dark:hover:bg-green-900/30 hover:border-green-300 dark:hover:border-green-600 border-2 transition-all duration-200"
               >
-                <Save className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                <Save className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
               </Button>
               <Button
                 onClick={() => onRemoveExercise(exercise.id)}
                 variant="outline"
                 size="sm"
                 disabled={exercises.length === 1}
-                className="h-8 sm:h-10 px-2 sm:px-3 hover:bg-red-50 hover:border-red-300 border-2 transition-all duration-200"
+                className="h-8 sm:h-10 px-2 sm:px-3 hover:bg-red-50 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-600 border-2 transition-all duration-200"
               >
-                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
+                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-500 dark:text-red-400" />
               </Button>
             </div>
           </div>

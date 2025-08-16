@@ -53,14 +53,20 @@ export const ExerciseSelector = ({
 
   return (
     <Select value={selectedExercise} onValueChange={onExerciseSelect}>
-      <SelectTrigger className="w-full bg-white border-2 hover:border-blue-300 transition-colors">
+      <SelectTrigger className="w-full bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors">
         <SelectValue placeholder={`🔍 ${t.workoutForm.selectExercise}`} />
       </SelectTrigger>
-      <SelectContent className="max-h-60" onPointerDown={(e) => e.stopPropagation()}>
+      <SelectContent
+        className="max-h-60 dark:bg-gray-800 dark:border-gray-600"
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         {/* Campo de búsqueda */}
-        <div className="p-3 border-b bg-gray-50" onPointerDown={(e) => e.stopPropagation()}>
+        <div
+          className="p-3 border-b bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4 pointer-events-none" />
             <Input
               ref={searchInputRef}
               placeholder={`🔍 ${t.workoutForm.selectExercise}...`}
@@ -83,7 +89,7 @@ export const ExerciseSelector = ({
               }}
               onFocus={(e) => e.stopPropagation()}
               onBlur={(e) => e.stopPropagation()}
-              className="pl-10 h-9 bg-white"
+              className="pl-10 h-9 bg-white dark:bg-gray-800 dark:text-white"
               autoComplete="off"
               autoFocus
             />
@@ -93,7 +99,12 @@ export const ExerciseSelector = ({
         {/* Lista de ejercicios filtrados */}
         <div className="max-h-40 overflow-y-auto">
           {filteredExercises.map((ex) => (
-            <SelectItem key={ex.name} value={ex.name} className="py-2" onPointerDown={(e) => e.stopPropagation()}>
+            <SelectItem
+              key={ex.name}
+              value={ex.name}
+              className="py-2 dark:text-gray-200 dark:hover:bg-gray-700"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
               <div className="flex items-center justify-between w-full">
                 <span className="font-medium">{ex.name}</span>
               </div>
@@ -107,15 +118,15 @@ export const ExerciseSelector = ({
           !filteredExercises.some((ex) => ex.name.toLowerCase() === searchValue.toLowerCase()) && (
             <>
               <Separator />
-              <div className="p-2 bg-blue-50" onPointerDown={(e) => e.stopPropagation()}>
-                <p className="text-sm font-semibold text-blue-700 mb-2">
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/30" onPointerDown={(e) => e.stopPropagation()}>
+                <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
                   {t.workoutForm.createCustomExercise} "{searchValue.trim()}":
                 </p>
                 {MUSCLE_GROUPS.map((group) => (
                   <SelectItem
                     key={group}
                     value={`CREATE_|||${searchValue.trim()}|||${group}`}
-                    className="text-blue-700 font-medium ml-2"
+                    className="text-blue-700 dark:text-blue-300 font-medium ml-2 dark:hover:bg-blue-800/30"
                     onPointerDown={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center">
