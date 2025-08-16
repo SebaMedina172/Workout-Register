@@ -52,15 +52,16 @@ export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, 
   // Determinar clases CSS con enfoque más conservador
   let customClass = ""
   let baseClass =
-    "h-14 sm:h-16 md:h-18 lg:h-20 xl:h-22 w-full p-1 rounded-lg sm:rounded-xl border border-gray-200 sm:border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2"
+    "h-14 sm:h-16 md:h-18 lg:h-20 xl:h-22 w-full p-1 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-600 sm:border-2 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2"
 
   if (isOutside) {
-    baseClass += " text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100"
+    baseClass +=
+      " text-gray-300 dark:text-gray-600 opacity-40 bg-gray-50 dark:bg-gray-900 cursor-not-allowed border-gray-100 dark:border-gray-700"
   } else if (isSelected) {
     baseClass += " bg-gradient-to-br from-blue-500 to-blue-600 text-white border-blue-500 shadow-lg"
   } else if (isToday) {
     baseClass +=
-      " bg-blue-50 border-blue-300 text-blue-800 shadow-md ring-1 sm:ring-2 ring-blue-400 ring-offset-1 sm:ring-offset-2 font-bold"
+      " bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-200 shadow-md ring-1 sm:ring-2 ring-blue-400 dark:ring-blue-500 ring-offset-1 sm:ring-offset-2 font-bold"
   } else if (status === "planned") {
     customClass = "calendar-day-planned"
   } else if (status === "completed") {
@@ -70,7 +71,8 @@ export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, 
   } else if (status === "rest") {
     customClass = "calendar-day-rest"
   } else {
-    baseClass += " bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md"
+    baseClass +=
+      " bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 hover:shadow-md text-gray-900 dark:text-white"
   }
 
   const getAriaLabel = () => {

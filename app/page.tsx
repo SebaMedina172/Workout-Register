@@ -8,6 +8,7 @@ import StatsContainer from "@/components/stats-container"
 import SignOutButton from "@/components/sign-out-button"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function HomePage() {
   const { t } = useLanguage()
@@ -32,9 +33,9 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo and Title */}
@@ -43,24 +44,25 @@ export default function HomePage() {
                 <Dumbbell className="h-6 w-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900">Mi Entrenamiento</h1>
-                <p className="text-sm text-gray-600 hidden md:block">Tracker de Entrenamientos</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Mi Entrenamiento</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 hidden md:block">Tracker de Entrenamientos</p>
               </div>
               <div className="sm:hidden">
-                <h1 className="text-lg font-bold text-gray-900">Mi Entrenamiento</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Mi Entrenamiento</h1>
               </div>
             </div>
 
             {/* Desktop Navigation - Now only shows on large screens (1024px+) */}
             <nav className="hidden lg:flex items-center space-x-4">
               <LanguageSwitcher />
+              <ThemeToggle />
               <Button
                 onClick={() => setCurrentView("calendar")}
                 variant={currentView === "calendar" ? "default" : "ghost"}
                 className={`relative overflow-hidden transition-all duration-300 ${
                   currentView === "calendar"
                     ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:from-blue-600 hover:to-blue-700"
-                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
                 }`}
               >
                 <Dumbbell className="h-4 w-4 mr-2" />
@@ -72,7 +74,7 @@ export default function HomePage() {
                 className={`relative overflow-hidden transition-all duration-300 ${
                   currentView === "stats"
                     ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg hover:from-purple-600 hover:to-purple-700"
-                    : "text-gray-700 hover:text-purple-600 hover:bg-purple-50"
+                    : "text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950"
                 }`}
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
@@ -91,17 +93,15 @@ export default function HomePage() {
 
           {/* Mobile Navigation Menu - Now shows on tablet too */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden border-t border-gray-200 py-3 space-y-2">
-              <div className="w-full flex justify-start">
-                
-              </div>
+            <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 py-3 space-y-2">
+              <div className="w-full flex justify-start"></div>
               <Button
                 onClick={() => setCurrentView("calendar")}
                 variant={currentView === "calendar" ? "default" : "ghost"}
                 className={`w-full justify-start transition-all duration-300 ${
                   currentView === "calendar"
                     ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
-                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950"
                 }`}
               >
                 <Dumbbell className="h-4 w-4 mr-2" />
@@ -113,15 +113,18 @@ export default function HomePage() {
                 className={`w-full justify-start transition-all duration-300 ${
                   currentView === "stats"
                     ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg"
-                    : "text-gray-700 hover:text-purple-600 hover:bg-purple-50"
+                    : "text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950"
                 }`}
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
                 {t.stats.statistics}
               </Button>
               <LanguageSwitcher />
+              <div className="flex justify-start">
+                <ThemeToggle />
+              </div>
               {/* Botón Cerrar Sesión en el menú móvil */}
-              <div className="pt-2 border-t border-gray-100">
+              <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
                 <SignOutButton />
               </div>
             </div>

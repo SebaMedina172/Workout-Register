@@ -128,12 +128,12 @@ export default function StatsContainer() {
       {/* Header de navegación */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="text-center sm:text-left">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             {language === "es"
               ? format(weekStart, "'Semana del' dd 'de' MMMM", { locale })
               : format(weekStart, "'Week of' MMMM dd", { locale })}
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             {format(weekStart, "dd/MM", { locale })} - {format(weekEnd, "dd/MM/yyyy", { locale })}
           </p>
         </div>
@@ -143,9 +143,9 @@ export default function StatsContainer() {
             variant="ghost"
             size="icon"
             onClick={goToPreviousWeek}
-            className="rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10"
+            className="rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10"
           >
-            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
           </Button>
 
           <Button
@@ -174,9 +174,9 @@ export default function StatsContainer() {
             variant="ghost"
             size="icon"
             onClick={goToNextWeek}
-            className="rounded-full shadow-md hover:bg-gray-100 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10"
+            className="rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 h-8 w-8 sm:h-10 sm:w-10"
           >
-            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
           </Button>
         </div>
       </div>

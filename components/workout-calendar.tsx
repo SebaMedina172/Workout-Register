@@ -192,7 +192,7 @@ export default function WorkoutCalendar() {
     )
   }
 
-  const getWeekDayNames = (mondayFirst: boolean = false): string[] => {
+  const getWeekDayNames = (mondayFirst = false): string[] => {
     const dayNames = [
       calendarT.sun,
       calendarT.mon,
@@ -354,6 +354,61 @@ export default function WorkoutCalendar() {
             width: 14px !important;
           }
         }
+
+        /* Dark mode styles for calendar days */
+        .dark .calendar-day-planned,
+        .dark .calendar-day-completed,
+        .dark .calendar-day-incomplete,
+        .dark .calendar-day-rest {
+          border-width: 2px !important;
+        }
+
+        /* Dark mode styles for calendar navigation and headers */
+        .dark [data-calendar] {
+          background-color: rgb(17 24 39) !important;
+        }
+
+        .dark [data-calendar] .calendar-nav-button {
+          background-color: rgb(31 41 55) !important;
+          border-color: rgb(55 65 81) !important;
+          color: rgb(229 231 235) !important;
+        }
+
+        .dark [data-calendar] .calendar-nav-button:hover {
+          background-color: rgb(55 65 81) !important;
+          border-color: rgb(59 130 246) !important;
+        }
+
+        .dark [data-calendar] .calendar-head-cell {
+          background-color: rgb(31 41 55) !important;
+          color: rgb(156 163 175) !important;
+        }
+
+        .dark [data-calendar] .calendar-day-default {
+          background-color: rgb(31 41 55) !important;
+          border-color: rgb(55 65 81) !important;
+          color: rgb(229 231 235) !important;
+        }
+
+        .dark [data-calendar] .calendar-day-default:hover {
+          background-color: rgb(55 65 81) !important;
+        }
+
+        .dark [data-calendar] .calendar-day-outside {
+          background-color: rgb(17 24 39) !important;
+          color: rgb(75 85 99) !important;
+          border-color: rgb(31 41 55) !important;
+        }
+
+        .dark [data-calendar] .calendar-day-selected {
+          background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+          border-color: #2563eb !important;
+        }
+
+        .dark [data-calendar] .calendar-day-today {
+          background: linear-gradient(135deg, #f97316, #ea580c) !important;
+          border-color: #ea580c !important;
+        }
       `}</style>
 
       {/* Calendario principal con espaciado inteligente */}
@@ -380,29 +435,32 @@ export default function WorkoutCalendar() {
               onSelect={handleDateSelect}
               weekStartsOn={1} // Always start with Monday (1) regardless of locale
               className="rounded-xl sm:rounded-2xl border-0 shadow-none w-full"
+              data-calendar="true"
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
                 month: "space-y-2 sm:space-y-4 w-full",
                 caption: "flex justify-center pt-1 relative items-center mb-2 sm:mb-4 md:mb-6",
-                caption_label: "text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900",
+                caption_label: "text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white",
                 nav: "space-x-1 flex items-center",
                 nav_button:
-                  "h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 bg-white hover:bg-gray-50 border border-gray-200 sm:border-2 rounded-lg sm:rounded-xl transition-all duration-200 hover:border-blue-300 hover:shadow-md flex items-center justify-center",
+                  "calendar-nav-button h-7 w-7 sm:h-8 sm:w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 sm:border-2 rounded-lg sm:rounded-xl transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md flex items-center justify-center text-gray-700 dark:text-gray-300",
                 nav_button_previous: "absolute left-1",
                 nav_button_next: "absolute right-1",
                 table: "w-full border-collapse",
                 head_row: "flex w-full mb-1 sm:mb-2",
                 head_cell:
-                  "text-gray-600 rounded-md sm:rounded-lg w-full h-8 sm:h-10 md:h-12 lg:h-14 font-semibold sm:font-bold text-xs sm:text-sm md:text-base flex items-center justify-center bg-gray-50 mx-0.5 sm:mx-1",
+                  "calendar-head-cell text-gray-600 dark:text-gray-400 rounded-md sm:rounded-lg w-full h-8 sm:h-10 md:h-12 lg:h-14 font-semibold sm:font-bold text-xs sm:text-sm md:text-base flex items-center justify-center bg-gray-50 dark:bg-gray-800 mx-0.5 sm:mx-1",
                 row: "flex w-full mt-1 sm:mt-2",
                 cell: "relative p-0.5 sm:p-1 w-full",
-                day: "h-14 sm:h-16 md:h-18 lg:h-20 xl:h-22 w-full p-1 font-bold text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl border border-gray-200 sm:border-2 transition-all duration-200 flex flex-col items-center justify-center bg-white shadow-sm cursor-pointer focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2",
+                day: "calendar-day-default h-14 sm:h-16 md:h-18 lg:h-20 xl:h-22 w-full p-1 font-bold text-sm sm:text-base md:text-lg rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-600 sm:border-2 transition-all duration-200 flex flex-col items-center justify-center bg-white dark:bg-gray-800 shadow-sm cursor-pointer focus:outline-none focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 sm:focus:ring-offset-2 text-gray-900 dark:text-white",
                 day_selected:
-                  "bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-blue-500 shadow-lg",
+                  "calendar-day-selected bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-blue-500 shadow-lg",
                 day_today:
-                  "bg-gradient-to-br from-orange-400 to-orange-500 text-white border-orange-400 shadow-lg font-black ring-1 sm:ring-2 ring-orange-300 ring-offset-1 sm:ring-offset-2",
-                day_outside: "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100",
-                day_disabled: "text-gray-300 opacity-40 bg-gray-50 cursor-not-allowed border-gray-100",
+                  "calendar-day-today bg-gradient-to-br from-orange-400 to-orange-500 text-white border-orange-400 shadow-lg font-black ring-1 sm:ring-2 ring-orange-300 ring-offset-1 sm:ring-offset-2",
+                day_outside:
+                  "calendar-day-outside text-gray-300 dark:text-gray-600 opacity-40 bg-gray-50 dark:bg-gray-900 cursor-not-allowed border-gray-100 dark:border-gray-700",
+                day_disabled:
+                  "text-gray-300 dark:text-gray-600 opacity-40 bg-gray-50 dark:bg-gray-900 cursor-not-allowed border-gray-100 dark:border-gray-700",
                 day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
                 day_hidden: "invisible",
               }}

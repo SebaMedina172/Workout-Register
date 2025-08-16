@@ -69,10 +69,12 @@ export default function WeeklyProgress({ dailyData, weekStart }: WeeklyProgressP
   }
 
   return (
-    <Card className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-xl transition-all duration-300 ease-out group">
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+    <Card className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-lg hover:shadow-xl transition-all duration-300 ease-out group">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
       <CardHeader className="relative z-10 pb-2 p-4 sm:p-6">
-        <CardTitle className="text-lg sm:text-2xl font-bold text-gray-900">{t.stats.weeklyProgress}</CardTitle>
+        <CardTitle className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+          {t.stats.weeklyProgress}
+        </CardTitle>
       </CardHeader>
       <CardContent className="relative z-10 p-4 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 sm:gap-4">
@@ -88,20 +90,24 @@ export default function WeeklyProgress({ dailyData, weekStart }: WeeklyProgressP
             return (
               <div
                 key={index}
-                className="flex flex-col items-center p-3 sm:p-4 rounded-xl border-2 border-gray-200 bg-white hover:shadow-md transition-all duration-200"
+                className="flex flex-col items-center p-3 sm:p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200"
               >
-                <div className="text-xs sm:text-sm font-medium text-gray-600 mb-2">{getDayAbbreviation(index)}</div>
-                <div className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{format(currentDate, "dd")}</div>
+                <div className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  {getDayAbbreviation(index)}
+                </div>
+                <div className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  {format(currentDate, "dd")}
+                </div>
                 <div className={`p-2 sm:p-3 rounded-full ${statusInfo.color} mb-2`}>
                   <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
                 <Badge
                   variant="secondary"
-                  className="text-xs px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 mb-1"
+                  className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 mb-1"
                 >
                   {statusInfo.label}
                 </Badge>
-                <div className="text-xs text-gray-500 text-center">{statusInfo.description}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 text-center">{statusInfo.description}</div>
               </div>
             )
           })}
