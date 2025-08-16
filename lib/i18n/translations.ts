@@ -165,13 +165,13 @@ export const translations: Record<"es" | "en", Translations> = {
       december: "Diciembre",
 
       // Days of week (full names)
-      monday: "lunes",
-      tuesday: "martes",
-      wednesday: "miércoles",
-      thursday: "jueves",
-      friday: "viernes",
-      saturday: "sábado",
-      sunday: "domingo",
+      monday: "Lunes",
+      tuesday: "Martes",
+      wednesday: "Miércoles",
+      thursday: "Jueves",
+      friday: "Viernes",
+      saturday: "Sábado",
+      sunday: "Domingo",
 
       // Days of week (short)
       mon: "Lun",
