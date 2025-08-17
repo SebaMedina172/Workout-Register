@@ -119,10 +119,16 @@ export default function HomePage() {
                 <BarChart3 className="h-4 w-4 mr-2" />
                 {t.stats.statistics}
               </Button>
-              <LanguageSwitcher />
-              <div className="flex justify-start">
-                <ThemeToggle />
+
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <LanguageSwitcher mobile={true} />
+                </div>
+                <div className="flex-1">
+                  <ThemeToggle mobile={true} />
+                </div>
               </div>
+
               {/* Botón Cerrar Sesión en el menú móvil */}
               <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
                 <SignOutButton />

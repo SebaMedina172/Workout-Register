@@ -6,9 +6,10 @@ import { Languages } from "lucide-react"
 
 interface LanguageSwitcherProps {
   variant?: "hero" | "page"
+  mobile?: boolean
 }
 
-export function LanguageSwitcher({ variant = "page" }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ variant = "page", mobile = false }: LanguageSwitcherProps) {
   const { language, setLanguage } = useLanguage()
 
   const toggleLanguage = () => {
@@ -34,7 +35,7 @@ export function LanguageSwitcher({ variant = "page" }: LanguageSwitcherProps) {
       variant="outline"
       size="sm"
       onClick={toggleLanguage}
-      className="flex items-center gap-2 border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors bg-transparent text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100"
+      className={`flex items-center gap-2 border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors bg-transparent text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 ${mobile ? "w-full justify-center" : ""}`}
     >
       <Languages className="w-4 h-4" />
       <span className="font-medium">{language === "es" ? "EN" : "ES"}</span>

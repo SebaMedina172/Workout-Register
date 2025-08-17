@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/i18n/context"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  mobile?: boolean
+}
+
+export function ThemeToggle({ mobile = false }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme()
   const { t } = useLanguage()
 
@@ -14,9 +18,9 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
-          className="relative overflow-hidden transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          className={`relative overflow-hidden transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-slate-200 dark:border-gray-700 bg-transparent text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 ${mobile ? "w-full" : ""}`}
         >
           <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
