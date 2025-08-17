@@ -9,6 +9,7 @@ import SignOutButton from "@/components/sign-out-button"
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { ProfileDropdown } from "@/components/profile-dropdown"
 
 export default function HomePage() {
   const { t } = useLanguage()
@@ -54,8 +55,6 @@ export default function HomePage() {
 
             {/* Desktop Navigation - Now only shows on large screens (1024px+) */}
             <nav className="hidden lg:flex items-center space-x-4">
-              <LanguageSwitcher />
-              <ThemeToggle />
               <Button
                 onClick={() => setCurrentView("calendar")}
                 variant={currentView === "calendar" ? "default" : "ghost"}
@@ -80,7 +79,7 @@ export default function HomePage() {
                 <BarChart3 className="h-4 w-4 mr-2" />
                 {t.stats.statistics}
               </Button>
-              <SignOutButton />
+              <ProfileDropdown />
             </nav>
 
             {/* Mobile Menu Button - Now shows on tablet too (up to 1024px) */}
