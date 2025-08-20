@@ -30,6 +30,7 @@ export async function GET() {
           reps,
           rest_seconds,
           weight,
+          exercise_order,
           is_saved,
           is_expanded,
           is_completed,
@@ -52,6 +53,7 @@ export async function GET() {
       `)
       .eq("user_id", session.user.id)
       .order("date", { ascending: true })
+      .order("exercise_order", { foreignTable: "workout_exercises", ascending: true })
 
     if (workoutsError) {
       console.error("❌ Error fetching workouts:", workoutsError)
@@ -222,6 +224,7 @@ export async function POST(request: Request) {
           reps: exercise.reps,
           rest_seconds: exercise.rest_time,
           weight: exercise.weight || 0,
+          exercise_order: i + 1,
           is_saved: exercise.is_saved || false,
           is_expanded: exercise.is_expanded || false,
           is_completed: exercise.is_completed || false,
