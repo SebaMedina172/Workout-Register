@@ -343,4 +343,7 @@ export interface Translations {
     inactive: string
     close: string
   }
+  defaultExercises: {
+    [key: string]: string
+  }
 }

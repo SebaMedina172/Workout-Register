@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Plus, Edit, Coffee, Trash2, X, Dumbbell, Clock } from "lucide-react"
 import { getWorkoutCompletionStatus } from "./utils"
 import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
+import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
+import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
 import type { Workout } from "./types"
 
 interface DayActionsDialogProps {
@@ -30,6 +32,8 @@ export const DayActionsDialog = ({
   onPostpone,
 }: DayActionsDialogProps) => {
   const { formatDate, formatWeight, t } = useCalendarTranslation()
+  const { translateMuscleGroup } = useMuscleGroupTranslation()
+  const { translateExercise } = useExerciseTranslation()       
 
   const getDayStatus = (workout: Workout | null, date: Date) => {
     if (!workout) return null
@@ -181,7 +185,7 @@ export const DayActionsDialog = ({
                               : "text-green-700 dark:text-green-300"
                         }`}
                       >
-                        {exercise.exercise_name}
+                        {translateExercise(exercise.exercise_name)}
                       </span>
                     </div>
                     <div className="flex items-center space-x-1 sm:space-x-2 flex-wrap">

@@ -346,6 +346,114 @@ export const translations: Record<"es" | "en", Translations> = {
       inactive: "Inactiva",
       close: "Cerrar",
     },
+    defaultExercises: {
+      // PECHO / CHEST
+      "Press de banca con barra": "Barbell bench press",
+      "Press de banca con mancuernas": "Dumbbell bench press",
+      "Press inclinado con barra": "Incline barbell press",
+      "Press inclinado con mancuernas": "Incline dumbbell press",
+      "Press declinado con barra": "Decline barbell press",
+      "Aperturas con mancuernas": "Dumbbell flyes",
+      "Aperturas en polea": "Cable flyes",
+      "Cruces en máquina": "Machine flyes",
+      "Push-ups": "Push-ups",
+
+      // ESPALDA / BACK
+      Dominadas: "Pull-ups",
+      "Dominadas con agarre ancho": "Wide grip pull-ups",
+      "Dominadas con agarre cerrado": "Close grip pull-ups",
+      "Pull-ups": "Pull-ups",
+      "Remo con barra": "Barbell rows",
+      "Remo con mancuernas": "Dumbbell rows",
+      "Remo en polea baja": "Cable rows",
+      "Remo en máquina": "Machine rows",
+      "Jalones al pecho": "Lat pulldowns",
+      "Jalones tras nuca": "Behind neck pulldowns",
+
+      // DELTOIDES ANTERIOR / FRONT DELTOID
+      "Press militar con barra": "Military press",
+      "Press militar con mancuernas": "Dumbbell shoulder press",
+      "Elevaciones frontales con mancuernas": "Front raises",
+
+      // DELTOIDES MEDIO / MIDDLE DELTOID
+      "Elevaciones laterales con mancuernas": "Lateral raises",
+      "Elevaciones laterales en polea": "Cable lateral raises",
+      "Press tras nuca": "Behind neck press",
+
+      // DELTOIDES POSTERIOR / REAR DELTOID
+      "Pájaros con mancuernas": "Rear delt flyes",
+      "Pájaros en máquina": "Machine rear delt flyes",
+      "Remo al mentón": "Upright rows",
+      "Face pulls": "Face pulls",
+
+      // BÍCEPS / BICEPS
+      "Curl de bíceps con barra": "Barbell curls",
+      "Curl de bíceps con mancuernas": "Dumbbell curls",
+      "Curl martillo": "Hammer curls",
+      "Curl concentrado": "Concentration curls",
+      "Curl en polea": "Cable curls",
+      "Curl predicador": "Preacher curls",
+
+      // TRÍCEPS / TRICEPS
+      "Press francés": "French press",
+      "Extensiones de tríceps": "Tricep extensions",
+      "Extensiones tras nuca": "Overhead extensions",
+      "Patadas de tríceps": "Tricep kickbacks",
+      "Fondos para tríceps": "Tricep dips",
+      "Press cerrado": "Close grip press",
+
+      // ANTEBRAZOS / FOREARMS
+      "Curl de muñeca": "Wrist curls",
+      "Curl inverso": "Reverse curls",
+
+      // CUÁDRICEPS / QUADRICEPS
+      Sentadillas: "Squats",
+      "Sentadillas frontales": "Front squats",
+      "Sentadillas búlgaras": "Bulgarian split squats",
+      "Prensa de piernas": "Leg press",
+      "Extensiones de cuádriceps": "Leg extensions",
+      Zancadas: "Lunges",
+      "Zancadas laterales": "Lateral lunges",
+
+      // ISQUIOTIBIALES / HAMSTRINGS
+      "Curl femoral": "Leg curls",
+      "Curl femoral acostado": "Lying leg curls",
+      "Curl femoral de pie": "Standing leg curls",
+      "Peso muerto": "Deadlifts",
+      "Peso muerto rumano": "Romanian deadlifts",
+      "Buenos días": "Good mornings",
+
+      // GLÚTEO / GLUTES
+      "Sentadilla sumo": "Sumo squats",
+      "Hip thrust": "Hip thrusts",
+      "Puente de glúteo": "Glute bridges",
+      "Peso muerto sumo": "Sumo deadlifts",
+      "Patadas de glúteo": "Glute kickbacks",
+      "Patadas de glúteo en polea": "Cable glute kickbacks",
+
+      // GEMELOS / CALVES
+      "Elevaciones de gemelos de pie": "Standing calf raises",
+      "Elevaciones de gemelos sentado": "Seated calf raises",
+      "Elevaciones en prensa": "Calf press",
+
+      // ABDUCTORES / ABDUCTORS
+      "Abducción de cadera": "Hip abduction",
+      "Patadas laterales": "Side kicks",
+
+      // ABDOMINALES / ABS
+      Crunches: "Crunches",
+      "Abdominales en máquina": "Machine crunches",
+      Plancha: "Plank",
+      "Plancha lateral": "Side plank",
+      "Elevaciones de piernas": "Leg raises",
+      "Mountain climbers": "Mountain climbers",
+
+      // OBLICUOS / OBLIQUES
+      "Crunches oblicuos": "Oblique crunches",
+      Bicicleta: "Bicycle crunches",
+      "Russian twists": "Russian twists",
+      Leñador: "Wood choppers",
+    },
   },
   en: {
     auth: {
@@ -691,6 +799,114 @@ export const translations: Record<"es" | "en", Translations> = {
       active: "Active",
       inactive: "Inactive",
       close: "Close",
+    },
+    defaultExercises: {
+      // PECHO / CHEST
+      "Press de banca con barra": "Barbell bench press",
+      "Press de banca con mancuernas": "Dumbbell bench press",
+      "Press inclinado con barra": "Incline barbell press",
+      "Press inclinado con mancuernas": "Incline dumbbell press",
+      "Press declinado con barra": "Decline barbell press",
+      "Aperturas con mancuernas": "Dumbbell flyes",
+      "Aperturas en polea": "Cable flyes",
+      "Cruces en máquina": "Machine flyes",
+      "Push-ups": "Push-ups",
+
+      // ESPALDA / BACK
+      Dominadas: "Pull-ups",
+      "Dominadas con agarre ancho": "Wide grip pull-ups",
+      "Dominadas con agarre cerrado": "Close grip pull-ups",
+      "Pull-ups": "Pull-ups",
+      "Remo con barra": "Barbell rows",
+      "Remo con mancuernas": "Dumbbell rows",
+      "Remo en polea baja": "Cable rows",
+      "Remo en máquina": "Machine rows",
+      "Jalones al pecho": "Lat pulldowns",
+      "Jalones tras nuca": "Behind neck pulldowns",
+
+      // DELTOIDES ANTERIOR / FRONT DELTOID
+      "Press militar con barra": "Military press",
+      "Press militar con mancuernas": "Dumbbell shoulder press",
+      "Elevaciones frontales con mancuernas": "Front raises",
+
+      // DELTOIDES MEDIO / MIDDLE DELTOID
+      "Elevaciones laterales con mancuernas": "Lateral raises",
+      "Elevaciones laterales en polea": "Cable lateral raises",
+      "Press tras nuca": "Behind neck press",
+
+      // DELTOIDES POSTERIOR / REAR DELTOID
+      "Pájaros con mancuernas": "Rear delt flyes",
+      "Pájaros en máquina": "Machine rear delt flyes",
+      "Remo al mentón": "Upright rows",
+      "Face pulls": "Face pulls",
+
+      // BÍCEPS / BICEPS
+      "Curl de bíceps con barra": "Barbell curls",
+      "Curl de bíceps con mancuernas": "Dumbbell curls",
+      "Curl martillo": "Hammer curls",
+      "Curl concentrado": "Concentration curls",
+      "Curl en polea": "Cable curls",
+      "Curl predicador": "Preacher curls",
+
+      // TRÍCEPS / TRICEPS
+      "Press francés": "French press",
+      "Extensiones de tríceps": "Tricep extensions",
+      "Extensiones tras nuca": "Overhead extensions",
+      "Patadas de tríceps": "Tricep kickbacks",
+      "Fondos para tríceps": "Tricep dips",
+      "Press cerrado": "Close grip press",
+
+      // ANTEBRAZOS / FOREARMS
+      "Curl de muñeca": "Wrist curls",
+      "Curl inverso": "Reverse curls",
+
+      // CUÁDRICEPS / QUADRICEPS
+      Sentadillas: "Squats",
+      "Sentadillas frontales": "Front squats",
+      "Sentadillas búlgaras": "Bulgarian split squats",
+      "Prensa de piernas": "Leg press",
+      "Extensiones de cuádriceps": "Leg extensions",
+      Zancadas: "Lunges",
+      "Zancadas laterales": "Lateral lunges",
+
+      // ISQUIOTIBIALES / HAMSTRINGS
+      "Curl femoral": "Leg curls",
+      "Curl femoral acostado": "Lying leg curls",
+      "Curl femoral de pie": "Standing leg curls",
+      "Peso muerto": "Deadlifts",
+      "Peso muerto rumano": "Romanian deadlifts",
+      "Buenos días": "Good mornings",
+
+      // GLÚTEO / GLUTES
+      "Sentadilla sumo": "Sumo squats",
+      "Hip thrust": "Hip thrusts",
+      "Puente de glúteo": "Glute bridges",
+      "Peso muerto sumo": "Sumo deadlifts",
+      "Patadas de glúteo": "Glute kickbacks",
+      "Patadas de glúteo en polea": "Cable glute kickbacks",
+
+      // GEMELOS / CALVES
+      "Elevaciones de gemelos de pie": "Standing calf raises",
+      "Elevaciones de gemelos sentado": "Seated calf raises",
+      "Elevaciones en prensa": "Calf press",
+
+      // ABDUCTORES / ABDUCTORS
+      "Abducción de cadera": "Hip abduction",
+      "Patadas laterales": "Side kicks",
+
+      // ABDOMINALES / ABS
+      Crunches: "Crunches",
+      "Abdominales en máquina": "Machine crunches",
+      Plancha: "Plank",
+      "Plancha lateral": "Side plank",
+      "Elevaciones de piernas": "Leg raises",
+      "Mountain climbers": "Mountain climbers",
+
+      // OBLICUOS / OBLIQUES
+      "Crunches oblicuos": "Oblique crunches",
+      Bicicleta: "Bicycle crunches",
+      "Russian twists": "Russian twists",
+      Leñador: "Wood choppers",
     },
   },
 }

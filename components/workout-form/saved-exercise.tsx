@@ -10,6 +10,7 @@ import { formatWeight, getMuscleGroupColor } from "./utils"
 import type { WorkoutExercise, CustomColumn } from "./types"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
+import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
 
 interface SavedExerciseProps {
   exercise: WorkoutExercise
@@ -34,6 +35,7 @@ export const SavedExercise = ({
 }: SavedExerciseProps) => {
   const { t } = useLanguage()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
+  const { translateExercise } = useExerciseTranslation()
   const completedSets = exercise.set_records?.filter((sr) => sr.is_completed === true).length || 0
   const totalSets = exercise.set_records?.length || 0
 
@@ -88,7 +90,7 @@ export const SavedExercise = ({
                     : "text-gray-900 dark:text-gray-100"
                 }`}
               >
-                {exercise.exercise_name}
+                {translateExercise(exercise.exercise_name)}
               </span>
             </div>
           </div>
@@ -100,11 +102,17 @@ export const SavedExercise = ({
               </Badge>
             )}
 
-            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600">
+            <Badge
+              variant="outline"
+              className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600"
+            >
               {exercise.sets} × {exercise.reps} × {formatWeight(exercise.weight)}
             </Badge>
 
-            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600">
+            <Badge
+              variant="outline"
+              className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600"
+            >
               <Clock className="w-3 h-3 mr-1" />
               {exercise.rest_time}s
             </Badge>
@@ -176,7 +184,7 @@ export const SavedExercise = ({
                     : "text-gray-900 dark:text-gray-100"
                 }`}
               >
-                {exercise.exercise_name}
+                {translateExercise(exercise.exercise_name)}
               </span>
             </div>
 
@@ -201,11 +209,17 @@ export const SavedExercise = ({
 
           {/* Third row: Exercise details */}
           <div className="pl-12 flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 text-xs px-2 py-1">
+            <Badge
+              variant="outline"
+              className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 text-xs px-2 py-1"
+            >
               {exercise.sets} × {exercise.reps} × {formatWeight(exercise.weight)}
             </Badge>
 
-            <Badge variant="outline" className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 text-xs px-2 py-1">
+            <Badge
+              variant="outline"
+              className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 text-xs px-2 py-1"
+            >
               <Clock className="w-3 h-3 mr-1" />
               {exercise.rest_time}s
             </Badge>

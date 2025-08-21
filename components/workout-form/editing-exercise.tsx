@@ -9,6 +9,7 @@ import { ExerciseSelector } from "./exercise-selector"
 import { getMuscleGroupColor } from "./utils"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
+import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
 import { DEFAULT_EXERCISES } from "./constants"
 
@@ -46,6 +47,7 @@ export const EditingExercise = ({
 }: EditingExerciseProps) => {
   const { t } = useLanguage()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
+  const { translateExercise } = useExerciseTranslation()
   const isFirstUnlocked = index === 0 || exercises[index - 1].is_saved
 
   const handleExerciseSelect = async (value: string) => {
@@ -69,10 +71,7 @@ export const EditingExercise = ({
     }
 
     console.log(`🔍 Buscando ejercicio en lista:`, value)
-    const allExercises = [
-      ...DEFAULT_EXERCISES,
-      ...userExercises.map((ex) => ({ name: ex.name, muscle_group: ex.muscle_group })),
-    ]
+    const allExercises = [...DEFAULT_EXERCISES, ...userExercises]
     const selectedExercise = allExercises.find((ex) => ex.name === value)
     console.log(`🎯 Ejercicio encontrado:`, selectedExercise)
 

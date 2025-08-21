@@ -12,6 +12,7 @@ import { DEFAULT_EXERCISES, MUSCLE_GROUPS } from "./constants"
 import { getMuscleGroupColor } from "./utils"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
+import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
 import type { UserExercise } from "./types"
 import { useRef, useEffect, useState } from "react"
 
@@ -34,6 +35,7 @@ export const ExerciseSelector = ({
 }: ExerciseSelectorProps) => {
   const { t } = useLanguage()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
+  const { translateExercise } = useExerciseTranslation()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -50,8 +52,16 @@ export const ExerciseSelector = ({
 
   // Combinar ejercicios predefinidos y personalizados
   const allExercises = [
-    ...DEFAULT_EXERCISES,
-    ...userExercises.map((ex) => ({ name: ex.name, muscle_group: ex.muscle_group })),
+    ...DEFAULT_EXERCISES.map((ex) => ({
+      name: translateExercise(ex.name),
+      muscle_group: ex.muscle_group,
+      originalName: ex.name, // Guardamos el nombre original para identificación
+    })),
+    ...userExercises.map((ex) => ({
+      name: ex.name,
+      muscle_group: ex.muscle_group,
+      originalName: ex.name,
+    })),
   ]
 
   // Filtrar ejercicios por búsqueda
@@ -98,8 +108,8 @@ export const ExerciseSelector = ({
       <div className="flex-1 overflow-y-auto">
         {filteredExercises.map((ex) => (
           <div
-            key={ex.name}
-            onClick={() => onSelect(ex.name)}
+            key={ex.originalName}
+            onClick={() => onSelect(ex.originalName)}
             className="py-3 px-4 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-600"
           >
             <div className="flex items-center justify-between w-full">
@@ -176,15 +186,17 @@ export const ExerciseSelector = ({
     )
   }
 
+  // Desktop: usar Select original
   return (
     <Select value={selectedExercise} onValueChange={onExerciseSelect} open={isOpen} onOpenChange={setIsOpen}>
       <SelectTrigger className="w-full bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors">
-        <SelectValue placeholder={`🔍 ${t.workoutForm.selectExercise}`} />
+        <SelectValue 
+          placeholder={`🔍 ${t.workoutForm.selectExercise}`}
+        >
+          {selectedExercise ? translateExercise(selectedExercise) : `🔍 ${t.workoutForm.selectExercise}`}
+        </SelectValue>
       </SelectTrigger>
-      <SelectContent
-        className="max-h-60 dark:bg-gray-800 dark:border-gray-600"
-        onPointerDown={preventClose}
-      >
+      <SelectContent className="max-h-60 dark:bg-gray-800 dark:border-gray-600" onPointerDown={preventClose}>
         <div
           className="p-3 border-b bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
           onPointerDown={preventClose}
@@ -221,7 +233,11 @@ export const ExerciseSelector = ({
 
         <div className="max-h-40 overflow-y-auto">
           {filteredExercises.map((ex) => (
-            <SelectItem key={ex.name} value={ex.name} className="py-2 dark:text-gray-200 dark:hover:bg-gray-700">
+            <SelectItem
+              key={ex.originalName}
+              value={ex.originalName}
+              className="py-2 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
               <div className="flex items-center justify-between w-full">
                 <span className="font-medium">{ex.name}</span>
               </div>
