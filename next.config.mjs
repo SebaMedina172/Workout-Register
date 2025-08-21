@@ -9,6 +9,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  trailingSlash: true,
+  experimental: {
+    outputFileTracingRoot: process.cwd(),
+  },
 }
 
 export default nextConfig
