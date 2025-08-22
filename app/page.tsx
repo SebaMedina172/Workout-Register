@@ -41,8 +41,12 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             {/* Logo and Title */}
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
-                <Dumbbell className="h-6 w-6 text-white" />
+              <div className="p-2 rounded-lg">
+                <img 
+                  src="/android-chrome-512x512.png" 
+                  alt="Mi Entrenamiento Logo" 
+                  className="h-12 w-12 object-contain"
+                />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">Mi Entrenamiento</h1>

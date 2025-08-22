@@ -178,9 +178,11 @@ export default function AuthPage() {
 
         <div className="relative z-10 flex flex-col items-center text-white dark:text-slate-100 text-center max-w-md mx-auto">
           <div className="mb-8">
-            <div className="w-20 h-20 bg-white/10 dark:bg-slate-100/10 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/20 dark:border-slate-100/20">
-              <Dumbbell className="w-10 h-10 text-white" />
-            </div>
+              <img 
+                src="/android-chrome-192x192.png" 
+                alt="Mi Entrenamiento Logo" 
+                className="object-contain"
+              />
           </div>
           <h1 className="text-4xl font-bold mb-4">{t.auth.appTitle}</h1>
           <p className="text-xl text-slate-300 dark:text-slate-400 leading-relaxed">{t.auth.appDescription}</p>
