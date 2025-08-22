@@ -70,6 +70,11 @@ export default function WorkoutCalendar() {
 
   // Obtener entrenamiento para una fecha específica
   const getWorkoutForDate = (date: Date) => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      console.warn("⚠️ Invalid date provided to getWorkoutForDate:", date)
+      return undefined
+    }
+
     const dateString = date.toISOString().split("T")[0]
     const workout = workouts.find((w) => w.date === dateString)
     console.log(`🔍 Buscando workout para ${dateString}:`, workout ? "encontrado" : "no encontrado")
@@ -78,7 +83,11 @@ export default function WorkoutCalendar() {
 
   // Crear nuevo entrenamiento
   const handleCreateWorkout = () => {
-    console.log("➕ Creando nuevo entrenamiento para:", selectedDate?.toISOString().split("T")[0])
+    if (!selectedDate || !(selectedDate instanceof Date)) {
+      console.warn("⚠️ No valid date selected for creating workout")
+      return
+    }
+    console.log("➕ Creando nuevo entrenamiento para:", selectedDate.toISOString().split("T")[0])
     setEditingWorkout(null)
     setShowWorkoutForm(true)
     setShowDayActions(false)
@@ -86,20 +95,26 @@ export default function WorkoutCalendar() {
 
   // Editar entrenamiento existente
   const handleEditWorkout = () => {
-    if (selectedDate) {
-      const workout = getWorkoutForDate(selectedDate)
-      if (workout) {
-        console.log("✏️ Editando entrenamiento:", workout.id)
-        setEditingWorkout(workout)
-        setShowWorkoutForm(true)
-        setShowDayActions(false)
-      }
+    if (!selectedDate || !(selectedDate instanceof Date)) {
+      console.warn("⚠️ No valid date selected for editing workout")
+      return
+    }
+
+    const workout = getWorkoutForDate(selectedDate)
+    if (workout) {
+      console.log("✏️ Editando entrenamiento:", workout.id)
+      setEditingWorkout(workout)
+      setShowWorkoutForm(true)
+      setShowDayActions(false)
     }
   }
 
   // Marcar día como descanso
   const handleMarkAsRest = async () => {
-    if (!selectedDate) return
+    if (!selectedDate || !(selectedDate instanceof Date)) {
+      console.warn("⚠️ No valid date selected for marking as rest")
+      return
+    }
 
     const dateString = selectedDate.toISOString().split("T")[0]
     console.log("🛌 Marcando día como descanso:", dateString)
@@ -131,7 +146,10 @@ export default function WorkoutCalendar() {
 
   // Limpiar día
   const handleClearDay = async () => {
-    if (!selectedDate) return
+    if (!selectedDate || !(selectedDate instanceof Date)) {
+      console.warn("⚠️ No valid date selected for clearing day")
+      return
+    }
 
     const workout = getWorkoutForDate(selectedDate)
     if (!workout) return
@@ -161,6 +179,11 @@ export default function WorkoutCalendar() {
 
   // Manejar selección de fecha
   const handleDateSelect = (date: Date | undefined) => {
+    if (date && (!(date instanceof Date) || isNaN(date.getTime()))) {
+      console.warn("⚠️ Invalid date selected:", date)
+      return
+    }
+
     if (date) {
       console.log("📅 Fecha seleccionada:", date.toISOString().split("T")[0])
     }
@@ -173,6 +196,10 @@ export default function WorkoutCalendar() {
   // Ir a hoy
   const goToToday = () => {
     const today = new Date()
+    if (!(today instanceof Date) || isNaN(today.getTime())) {
+      console.error("❌ Error creating today's date")
+      return
+    }
     console.log("📅 Navegando a hoy:", today.toISOString().split("T")[0])
     setCurrentMonth(today)
     setSelectedDate(today)
@@ -482,6 +509,11 @@ export default function WorkoutCalendar() {
               }}
               components={{
                 Day: ({ date, displayMonth, ...props }) => {
+                  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+                    console.warn("⚠️ Invalid date in Day component:", date)
+                    return null
+                  }
+
                   const workout = getWorkoutForDate(date)
                   const isToday = date.toDateString() === new Date().toDateString()
                   const isSelected = selectedDate?.toDateString() === date.toDateString()
