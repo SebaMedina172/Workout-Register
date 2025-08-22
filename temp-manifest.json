@@ -1,15 +1,12 @@
 {
-  "name": "Mi Entrenamiento - Workout Tracker",
-  "short_name": "Mi Entrenamiento",
-  "description": "Aplicación para planificación y registro de entrenamientos",
+  "name": "WorkoutRegister - Mi Entrenamiento",
+  "short_name": "WorkoutReg",
+  "description": "Tracker de Entrenamientos",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#3b82f6",
-  "orientation": "portrait-primary",
-  "scope": "/",
-  "lang": "es",
-  "categories": ["health", "fitness", "lifestyle"],
+  "theme_color": "#000000",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -23,5 +20,6 @@
       "type": "image/png",
       "purpose": "maskable any"
     }
-  ]
+  ],
+  "categories": ["health", "fitness", "lifestyle"]
 }
