@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   description:
     "Aplicación para planificación y registro de entrenamientos. Lleva el control de tus rutinas de ejercicio de forma fácil y eficiente.",
   generator: "v0.app",
-  manifest: "/manifest.json",
   keywords: ["entrenamiento", "fitness", "ejercicio", "rutina", "gym", "workout", "tracker"],
   authors: [{ name: "Mi Entrenamiento App" }],
   creator: "Mi Entrenamiento App",
@@ -87,22 +86,6 @@ html {
   --font-mono: ${GeistMono.variable};
 }
         `}</style>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registrado con éxito: ', registration.scope);
-                    }, function(err) {
-                      console.log('SW falló al registrarse: ', err);
-                    });
-                });
-              }
-            `,
-          }}
-        />
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
