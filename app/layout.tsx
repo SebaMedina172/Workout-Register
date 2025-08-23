@@ -7,68 +7,9 @@ import { LanguageProvider } from "@/lib/i18n/context"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Mi Entrenamiento - Workout Tracker",
-  description:
-    "Aplicación para planificación y registro de entrenamientos. Lleva el control de tus rutinas de ejercicio de forma fácil y eficiente.",
+  title: "WorkoutRegister - Mi Entrenamiento",
+  description: "Tracker de Entrenamientos",
   generator: "v0.app",
-  keywords: ["entrenamiento", "fitness", "ejercicio", "rutina", "gym", "workout", "tracker"],
-  authors: [{ name: "Mi Entrenamiento App" }],
-  creator: "Mi Entrenamiento App",
-  publisher: "Mi Entrenamiento App",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL("https://mi-entrenamiento.vercel.app"),
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: "Mi Entrenamiento - Workout Tracker",
-    description: "Aplicación para planificación y registro de entrenamientos",
-    url: "https://mi-entrenamiento.vercel.app",
-    siteName: "Mi Entrenamiento",
-    images: [
-      {
-        url: "/android-chrome-512x512.png",
-        width: 512,
-        height: 512,
-        alt: "Mi Entrenamiento Logo",
-      },
-    ],
-    locale: "es_ES",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Mi Entrenamiento - Workout Tracker",
-    description: "Aplicación para planificación y registro de entrenamientos",
-    images: ["/android-chrome-512x512.png"],
-  },
-  icons: {
-    icon: [
-      { url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: [{ url: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" }],
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Mi Entrenamiento",
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "Mi Entrenamiento",
-    "application-name": "Mi Entrenamiento",
-    "msapplication-TileColor": "#3b82f6",
-    "msapplication-config": "/browserconfig.xml",
-    "theme-color": "#3b82f6",
-  },
 }
 
 export default function RootLayout({
@@ -77,8 +18,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};

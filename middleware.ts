@@ -1,26 +1,86 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@supabase/ssr"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
+  let response = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  })
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return req.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          req.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: req.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: any) {
+          req.cookies.set({
+            name,
+            value: "",
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: req.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value: "",
+            ...options,
+          })
+        },
+      },
+    },
+  )
 
-  if (!session && req.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/auth", req.url))
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    const pathname = req.nextUrl.pathname
+
+    // Solo redirigir si no hay sesión y está en la página principal
+    if (!session && pathname === "/") {
+      const redirectUrl = new URL("/auth", req.url)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    // Solo redirigir si hay sesión y está en auth (pero no en callback)
+    if (session && pathname === "/auth") {
+      const redirectUrl = new URL("/", req.url)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    return response
+  } catch (error) {
+    console.error("Middleware error:", error)
+    return response
   }
-
-  if (session && req.nextUrl.pathname === "/auth") {
-    return NextResponse.redirect(new URL("/", req.url))
-  }
-
-  return res
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!api|auth/callback|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 }

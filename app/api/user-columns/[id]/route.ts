@@ -1,10 +1,21 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
 
     const {
       data: { session },
@@ -20,7 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Verificar que la columna pertenece al usuario
     const { data: existingColumn } = await supabase
-      .from("user_columns") // CORREGIDO: usar user_columns
+      .from("user_columns")
       .select("id, column_name")
       .eq("id", params.id)
       .eq("user_id", session.user.id)
@@ -38,7 +49,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (display_order !== undefined) updateData.display_order = display_order
 
     const { data: updatedColumn, error } = await supabase
-      .from("user_columns") // CORREGIDO: usar user_columns
+      .from("user_columns")
       .update(updateData)
       .eq("id", params.id)
       .eq("user_id", session.user.id)
@@ -60,7 +71,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
 
     const {
       data: { session },
@@ -73,7 +95,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Verificar que la columna pertenece al usuario
     const { data: existingColumn } = await supabase
-      .from("user_columns") // CORREGIDO: usar user_columns
+      .from("user_columns")
       .select("id, column_name")
       .eq("id", params.id)
       .eq("user_id", session.user.id)
@@ -84,11 +106,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Eliminar la columna (esto también eliminará los datos relacionados por CASCADE)
-    const { error } = await supabase
-      .from("user_columns") // CORREGIDO: usar user_columns
-      .delete()
-      .eq("id", params.id)
-      .eq("user_id", session.user.id)
+    const { error } = await supabase.from("user_columns").delete().eq("id", params.id).eq("user_id", session.user.id)
 
     if (error) {
       console.error("Error deleting user column:", error)

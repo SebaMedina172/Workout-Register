@@ -110,16 +110,20 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   }
 
   // Agregar columna personalizada
-  const addCustomColumn = async () => {
-    if (!newColumnName.trim()) return
+  const addCustomColumn = async (name?: string, type?: "text" | "number" | "boolean") => {
+    // Usar parámetros si se proporcionan, sino usar estado local
+    const columnName = name || newColumnName.trim()
+    const columnType = type || newColumnType
+
+    if (!columnName) return
 
     try {
       const response = await fetch("/api/user-columns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          column_name: newColumnName.trim(),
-          column_type: newColumnType,
+          column_name: columnName,
+          column_type: columnType,
           is_active: true,
         }),
       })
@@ -128,7 +132,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         await loadUserData()
         setNewColumnName("")
         setNewColumnType("text")
-        setMessage(t.workoutForm.columnCreatedSuccessfully.replace("{name}", newColumnName.trim()))
+        setMessage(t.workoutForm.columnCreatedSuccessfully.replace("{name}", columnName))
         setTimeout(() => setMessage(""), 3000)
       }
     } catch (error) {
@@ -148,6 +152,30 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       : t.workoutForm.columnDeactivated.replace("{name}", column?.column_name || "")
     setMessage(message)
     setTimeout(() => setMessage(""), 3000)
+  }
+
+  // Eliminar columna personalizada
+  const deleteCustomColumn = async (columnId: string, columnName: string) => {
+    try {
+      const response = await fetch(`/api/user-columns/${columnId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        // Actualizar el estado local removiendo la columna eliminada
+        setCustomColumns(customColumns.filter((col) => col.id !== columnId))
+        setMessage(`Columna "${columnName}" eliminada exitosamente`)
+        setTimeout(() => setMessage(""), 3000)
+      } else {
+        const errorData = await response.json()
+        setMessage(`Error al eliminar columna: ${errorData.error || "Error desconocido"}`)
+        setTimeout(() => setMessage(""), 3000)
+      }
+    } catch (error) {
+      console.error("Error deleting custom column:", error)
+      setMessage("Error de conexión al eliminar columna")
+      setTimeout(() => setMessage(""), 3000)
+    }
   }
 
   // Manejar cambios de peso
@@ -344,6 +372,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         customColumns={customColumns}
         onAddColumn={addCustomColumn}
         onToggleColumnVisibility={toggleColumnVisibility}
+        onDeleteColumn={deleteCustomColumn}
       />
 
       {showExerciseManager && (

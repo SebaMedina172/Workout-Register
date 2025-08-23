@@ -1,17 +1,28 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 // PUT - Actualizar entrenamiento
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
 
-    // Verificar autenticación
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session) {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -28,7 +39,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       .from("workouts")
       .upsert(
         {
-          user_id: session.user.id,
+          user_id: user.id,
           date: workoutDate,
           is_rest_day: type === "rest",
           type: type === "rest" ? "rest" : "workout",
@@ -145,11 +156,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         console.log(`📊 Guardando datos personalizados para ejercicio ${i + 1}`)
 
         try {
-          // Obtener columnas personalizadas del usuario
           const { data: userColumns, error: columnsError } = await supabase
-            .from("user_columns")
+            .from("user_custom_columns")
             .select("id, column_name, column_type")
-            .eq("user_id", session.user.id)
+            .eq("user_id", user.id)
             .eq("is_active", true)
 
           if (columnsError) {
@@ -207,13 +217,24 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // POST - Crear nuevo entrenamiento
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
 
-    // Verificar autenticación
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session) {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -226,7 +247,7 @@ export async function POST(request: Request) {
     const { data: workout, error: workoutError } = await supabase
       .from("workouts")
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         date: date,
         is_rest_day: type === "rest",
         type: type === "rest" ? "rest" : "workout",
@@ -320,9 +341,9 @@ export async function POST(request: Request) {
 
         try {
           const { data: userColumns, error: columnsError } = await supabase
-            .from("user_columns")
+            .from("user_custom_columns")
             .select("id, column_name, column_type")
-            .eq("user_id", session.user.id)
+            .eq("user_id", user.id)
             .eq("is_active", true)
 
           if (columnsError) {
@@ -380,13 +401,24 @@ export async function POST(request: Request) {
 // DELETE - Eliminar entrenamiento
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
 
-    // Verificar autenticación
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session) {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -399,7 +431,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const { data: workout } = await supabase
       .from("workouts")
       .select("id")
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .eq("date", workoutDate)
       .single()
 

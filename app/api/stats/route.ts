@@ -1,10 +1,22 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
+
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
@@ -23,7 +35,6 @@ export async function GET(request: Request) {
 
     console.log(`📊 Cargando estadísticas del ${startDate} al ${endDate} para usuario:`, session.user.id)
 
-    // Obtener todos los workouts de la semana con ejercicios y registros
     const { data: workouts, error: workoutsError } = await supabase
       .from("workouts")
       .select(`
@@ -56,6 +67,8 @@ export async function GET(request: Request) {
       console.error("❌ Error fetching workouts for stats:", workoutsError)
       return NextResponse.json({ error: "Error al obtener estadísticas" }, { status: 500 })
     }
+
+    console.log(`📊 Workouts encontrados: ${workouts?.length || 0}`)
 
     // Calcular estadísticas
     const stats = calculateWeeklyStats(workouts || [], startDate, endDate)
@@ -111,32 +124,83 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
   const ESTIMATED_SET_EXECUTION_TIME = 45 // segundos por cada set ejecutado
 
   console.log("🔍 Iniciando cálculo de estadísticas...")
+  console.log(`📊 Total de workouts encontrados: ${workouts.length}`)
 
   // Procesar cada día
   allDays.forEach((day) => {
     const dayWorkout = workouts.find((w) => w.date === day)
     const isPastDay = day < today
 
+    console.log(`📅 Procesando día: ${day}`)
+
     if (!dayWorkout) {
+      console.log(`   ❌ No hay workout registrado para ${day}`)
       unregisteredDays++
     } else if (dayWorkout.is_rest_day) {
+      console.log(`   🛌 Día de descanso: ${day}`)
       restDays++
     } else {
       // Es un día de entrenamiento
-      const hasCompletedExercises = dayWorkout.workout_exercises?.some(
-        (ex: any) => ex.is_saved && ex.workout_set_records?.some((sr: any) => sr.is_completed),
-      )
+      console.log(`   💪 Día de entrenamiento: ${day}`)
+      console.log(`   📋 Ejercicios en el workout: ${dayWorkout.workout_exercises?.length || 0}`)
+
+      let hasCompletedExercises = false
+      let savedExercisesCount = 0
+      let completedSetsCount = 0
+
+      if (dayWorkout.workout_exercises && dayWorkout.workout_exercises.length > 0) {
+        dayWorkout.workout_exercises.forEach((ex: any, index: number) => {
+          console.log(`     🏋️ Ejercicio ${index + 1}: ${ex.exercise_name}`)
+          console.log(`       - is_saved: ${ex.is_saved} (tipo: ${typeof ex.is_saved})`)
+          console.log(`       - is_completed: ${ex.is_completed} (tipo: ${typeof ex.is_completed})`)
+          console.log(`       - workout_set_records: ${ex.workout_set_records?.length || 0}`)
+
+          if (ex.is_saved) {
+            savedExercisesCount++
+            console.log(`       ✅ Ejercicio guardado`)
+
+            if (ex.workout_set_records && ex.workout_set_records.length > 0) {
+              const completedSets = ex.workout_set_records.filter((sr: any) => {
+                const isCompleted = sr.is_completed === true || sr.is_completed === "true"
+                console.log(
+                  `         Serie ${sr.set_number}: is_completed=${sr.is_completed} (tipo: ${typeof sr.is_completed}) -> ${isCompleted}`,
+                )
+                return isCompleted
+              })
+
+              completedSetsCount += completedSets.length
+              console.log(`       📊 Series completadas: ${completedSets.length}/${ex.workout_set_records.length}`)
+
+              if (completedSets.length > 0) {
+                hasCompletedExercises = true
+                console.log(`       ✅ Ejercicio tiene series completadas`)
+              }
+            } else {
+              console.log(`       ⚠️ Ejercicio guardado pero sin registros de series`)
+            }
+          } else {
+            console.log(`       ⏭️ Ejercicio no guardado, saltando`)
+          }
+        })
+      }
+
+      console.log(`   📊 Resumen del día ${day}:`)
+      console.log(`     - Ejercicios guardados: ${savedExercisesCount}`)
+      console.log(`     - Series completadas: ${completedSetsCount}`)
+      console.log(`     - Tiene ejercicios completados: ${hasCompletedExercises}`)
 
       if (hasCompletedExercises) {
         workoutDays++
-        console.log(`📅 Día de entrenamiento: ${day}`)
+        console.log(`   ✅ Día contado como entrenamiento completado`)
       } else if (isPastDay) {
         missedDays++
+        console.log(`   ❌ Día pasado sin completar - contado como perdido`)
       } else {
         unregisteredDays++
+        console.log(`   ⏳ Día futuro sin completar - contado como no registrado`)
       }
 
-      // Procesar ejercicios del día
+      // Procesar ejercicios del día para estadísticas detalladas
       dayWorkout.workout_exercises?.forEach((exercise: any) => {
         let muscleGroup = exercise.muscle_group || "Sin clasificar"
         const lowerCaseMuscleGroup = muscleGroup.toLowerCase()
@@ -179,7 +243,9 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
 
         // Procesar registros de series reales y calcular tiempo de entrenamiento
         if (exercise.workout_set_records && exercise.workout_set_records.length > 0) {
-          const completedSetRecords = exercise.workout_set_records.filter((sr: any) => sr.is_completed)
+          const completedSetRecords = exercise.workout_set_records.filter((sr: any) => {
+            return sr.is_completed === true || sr.is_completed === "true"
+          })
           const completedSetCount = completedSetRecords.length
 
           console.log(
@@ -221,6 +287,14 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
   const totalTrainingMinutes = Math.round(totalTrainingSeconds / 60)
   console.log(`⏰ Tiempo total de entrenamiento: ${totalTrainingSeconds}s = ${totalTrainingMinutes} minutos`)
 
+  console.log(`📊 RESUMEN FINAL DE ESTADÍSTICAS:`)
+  console.log(`   - Días de entrenamiento: ${workoutDays}`)
+  console.log(`   - Días de descanso: ${restDays}`)
+  console.log(`   - Días no registrados: ${unregisteredDays}`)
+  console.log(`   - Días perdidos: ${missedDays}`)
+  console.log(`   - Series planificadas: ${totalPlannedSets}`)
+  console.log(`   - Series completadas: ${totalCompletedSets}`)
+
   // Calcular porcentaje de cumplimiento
   const completionRate = totalPlannedSets > 0 ? Math.round((totalCompletedSets / totalPlannedSets) * 100) : 0
 
@@ -250,9 +324,10 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
         if (workout.is_rest_day) {
           status = "rest"
         } else {
-          const hasCompleted = workout.workout_exercises?.some((ex: any) =>
-            ex.workout_set_records?.some((sr: any) => sr.is_completed),
-          )
+          const hasCompleted = workout.workout_exercises?.some((ex: any) => {
+            if (!ex.is_saved) return false
+            return ex.workout_set_records?.some((sr: any) => sr.is_completed === true || sr.is_completed === "true")
+          })
 
           if (hasCompleted) {
             status = "workout"
@@ -265,7 +340,9 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
           // Contar series completadas del día
           workout.workout_exercises?.forEach((ex: any) => {
             ex.workout_set_records?.forEach((sr: any) => {
-              if (sr.is_completed) completedSets++
+              if (sr.is_completed === true || sr.is_completed === "true") {
+                completedSets++
+              }
             })
           })
         }

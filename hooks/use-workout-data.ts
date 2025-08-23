@@ -119,8 +119,10 @@ export function useWorkoutData({ workout, date }: UseWorkoutDataProps) {
 
   // Cargar datos al montar
   useEffect(() => {
-    loadUserData()
-  }, [workout])
+    if (!initialDataLoaded) {
+      loadUserData()
+    }
+  }, [workout?.id]) // Only depend on workout ID, not the entire object
 
   return {
     exercises,

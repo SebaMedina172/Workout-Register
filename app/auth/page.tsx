@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { createBrowserClient } from "@supabase/ssr"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,7 +33,10 @@ export default function AuthPage() {
   }>({})
 
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
   const { t } = useLanguage()
 
   const validateEmail = (email: string) => {
@@ -178,11 +181,7 @@ export default function AuthPage() {
 
         <div className="relative z-10 flex flex-col items-center text-white dark:text-slate-100 text-center max-w-md mx-auto">
           <div className="mb-8">
-              <img 
-                src="/android-chrome-192x192.png" 
-                alt="Mi Entrenamiento Logo" 
-                className="object-contain"
-              />
+            <img src="/android-chrome-192x192.png" alt="Mi Entrenamiento Logo" className="object-contain" />
           </div>
           <h1 className="text-4xl font-bold mb-4">{t.auth.appTitle}</h1>
           <p className="text-xl text-slate-300 dark:text-slate-400 leading-relaxed">{t.auth.appDescription}</p>

@@ -1,11 +1,22 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
 // DELETE - Eliminar ejercicio personalizado
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
 
     const {
       data: { session },
@@ -51,7 +62,18 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 // PUT - Actualizar ejercicio personalizado
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return cookieStore.get(name)?.value
+          },
+        },
+      },
+    )
 
     const {
       data: { session },
@@ -61,17 +83,21 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     const body = await request.json()
-    const { name, category } = body
+    const { name, muscle_group } = body
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: "El nombre del ejercicio es requerido" }, { status: 400 })
+    }
+
+    if (muscle_group && !muscle_group.trim()) {
+      return NextResponse.json({ error: "El grupo muscular no puede estar vacío" }, { status: 400 })
     }
 
     const { data: exercise, error } = await supabase
       .from("user_exercises")
       .update({
         name: name.trim(),
-        category: category || null,
+        muscle_group: muscle_group || null,
       })
       .eq("id", params.id)
       .eq("user_id", session.user.id)

@@ -342,6 +342,12 @@ export interface Translations {
     active: string
     inactive: string
     close: string
+    deleteColumn: string
+    confirmDeleteTitle: string
+    confirmDeleteMessage: string
+    confirmDeleteWarning: string
+    confirmDelete: string
+    cancelDelete: string
   }
   defaultExercises: {
     [key: string]: string
