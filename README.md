@@ -8,6 +8,25 @@ A modern, full-stack workout tracking application built with Next.js 14, TypeScr
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8)
 
+---
+
+## 📑 Index
+- [🌟 Features](#-features)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [🚀 API Routes](#-api-routes)
+- [🔐 Authentication & Authorization](#-authentication--authorization)
+- [📱 Key Components](#-key-components)
+- [🌐 Internationalization (i18n)](#-internationalization-i18n)
+- [📦 Installation & Setup](#-installation--setup)
+- [🗂️ Project Structure](#️-project-structure)
+- [🔄 Data Flow](#-data-flow)
+- [🎯 Key Features Implementation](#-key-features-implementation)
+- [🚧 Future Enhancements](#-future-enhancements)
+- [📄 License](#-license)
+- [👤 Author](#-author)
+
+---
+
 ## 🌟 Features
 
 ### 📅 Workout Planning & Tracking
