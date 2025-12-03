@@ -154,7 +154,7 @@ export const ExerciseSelector = ({
             variant="outline"
             className="w-full justify-start bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
           >
-            {selectedExercise || `🔍 ${t.workoutForm.selectExercise}`}
+            {selectedExercise ? translateExercise(selectedExercise) : `🔍 ${t.workoutForm.selectExercise}`}
           </Button>
         </SheetTrigger>
         <SheetContent side="bottom" className="h-[80vh] dark:bg-gray-800">
@@ -190,9 +190,7 @@ export const ExerciseSelector = ({
   return (
     <Select value={selectedExercise} onValueChange={onExerciseSelect} open={isOpen} onOpenChange={setIsOpen}>
       <SelectTrigger className="w-full bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors">
-        <SelectValue 
-          placeholder={`🔍 ${t.workoutForm.selectExercise}`}
-        >
+        <SelectValue placeholder={`🔍 ${t.workoutForm.selectExercise}`}>
           {selectedExercise ? translateExercise(selectedExercise) : `🔍 ${t.workoutForm.selectExercise}`}
         </SelectValue>
       </SelectTrigger>

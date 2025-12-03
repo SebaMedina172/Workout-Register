@@ -26,6 +26,7 @@ import { ExerciseSelector } from "./exercise-selector"
 import { formatWeight, getMuscleGroupColor } from "./utils"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
+import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
 import { DEFAULT_EXERCISES } from "./constants"
 
@@ -73,6 +74,7 @@ export const MobileExerciseCard = ({
 }: MobileExerciseCardProps) => {
   const { t } = useLanguage()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
+  const { translateExercise } = useExerciseTranslation()
   const [showCustomFields, setShowCustomFields] = useState(false)
 
   const handleExerciseSelect = async (value: string) => {
@@ -321,7 +323,7 @@ export const MobileExerciseCard = ({
                       : "text-gray-900 dark:text-gray-100"
                   }`}
                 >
-                  {exercise.exercise_name}
+                  {translateExercise(exercise.exercise_name)}
                 </span>
               </div>
 
