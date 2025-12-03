@@ -227,7 +227,27 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
 
   // Guardar entrenamiento
   const handleSave = async () => {
-    const validExercises = exercises.filter((ex) => ex.exercise_name.trim() !== "")
+    const exercisesToProcess = exercises.map((ex) => {
+      if (!ex.is_saved && ex.exercise_name.trim() !== "") {
+        const setRecords = Array.from({ length: ex.sets }, (_, index) => ({
+          id: `${ex.id}_set_${index + 1}`,
+          set_number: index + 1,
+          reps: ex.reps,
+          weight: ex.weight || 0,
+          custom_data: { ...ex.custom_data },
+          is_completed: false,
+        }))
+
+        return {
+          ...ex,
+          is_saved: true,
+          set_records: setRecords,
+        }
+      }
+      return ex
+    })
+
+    const validExercises = exercisesToProcess.filter((ex) => ex.exercise_name.trim() !== "")
     if (validExercises.length === 0) {
       alert(t.workoutForm.addAtLeastOneExercise)
       return
