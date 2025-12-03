@@ -55,7 +55,7 @@ export const ExerciseSelector = ({
     ...DEFAULT_EXERCISES.map((ex) => ({
       name: translateExercise(ex.name),
       muscle_group: ex.muscle_group,
-      originalName: ex.name, // Guardamos el nombre original para identificación
+      originalName: ex.name,
     })),
     ...userExercises.map((ex) => ({
       name: ex.name,
@@ -95,6 +95,12 @@ export const ExerciseSelector = ({
   const preventClose = (e: React.SyntheticEvent) => {
     e.preventDefault()
     e.stopPropagation()
+  }
+
+  const keepFocusOnInput = () => {
+    if (searchInputRef.current && document.activeElement !== searchInputRef.current) {
+      searchInputRef.current.focus()
+    }
   }
 
   const handleExerciseSelectSheet = (value: string) => {
@@ -194,7 +200,12 @@ export const ExerciseSelector = ({
           {selectedExercise ? translateExercise(selectedExercise) : `🔍 ${t.workoutForm.selectExercise}`}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="max-h-60 dark:bg-gray-800 dark:border-gray-600" onPointerDown={preventClose}>
+      <SelectContent 
+        className="max-h-60 dark:bg-gray-800 dark:border-gray-600" 
+        onPointerDown={preventClose}
+        onPointerMove={keepFocusOnInput}
+        onMouseMove={keepFocusOnInput}
+      >
         <div
           className="p-3 border-b bg-gray-50 dark:bg-gray-700 dark:border-gray-600"
           onPointerDown={preventClose}
@@ -210,6 +221,14 @@ export const ExerciseSelector = ({
               onPointerDown={preventClose}
               onClick={preventClose}
               onMouseDown={preventClose}
+              onBlur={(e) => {
+                e.preventDefault()
+                setTimeout(() => {
+                  if (searchInputRef.current) {
+                    searchInputRef.current.focus()
+                  }
+                }, 0)
+              }}
               onKeyDown={(e) => {
                 e.stopPropagation()
                 if (e.key === "ArrowDown") {
@@ -229,12 +248,17 @@ export const ExerciseSelector = ({
           </div>
         </div>
 
-        <div className="max-h-40 overflow-y-auto">
+        <div 
+          className="max-h-40 overflow-y-auto"
+          onMouseEnter={keepFocusOnInput}
+          onMouseMove={keepFocusOnInput}
+        >
           {filteredExercises.map((ex) => (
             <SelectItem
               key={ex.originalName}
               value={ex.originalName}
               className="py-2 dark:text-gray-200 dark:hover:bg-gray-700"
+              onMouseEnter={keepFocusOnInput}
             >
               <div className="flex items-center justify-between w-full">
                 <span className="font-medium">{ex.name}</span>
@@ -257,6 +281,7 @@ export const ExerciseSelector = ({
                     key={group}
                     value={`CREATE_|||${searchValue.trim()}|||${group}`}
                     className="text-blue-700 dark:text-blue-300 font-medium ml-2 dark:hover:bg-blue-800/30"
+                    onMouseEnter={keepFocusOnInput}
                   >
                     <div className="flex items-center">
                       <Plus className="w-3 h-3 mr-2" />
