@@ -15,6 +15,7 @@ import { Dumbbell, Mail, Lock, User, CheckCircle, AlertCircle, Loader2, Eye, Eye
 import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
+import Image from 'next/image'
 
 export default function AuthPage() {
   const [email, setEmail] = useState("")
@@ -181,7 +182,13 @@ export default function AuthPage() {
 
         <div className="relative z-10 flex flex-col items-center text-white dark:text-slate-100 text-center max-w-md mx-auto">
           <div className="mb-8">
-            <img src="/android-chrome-192x192.png" alt="Mi Entrenamiento Logo" className="object-contain" />
+            <Image 
+              src="/android-chrome-192x192.png" 
+              alt="Mi Entrenamiento Logo" 
+              width={192} 
+              height={192}
+              className="object-contain" 
+            />
           </div>
           <h1 className="text-4xl font-bold mb-4">{t.auth.appTitle}</h1>
           <p className="text-xl text-slate-300 dark:text-slate-400 leading-relaxed">{t.auth.appDescription}</p>

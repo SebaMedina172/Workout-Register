@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns"
 import { es, enUS } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
@@ -48,33 +48,33 @@ export default function StatsContainer() {
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 }) // Domingo
 
   // Cargar estadísticas
-  const loadStats = async () => {
-    try {
-      setLoading(true)
-      const startDate = format(weekStart, "yyyy-MM-dd")
-      const endDate = format(weekEnd, "yyyy-MM-dd")
+  const loadStats = useCallback(async () => {
+  try {
+    setLoading(true)
+    const startDate = format(weekStart, "yyyy-MM-dd")
+    const endDate = format(weekEnd, "yyyy-MM-dd")
 
-      console.log(t.stats.loadingStats.replace("{startDate}", startDate).replace("{endDate}", endDate))
+    console.log(t.stats.loadingStats.replace("{startDate}", startDate).replace("{endDate}", endDate))
 
-      const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data)
-        console.log(t.stats.statsLoaded, data)
-      } else {
-        console.error(t.stats.errorLoadingStats)
-      }
-    } catch (error) {
-      console.error(t.stats.error, error)
-    } finally {
-      setLoading(false)
+    const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
+    if (response.ok) {
+      const data = await response.json()
+      setStats(data)
+      console.log(t.stats.statsLoaded, data)
+    } else {
+      console.error(t.stats.errorLoadingStats)
     }
+  } catch (error) {
+    console.error(t.stats.error, error)
+  } finally {
+    setLoading(false)
   }
+}, [weekStart, weekEnd, t.stats])
 
   // Cargar estadísticas cuando cambia la semana
   useEffect(() => {
     loadStats()
-  }, [currentWeek])
+  }, [loadStats])
 
   // Navegación de semanas
   const goToPreviousWeek = () => {

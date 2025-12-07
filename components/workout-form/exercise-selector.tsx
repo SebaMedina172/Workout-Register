@@ -131,7 +131,7 @@ export const ExerciseSelector = ({
               {filteredExercises.length > 0 && <Separator />}
               <div className="p-4 bg-blue-50 dark:bg-blue-900/30">
                 <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-3">
-                  {t.workoutForm.createCustomExercise} "{searchValue.trim()}":
+                  {t.workoutForm.createCustomExercise} &quot;{searchValue.trim()}&quot;:
                 </p>
                 {MUSCLE_GROUPS.map((group) => (
                   <div
@@ -274,7 +274,7 @@ export const ExerciseSelector = ({
               <Separator />
               <div className="p-2 bg-blue-50 dark:bg-blue-900/30">
                 <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                  {t.workoutForm.createCustomExercise} "{searchValue.trim()}":
+                  {t.workoutForm.createCustomExercise} &quot;{searchValue.trim()}&quot;:
                 </p>
                 {MUSCLE_GROUPS.map((group) => (
                   <SelectItem

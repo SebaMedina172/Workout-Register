@@ -10,6 +10,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ProfileDropdown } from "@/components/profile-dropdown"
+import Image from 'next/image'
 
 export default function HomePage() {
   const { t } = useLanguage()
@@ -42,9 +43,11 @@ export default function HomePage() {
             {/* Logo and Title */}
             <div className="flex items-center space-x-3">
               <div className="p-2 rounded-lg">
-                <img 
+                <Image 
                   src="/android-chrome-512x512.png" 
                   alt="Mi Entrenamiento Logo" 
+                  width={48}
+                  height={48}
                   className="h-12 w-12 object-contain"
                 />
               </div>
