@@ -103,6 +103,46 @@ A modern, full-stack workout tracking application built with Next.js 14, TypeScr
 - **Linting**: ESLint
 - **CSS Processing**: PostCSS + Autoprefixer
 
+## 🧪 Testing & Quality Assurance
+
+![Tests](https://img.shields.io/badge/tests-34%20passing-success)
+![Coverage](https://img.shields.io/badge/coverage-84%25-brightgreen)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-automated-blue)
+
+This project includes comprehensive automated testing to ensure code quality and reliability:
+
+### Test Coverage
+- **84% overall code coverage**
+- **100% coverage** on utility functions
+- **80% coverage** on custom hooks
+- **34 automated tests** with Vitest + React Testing Library
+
+### Testing Stack
+- **Vitest**: Fast unit test framework
+- **React Testing Library**: Component testing utilities
+- **Testing Library User Event**: User interaction simulation
+- **jsdom**: DOM environment for tests
+
+### Run Tests Locally
+```bash
+npm run test              # Run all tests
+npm run test:coverage     # Generate coverage report
+npm run test:ui          # Interactive test UI
+npm run test -- workout   # Run specific test file
+```
+
+### Test Structure
+```
+__tests__/
+├── lib/
+│   └── workout-utils.test.ts     # Utility functions (22 tests)
+└── hooks/
+    └── use-exercise-actions.test.ts # Exercise hooks (12 tests)
+```
+
+### Continuous Integration
+All tests run automatically on every push and pull request via GitHub Actions, ensuring code quality is maintained throughout development.
+
 ## 🚀 API Routes
 
 ### Workouts
