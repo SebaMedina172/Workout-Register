@@ -48,33 +48,34 @@ export default function StatsContainer() {
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 }) // Domingo
 
   // Cargar estadísticas
-  const loadStats = useCallback(async () => {
-  try {
-    setLoading(true)
-    const startDate = format(weekStart, "yyyy-MM-dd")
-    const endDate = format(weekEnd, "yyyy-MM-dd")
+  const loadStats = async () => {
+    try {
+      setLoading(true)
+      const startDate = format(weekStart, "yyyy-MM-dd")
+      const endDate = format(weekEnd, "yyyy-MM-dd")
 
-    console.log(t.stats.loadingStats.replace("{startDate}", startDate).replace("{endDate}", endDate))
+      console.log(t.stats.loadingStats.replace("{startDate}", startDate).replace("{endDate}", endDate))
 
-    const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
-    if (response.ok) {
-      const data = await response.json()
-      setStats(data)
-      console.log(t.stats.statsLoaded, data)
-    } else {
-      console.error(t.stats.errorLoadingStats)
+      const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data)
+        console.log(t.stats.statsLoaded, data)
+      } else {
+        console.error(t.stats.errorLoadingStats)
+      }
+    } catch (error) {
+      console.error(t.stats.error, error)
+    } finally {
+      setLoading(false)
     }
-  } catch (error) {
-    console.error(t.stats.error, error)
-  } finally {
-    setLoading(false)
+
   }
-}, [weekStart, weekEnd, t.stats])
 
   // Cargar estadísticas cuando cambia la semana
   useEffect(() => {
     loadStats()
-  }, [loadStats])
+  }, [currentWeek])
 
   // Navegación de semanas
   const goToPreviousWeek = () => {
