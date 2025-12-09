@@ -16,16 +16,42 @@ export default function PRCard({ title, value, unit, date, previousValue }: PRCa
   const { t, language } = useLanguage()
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return t.exerciseHistory.noRecordYet
-    // Parse as UTC to avoid timezone offset issues
-    const [year, month, day] = dateString.split("-").map(Number)
-    const utcDate = new Date(Date.UTC(year, month - 1, day))
-    return utcDate.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    })
+    if (!dateString || dateString.trim() === "") return t.exerciseHistory.noRecordYet
+
+    try {
+      // Handle ISO timestamp format (e.g., "2024-01-15T00:00:00.000Z")
+      let year: number, month: number, day: number
+
+      if (dateString.includes("T")) {
+        // ISO format - extract date part only
+        const datePart = dateString.split("T")[0]
+        const parts = datePart.split("-").map(Number)
+        year = parts[0]
+        month = parts[1]
+        day = parts[2]
+      } else {
+        // Simple YYYY-MM-DD format
+        const parts = dateString.split("-").map(Number)
+        year = parts[0]
+        month = parts[1]
+        day = parts[2]
+      }
+
+      // Validate that values are valid numbers
+      if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        return t.exerciseHistory.noRecordYet
+      }
+
+      const utcDate = new Date(Date.UTC(year, month - 1, day))
+      return utcDate.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      })
+    } catch (error) {
+      return t.exerciseHistory.noRecordYet
+    }
   }
 
   const improvement = value && previousValue ? value - previousValue : null

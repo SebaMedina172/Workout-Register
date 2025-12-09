@@ -48,11 +48,20 @@ export async function GET(request: Request, { params }: { params: { exerciseName
 
     const weightRecord = records.find((r: any) => r.record_type === "max_weight")
 
+    const normalizeDate = (dateValue: string | null): string | null => {
+      if (!dateValue) return null
+      // If it's an ISO timestamp, extract just the date part
+      if (dateValue.includes("T")) {
+        return dateValue.split("T")[0]
+      }
+      return dateValue
+    }
+
     return NextResponse.json({
       max_weight: weightRecord
         ? {
             value: weightRecord.value,
-            date: weightRecord.achieved_at,
+            date: normalizeDate(weightRecord.achieved_at),
             previousValue: weightRecord.previous_record,
           }
         : null,
