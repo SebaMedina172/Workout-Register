@@ -352,4 +352,25 @@ export interface Translations {
   defaultExercises: {
     [key: string]: string
   }
+  exerciseHistory: {
+    personalRecord: string
+    maxWeight: string
+    achievedOn: string
+    vsAnterior: string
+    noRecordYet: string
+    comparedToLastWorkout: string
+    comparedWith: string
+    weight: string
+    reps: string
+    setsCompleted: string
+    same: string
+    weightProgress: string
+    recentWorkouts: string
+    noHistoryYet: string
+    incomplete: string
+    bodyweight: string
+    sets: string
+    prDay: string
+    bodyweightExercise: string
+  }
 }
