@@ -356,11 +356,19 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
         return setRecord
       }) || []
 
-    // Update state
+    const allSetsCompleted = updatedSetRecords.length > 0 && updatedSetRecords.every((sr) => sr.is_completed)
+    const noSetsCompleted = updatedSetRecords.every((sr) => !sr.is_completed)
+
+    // Update state with auto-completion logic
     setExercises(
       exercises.map((ex) => {
         if (ex.id === exerciseId) {
-          return { ...ex, set_records: updatedSetRecords }
+          return {
+            ...ex,
+            set_records: updatedSetRecords,
+            // Auto-mark exercise as completed if all sets are done, or uncomplete if no sets are done
+            is_completed: allSetsCompleted ? true : noSetsCompleted ? false : ex.is_completed,
+          }
         }
         return ex
       }),
