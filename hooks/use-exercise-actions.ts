@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useMemo } from "react"
+import { useMemo, useRef } from "react"
 import type { WorkoutExercise, Workout, SetRecord } from "@/components/workout-form/types"
 
 interface UseExerciseActionsProps {
@@ -12,7 +12,61 @@ interface UseExerciseActionsProps {
   setMessage: (message: string) => void
 }
 
+const recordingInProgress = new Set<string>()
+
+async function recordExerciseHistoryOnCompletion(
+  exerciseName: string,
+  muscleGroup: string | null | undefined,
+  sets: number,
+  reps: number,
+  weight: number,
+  workoutDate: string,
+) {
+  const recordKey = `${exerciseName}_${workoutDate}`
+
+  // Skip if already recording this exercise
+  if (recordingInProgress.has(recordKey)) {
+    console.log(`[v0] Skipping duplicate recording for ${exerciseName} on ${workoutDate}`)
+    return { success: true, skipped: true }
+  }
+
+  recordingInProgress.add(recordKey)
+
+  try {
+    const response = await fetch("/api/exercises/record-history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        exerciseName,
+        muscleGroup: muscleGroup || null,
+        sets,
+        reps,
+        weight,
+        date: workoutDate,
+      }),
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      return { success: true, data }
+    } else {
+      const errorData = await response.json()
+      console.error(`[v0] Error recording exercise history:`, errorData)
+      return { success: false, error: errorData }
+    }
+  } catch (error) {
+    console.error(`[v0] Error calling record-history API:`, error)
+    return { success: false, error }
+  } finally {
+    setTimeout(() => {
+      recordingInProgress.delete(recordKey)
+    }, 2000)
+  }
+}
+
 export function useExerciseActions({ exercises, setExercises, workout, setMessage }: UseExerciseActionsProps) {
+  const recordedExercises = useRef(new Set<string>())
+
   // Agregar nuevo ejercicio
   const addExercise = () => {
     const newExercise: WorkoutExercise = {
@@ -34,7 +88,20 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
   }
 
   // Eliminar ejercicio
-  const removeExercise = (id: string) => {
+  const removeExercise = async (id: string) => {
+    const exerciseToRemove = exercises.find((ex) => ex.id === id)
+
+    if (exerciseToRemove && exerciseToRemove.is_saved && workout?.date) {
+      try {
+        await fetch(
+          `/api/exercises/record-history?exerciseName=${encodeURIComponent(exerciseToRemove.exercise_name)}&date=${workout.date}`,
+          { method: "DELETE" },
+        )
+      } catch (error) {
+        console.error("[v0] Error deleting exercise history:", error)
+      }
+    }
+
     setExercises(exercises.filter((ex) => ex.id !== id))
   }
 
@@ -138,23 +205,17 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
   // Guardar automáticamente estados de completado
   const saveCompletionStates = async () => {
     if (!workout || !workout.id) {
-      console.log("⚠️ No hay workout ID, no se puede guardar automáticamente")
       return
     }
 
     try {
-      console.log("💾 Guardando estados de completado automáticamente...")
-      console.log("📊 Ejercicios a guardar:", exercises.length)
-
       const response = await fetch(`/api/workouts/${workout.id}/completion`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ exercises }),
       })
 
-      if (response.ok) {
-        console.log("✅ Estados de completado guardados automáticamente")
-      } else {
+      if (!response.ok) {
         const errorData = await response.json()
         console.error("❌ Error guardando estados de completado:", errorData)
       }
@@ -179,13 +240,16 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
   }, [workout, exercises])
 
   // Alternar completado de ejercicio completo
-  const toggleExerciseCompletion = (id: string) => {
+  const toggleExerciseCompletion = async (id: string) => {
+    const exerciseToToggle = exercises.find((ex) => ex.id === id)
+    if (!exerciseToToggle) return
+
+    const newCompletedState = !exerciseToToggle.is_completed
+    const recordKey = workout?.date ? `${exerciseToToggle.exercise_name}_${workout.date}` : null
+
     setExercises(
       exercises.map((ex) => {
         if (ex.id === id) {
-          const newCompletedState = !ex.is_completed
-          console.log(`🎯 ${newCompletedState ? "Marcando" : "Desmarcando"} ejercicio completo: ${ex.exercise_name}`)
-
           const updatedSetRecords =
             ex.set_records?.map((setRecord) => ({
               ...setRecord,
@@ -203,47 +267,90 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     )
 
     // Guardar automáticamente si es un workout existente
+    if (
+      newCompletedState &&
+      exerciseToToggle.is_saved &&
+      workout?.date &&
+      recordKey &&
+      !recordedExercises.current.has(recordKey)
+    ) {
+      recordedExercises.current.add(recordKey)
+
+      const result = await recordExerciseHistoryOnCompletion(
+        exerciseToToggle.exercise_name,
+        exerciseToToggle.muscle_group,
+        exerciseToToggle.sets,
+        exerciseToToggle.reps,
+        exerciseToToggle.weight || 0,
+        workout.date,
+      )
+
+      if (result.success && !result.skipped) {
+        setMessage(`Ejercicio completado y registrado`)
+        setTimeout(() => setMessage(""), 3000)
+      }
+    }
+
     if (workout && workout.id) {
-      console.log("💾 Guardando cambio de completado de ejercicio...")
       debouncedSaveCompletion()
     }
   }
 
   // Alternar completado de serie individual
-  const toggleSetCompletion = (exerciseId: string, setId: string) => {
+  const toggleSetCompletion = async (exerciseId: string, setId: string) => {
+    const exercise = exercises.find((ex) => ex.id === exerciseId)
+    if (!exercise) return
+
+    const wasAlreadyCompleted = exercise.is_completed
+    const recordKey = workout?.date ? `${exercise.exercise_name}_${workout.date}` : null
+
+    const updatedSetRecords =
+      exercise.set_records?.map((setRecord) => {
+        if (setRecord.id === setId) {
+          return { ...setRecord, is_completed: !setRecord.is_completed }
+        }
+        return setRecord
+      }) || []
+
+    const allSetsCompleted = updatedSetRecords.length > 0 && updatedSetRecords.every((sr) => sr.is_completed)
+
+    // Update state with the pre-calculated values
     setExercises(
       exercises.map((ex) => {
         if (ex.id === exerciseId) {
-          const updatedSetRecords =
-            ex.set_records?.map((setRecord) => {
-              if (setRecord.id === setId) {
-                const newCompletedState = !setRecord.is_completed
-                console.log(
-                  `🎯 ${newCompletedState ? "Completando" : "Desmarcando"} serie ${setRecord.set_number} de ${ex.exercise_name}`,
-                )
-                return { ...setRecord, is_completed: newCompletedState }
-              }
-              return setRecord
-            }) || []
-
-          // Verificar si todas las series están completadas
-          const allSetsCompleted =
-            updatedSetRecords.length > 0 && updatedSetRecords.every((sr) => sr.is_completed === true)
-          const exerciseCompleted = allSetsCompleted
-
-          return {
-            ...ex,
-            set_records: updatedSetRecords,
-            is_completed: exerciseCompleted,
-          }
+          return { ...ex, set_records: updatedSetRecords }
         }
         return ex
       }),
     )
 
     // Guardar automáticamente si es un workout existente
+    if (
+      allSetsCompleted &&
+      !wasAlreadyCompleted &&
+      exercise.is_saved &&
+      workout?.date &&
+      recordKey &&
+      !recordedExercises.current.has(recordKey)
+    ) {
+      recordedExercises.current.add(recordKey)
+
+      const result = await recordExerciseHistoryOnCompletion(
+        exercise.exercise_name,
+        exercise.muscle_group,
+        exercise.sets,
+        exercise.reps,
+        exercise.weight || 0,
+        workout.date,
+      )
+
+      if (result.success && !result.skipped) {
+        setMessage(`${exercise.exercise_name} completado - Historial registrado`)
+        setTimeout(() => setMessage(""), 3000)
+      }
+    }
+
     if (workout && workout.id) {
-      console.log("💾 Guardando cambio de completado de serie...")
       debouncedSaveCompletion()
     }
   }
