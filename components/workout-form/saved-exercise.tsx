@@ -143,7 +143,7 @@ export const SavedExercise = ({
               title="View exercise history"
             >
               <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400 mr-1" />
-              History
+              {t.exerciseHistory.historyButton}
             </Button>
 
             <Button
@@ -212,6 +212,7 @@ export const SavedExercise = ({
               title="View exercise history"
             >
               <BarChart3 className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+              {t.exerciseHistory.historyButton}
             </Button>
 
             <Button
@@ -221,6 +222,7 @@ export const SavedExercise = ({
               className="hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 border-2 transition-all duration-200 h-7 px-2 flex-shrink-0"
             >
               <Edit className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+              {t.workoutForm.edit}
             </Button>
           </div>
 

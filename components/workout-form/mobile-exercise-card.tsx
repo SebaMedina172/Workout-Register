@@ -21,8 +21,10 @@ import {
   CheckCircle2,
   Circle,
   Dumbbell,
+  BarChart3,
 } from "lucide-react"
 import { ExerciseSelector } from "./exercise-selector"
+import { ExerciseHistoryDialog } from "@/components/exercise-history/exercise-history-dialog"
 import { formatWeight, getMuscleGroupColor } from "./utils"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
@@ -76,6 +78,7 @@ export const MobileExerciseCard = ({
   const { translateMuscleGroup } = useMuscleGroupTranslation()
   const { translateExercise } = useExerciseTranslation()
   const [showCustomFields, setShowCustomFields] = useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
   const handleExerciseSelect = async (value: string) => {
     if (value.startsWith("CREATE_")) {
@@ -284,6 +287,7 @@ export const MobileExerciseCard = ({
   const totalSets = exercise.set_records?.length || 0
 
   return (
+  <>
     <Card
       className={`border-l-4 ${
         exercise.is_completed 
@@ -358,6 +362,15 @@ export const MobileExerciseCard = ({
             >
               {completedSets}/{totalSets}
             </Badge>
+            <Button
+              onClick={() => setIsHistoryOpen(true)}
+              size="sm"
+              variant="outline"
+              className="h-8 px-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-600 border-gray-200 dark:border-gray-700"
+              title={t.exerciseHistory.historyButton}
+            >
+              <BarChart3 className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+            </Button>
             <Button
               onClick={() => onEditExercise(exercise.id)}
               size="sm"
@@ -505,5 +518,12 @@ export const MobileExerciseCard = ({
         </CollapsibleContent>
       </Collapsible>
     </Card>
+
+    <ExerciseHistoryDialog
+      exerciseName={exercise.exercise_name}
+      isOpen={isHistoryOpen}
+      onClose={() => setIsHistoryOpen(false)}
+    />
+  </>
   )
 }
