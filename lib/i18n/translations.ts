@@ -481,6 +481,7 @@ export const translations: Record<"es" | "en", Translations> = {
       sets: "sets",
       prDay: "PR",
       bodyweightExercise: "Ejercicio de peso corporal - sin datos de peso para graficar",
+      historyButton: "Historial",
     },
   },
   en: {
@@ -963,6 +964,7 @@ export const translations: Record<"es" | "en", Translations> = {
       sets: "sets",
       prDay: "PR",
       bodyweightExercise: "Bodyweight exercise - no weight data to chart",
+      historyButton: "History",
     },
   },
 }

@@ -373,5 +373,6 @@ export interface Translations {
     sets: string
     prDay: string
     bodyweightExercise: string
+    historyButton: string
   }
 }
