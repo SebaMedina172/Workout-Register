@@ -442,12 +442,90 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     // Eliminar set records primero
-    console.log("🗑️ Eliminando registros de series...")
     await supabase.from("workout_set_records").delete().eq("workout_id", workout.id)
 
-    // Eliminar ejercicios (cascada automática debería eliminar custom_data)
-    console.log("🗑️ Eliminando ejercicios...")
+    // Eliminar ejercicios
     await supabase.from("workout_exercises").delete().eq("workout_id", workout.id)
+
+    const { error: historyDeleteError } = await supabase
+      .from("exercise_history")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("workout_date", workoutDate)
+
+    if (historyDeleteError) {
+      console.error("Error eliminando historial de ejercicios:", historyDeleteError)
+    }
+
+    // Get all exercises that had history on this date
+    const { data: exercisesWithHistory } = await supabase
+      .from("personal_records")
+      .select("exercise_name")
+      .eq("user_id", user.id)
+
+    if (exercisesWithHistory) {
+      for (const record of exercisesWithHistory) {
+        // Check if there's any remaining history for this exercise
+        const { data: remainingHistory } = await supabase
+          .from("exercise_history")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("exercise_name", record.exercise_name)
+          .limit(1)
+
+        // If no history remains, delete the PR
+        if (!remainingHistory || remainingHistory.length === 0) {
+          await supabase
+            .from("personal_records")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("exercise_name", record.exercise_name)
+        } else {
+          const { data: currentPR } = await supabase
+            .from("personal_records")
+            .select("achieved_at")
+            .eq("user_id", user.id)
+            .eq("exercise_name", record.exercise_name)
+            .eq("record_type", "max_weight")
+            .single()
+
+          if (currentPR && currentPR.achieved_at === workoutDate) {
+            // Need to recalculate PR from remaining history
+            const { data: maxWeightRecord } = await supabase
+              .from("exercise_history")
+              .select("weight, reps, sets, workout_date")
+              .eq("user_id", user.id)
+              .eq("exercise_name", record.exercise_name)
+              .not("weight", "is", null)
+              .order("weight", { ascending: false })
+              .limit(1)
+              .single()
+
+            if (maxWeightRecord && maxWeightRecord.weight) {
+              await supabase
+                .from("personal_records")
+                .update({
+                  value: maxWeightRecord.weight,
+                  weight: maxWeightRecord.weight,
+                  reps: maxWeightRecord.reps,
+                  sets: maxWeightRecord.sets,
+                  achieved_at: maxWeightRecord.workout_date,
+                })
+                .eq("user_id", user.id)
+                .eq("exercise_name", record.exercise_name)
+                .eq("record_type", "max_weight")
+            } else {
+              // No weighted records remain, delete PR
+              await supabase
+                .from("personal_records")
+                .delete()
+                .eq("user_id", user.id)
+                .eq("exercise_name", record.exercise_name)
+            }
+          }
+        }
+      }
+    }
 
     // Eliminar workout principal
     const { error: deleteError } = await supabase.from("workouts").delete().eq("id", workout.id)
