@@ -121,6 +121,23 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
   const muscleGroupSets: Record<string, number> = {}
   allMuscleGroups.forEach((group) => (muscleGroupSets[group] = 0))
 
+  const exercisesByMuscleGroup: Record<
+    string,
+    Array<{
+      name: string
+      sets: number
+      reps: number
+      weight: number
+      completedSets: number
+      totalSets: number
+      date: string
+      isCompleted: boolean
+    }>
+  > = {}
+  allMuscleGroups.forEach((group) => {
+    exercisesByMuscleGroup[group] = []
+  })
+
   const ESTIMATED_SET_EXECUTION_TIME = 45 // segundos por cada set ejecutado
 
   console.log("🔍 Iniciando cálculo de estadísticas...")
@@ -279,12 +296,39 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
               totalCompletedSets++
             })
           }
+
+          if (allMuscleGroups.includes(muscleGroup)) {
+            // Find best set (highest weight, or highest reps if weight is same)
+            let bestWeight = exercise.weight || 0
+            let bestReps = exercise.reps || 0
+
+            completedSetRecords.forEach((sr: any) => {
+              const setWeight = sr.weight || 0
+              const setReps = sr.reps || 0
+              if (setWeight > bestWeight || (setWeight === bestWeight && setReps > bestReps)) {
+                bestWeight = setWeight
+                bestReps = setReps
+              }
+            })
+
+            exercisesByMuscleGroup[muscleGroup].push({
+              name: exercise.exercise_name,
+              sets: exercise.sets || 0,
+              reps: bestReps,
+              weight: bestWeight,
+              completedSets: completedSetRecords.length,
+              totalSets: exercise.workout_set_records.length,
+              date: day,
+              isCompleted: exercise.is_completed === true || exercise.is_completed === "true",
+            })
+          }
         }
       })
     }
   })
 
   const totalTrainingMinutes = Math.round(totalTrainingSeconds / 60)
+
   console.log(`⏰ Tiempo total de entrenamiento: ${totalTrainingSeconds}s = ${totalTrainingMinutes} minutos`)
 
   console.log(`📊 RESUMEN FINAL DE ESTADÍSTICAS:`)
@@ -314,6 +358,7 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
       totalTrainingMinutes,
     },
     muscleGroups: muscleGroupsArray,
+    exercisesByMuscleGroup,
     dailyBreakdown: allDays.map((day) => {
       const workout = workouts.find((w) => w.date === day)
       const isPastDay = day < today

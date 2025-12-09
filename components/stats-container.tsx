@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns"
 import { es, enUS } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import StatsOverview from "@/components/stats/stats-overview"
 import VolumeChart from "@/components/stats/volume-chart"
 import WeeklyProgress from "@/components/stats/weekly-progress"
+import ExercisePerformance from "@/components/stats/exercise-performance"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/lib/i18n/context"
@@ -28,6 +29,19 @@ interface WeeklyStats {
     sets: number
     volume: number
   }>
+  exercisesByMuscleGroup: Record<
+    string,
+    Array<{
+      name: string
+      sets: number
+      reps: number
+      weight: number
+      completedSets: number
+      totalSets: number
+      date: string
+      isCompleted: boolean
+    }>
+  >
   dailyBreakdown: Array<{
     date: string
     status: "workout" | "rest" | "planned" | "unregistered" | "missed"
@@ -119,6 +133,7 @@ export default function StatsContainer() {
           ))}
         </div>
         <Skeleton className="h-64 sm:h-80 lg:h-96 w-full" />
+        <Skeleton className="h-64 sm:h-80 w-full" />
         <Skeleton className="h-32 sm:h-40 lg:h-48 w-full" />
       </div>
     )
@@ -189,6 +204,12 @@ export default function StatsContainer() {
 
           {/* Gráfico principal de distribución de series */}
           <VolumeChart data={stats.muscleGroups} />
+
+          {/* Exercise Performance */}
+          <ExercisePerformance
+            muscleGroups={stats.muscleGroups}
+            exercisesByMuscleGroup={stats.exercisesByMuscleGroup || {}}
+          />
 
           {/* Progreso semanal */}
           <WeeklyProgress dailyData={stats.dailyBreakdown} weekStart={weekStart} />
