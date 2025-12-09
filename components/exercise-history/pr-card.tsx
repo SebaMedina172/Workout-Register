@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trophy } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface PRCardProps {
   title: string
@@ -12,12 +13,18 @@ interface PRCardProps {
 }
 
 export default function PRCard({ title, value, unit, date, previousValue }: PRCardProps) {
+  const { t, language } = useLanguage()
+
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return "Never"
-    return new Date(dateString).toLocaleDateString("es-ES", {
+    if (!dateString) return t.exerciseHistory.noRecordYet
+    // Parse as UTC to avoid timezone offset issues
+    const [year, month, day] = dateString.split("-").map(Number)
+    const utcDate = new Date(Date.UTC(year, month - 1, day))
+    return utcDate.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
+      timeZone: "UTC",
     })
   }
 
@@ -29,7 +36,7 @@ export default function PRCard({ title, value, unit, date, previousValue }: PRCa
         <div className="absolute top-3 right-3 z-10">
           <Badge className="bg-amber-500 text-white hover:bg-amber-600">
             <Trophy className="w-3 h-3 mr-1" />
-            PR
+            {t.exerciseHistory.prDay}
           </Badge>
         </div>
       )}
@@ -49,14 +56,16 @@ export default function PRCard({ title, value, unit, date, previousValue }: PRCa
 
               {improvement !== null && improvement > 0 && (
                 <div className="text-xs text-green-600 dark:text-green-400">
-                  +{improvement} {unit} vs anterior
+                  +{improvement} {unit} {t.exerciseHistory.vsAnterior}
                 </div>
               )}
 
-              <div className="text-xs text-muted-foreground">Logrado: {formatDate(date)}</div>
+              <div className="text-xs text-muted-foreground">
+                {t.exerciseHistory.achievedOn} {formatDate(date)}
+              </div>
             </>
           ) : (
-            <div className="py-4 text-center text-muted-foreground">Sin registro todavia</div>
+            <div className="py-4 text-center text-muted-foreground">{t.exerciseHistory.noRecordYet}</div>
           )}
         </div>
       </CardContent>

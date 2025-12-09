@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Spinner } from "@/components/ui/spinner"
+import { useLanguage } from "@/lib/i18n/context"
+import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
 import PRCard from "./pr-card"
 import HistoryList from "./history-list"
 import ProgressChart from "./progress-chart"
@@ -35,6 +37,8 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
   const [history, setHistory] = useState<WorkoutHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useLanguage()
+  const { translateExercise } = useExerciseTranslation()
 
   useEffect(() => {
     if (!isOpen || !exerciseName) return
@@ -92,8 +96,10 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{exerciseName}</DialogTitle>
-          <DialogDescription>Personal records and workout history</DialogDescription>
+          <DialogTitle className="text-2xl font-bold">{translateExercise(exerciseName)}</DialogTitle>
+          <DialogDescription>
+            {t.exerciseHistory.personalRecord} & {t.exerciseHistory.recentWorkouts}
+          </DialogDescription>
         </DialogHeader>
 
         {loading && (
@@ -112,9 +118,9 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
           <div className="space-y-6">
             {prData && (
               <div>
-                <h2 className="text-lg font-semibold mb-4">Personal Record</h2>
+                <h2 className="text-lg font-semibold mb-4">{t.exerciseHistory.personalRecord}</h2>
                 <PRCard
-                  title="Max Weight"
+                  title={t.exerciseHistory.maxWeight}
                   value={prData.maxWeight.value}
                   unit="kg"
                   date={prData.maxWeight.date}
@@ -125,7 +131,7 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
 
             {lastWorkout && previousWorkout && (
               <div>
-                <h2 className="text-lg font-semibold mb-4">Compared to Last Workout</h2>
+                <h2 className="text-lg font-semibold mb-4">{t.exerciseHistory.comparedToLastWorkout}</h2>
                 <LastWorkoutComparison current={lastWorkout} previous={previousWorkout} />
               </div>
             )}
@@ -133,14 +139,14 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
             {/* Progress Chart */}
             {history.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-4">Weight Progress</h2>
+                <h2 className="text-lg font-semibold mb-4">{t.exerciseHistory.weightProgress}</h2>
                 <ProgressChart data={history} />
               </div>
             )}
 
             {/* Last 5 workouts */}
             <div>
-              <h2 className="text-lg font-semibold mb-4">Recent Workouts</h2>
+              <h2 className="text-lg font-semibold mb-4">{t.exerciseHistory.recentWorkouts}</h2>
               <HistoryList workouts={history.slice(0, 5)} />
             </div>
           </div>

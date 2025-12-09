@@ -1,5 +1,6 @@
 "use client"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface WorkoutEntry {
   date: string
@@ -15,18 +16,25 @@ interface ProgressChartProps {
 }
 
 export default function ProgressChart({ data }: ProgressChartProps) {
+  const { t, language } = useLanguage()
+
   const chartData = data
     .slice()
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .map((entry) => ({
-      date: new Date(entry.date).toLocaleDateString("es-ES", {
-        month: "short",
-        day: "numeric",
-      }),
-      weight: entry.weight,
-      fullDate: entry.date,
-      wasPRDay: entry.wasPRDay,
-    }))
+    .map((entry) => {
+      const [year, month, day] = entry.date.split("-").map(Number)
+      const utcDate = new Date(Date.UTC(year, month - 1, day))
+      return {
+        date: utcDate.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
+          month: "short",
+          day: "numeric",
+          timeZone: "UTC",
+        }),
+        weight: entry.weight,
+        fullDate: entry.date,
+        wasPRDay: entry.wasPRDay,
+      }
+    })
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -35,7 +43,7 @@ export default function ProgressChart({ data }: ProgressChartProps) {
         <div className="rounded-lg border bg-background p-2 shadow-lg">
           <p className="text-sm font-medium">{dataPoint.date}</p>
           <p className="text-sm text-accent-foreground">{dataPoint.weight} kg</p>
-          {dataPoint.wasPRDay && <p className="text-xs text-amber-500 font-medium">PR Day!</p>}
+          {dataPoint.wasPRDay && <p className="text-xs text-amber-500 font-medium">{t.exerciseHistory.prDay}!</p>}
         </div>
       )
     }
@@ -47,7 +55,7 @@ export default function ProgressChart({ data }: ProgressChartProps) {
   if (!hasWeightData) {
     return (
       <div className="w-full h-[200px] rounded-lg border border-secondary/50 bg-card p-4 flex items-center justify-center">
-        <p className="text-muted-foreground text-sm">Ejercicio de peso corporal - sin datos de peso para graficar</p>
+        <p className="text-muted-foreground text-sm">{t.exerciseHistory.bodyweightExercise}</p>
       </div>
     )
   }
@@ -61,7 +69,7 @@ export default function ProgressChart({ data }: ProgressChartProps) {
           <YAxis
             stroke="hsl(var(--muted-foreground))"
             style={{ fontSize: "12px" }}
-            label={{ value: "Peso (kg)", angle: -90, position: "insideLeft" }}
+            label={{ value: `${t.exerciseHistory.weight} (kg)`, angle: -90, position: "insideLeft" }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Line

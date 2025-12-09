@@ -1,6 +1,7 @@
 "use client"
 import { Badge } from "@/components/ui/badge"
 import { Trophy, AlertCircle } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface WorkoutEntry {
   date: string
@@ -16,18 +17,33 @@ interface HistoryListProps {
 }
 
 export default function HistoryList({ workouts }: HistoryListProps) {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
+  const { t, language } = useLanguage()
+
+  const formatDate = (dateString: string | null) => {
+  if (!dateString || dateString.trim() === "") return t.exerciseHistory.noRecordYet
+  
+  try {
+    const [year, month, day] = dateString.split("-").map(Number)
+    // Validar que los valores sean números válidos
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+      return t.exerciseHistory.noRecordYet
+    }
+    const utcDate = new Date(Date.UTC(year, month - 1, day))
+    return utcDate.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
+      timeZone: "UTC",
     })
+  } catch (error) {
+    return t.exerciseHistory.noRecordYet
   }
+}
 
   if (workouts.length === 0) {
     return (
       <div className="rounded-lg border border-secondary/50 bg-secondary/5 p-6 text-center text-muted-foreground">
-        Sin historial de entrenamientos todavia
+        {t.exerciseHistory.noHistoryYet}
       </div>
     )
   }
@@ -45,13 +61,13 @@ export default function HistoryList({ workouts }: HistoryListProps) {
               {workout.wasPRDay && (
                 <Badge className="bg-amber-500 text-white hover:bg-amber-600 text-xs">
                   <Trophy className="w-3 h-3 mr-1" />
-                  PR
+                  {t.exerciseHistory.prDay}
                 </Badge>
               )}
               {!workout.completed && (
                 <Badge variant="outline" className="text-xs text-orange-500 border-orange-500">
                   <AlertCircle className="w-3 h-3 mr-1" />
-                  Incompleto
+                  {t.exerciseHistory.incomplete}
                 </Badge>
               )}
             </div>
@@ -62,14 +78,18 @@ export default function HistoryList({ workouts }: HistoryListProps) {
                   {" x "}
                   <span>{workout.reps} reps</span>
                   {" x "}
-                  <span>{workout.sets} sets</span>
+                  <span>
+                    {workout.sets} {t.exerciseHistory.sets}
+                  </span>
                 </>
               ) : (
                 <>
                   <span>{workout.reps} reps</span>
                   {" x "}
-                  <span>{workout.sets} sets</span>
-                  <span className="text-muted-foreground ml-2">(peso corporal)</span>
+                  <span>
+                    {workout.sets} {t.exerciseHistory.sets}
+                  </span>
+                  <span className="text-muted-foreground ml-2">({t.exerciseHistory.bodyweight})</span>
                 </>
               )}
             </div>

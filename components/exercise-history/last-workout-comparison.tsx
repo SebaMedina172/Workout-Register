@@ -1,6 +1,7 @@
 "use client"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowUp, ArrowDown, Minus, CheckCircle } from "lucide-react"
+import { useLanguage } from "@/lib/i18n/context"
 
 interface WorkoutEntry {
   date: string
@@ -16,10 +17,15 @@ interface LastWorkoutComparisonProps {
 }
 
 export default function LastWorkoutComparison({ current, previous }: LastWorkoutComparisonProps) {
+  const { t, language } = useLanguage()
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
+    const [year, month, day] = dateString.split("-").map(Number)
+    const utcDate = new Date(Date.UTC(year, month - 1, day))
+    return utcDate.toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
       month: "short",
       day: "numeric",
+      timeZone: "UTC",
     })
   }
 
@@ -43,12 +49,14 @@ export default function LastWorkoutComparison({ current, previous }: LastWorkout
   return (
     <Card className="border-secondary/50">
       <CardContent className="pt-4">
-        <div className="text-xs text-muted-foreground mb-3">Comparado con {formatDate(previous.date)}</div>
+        <div className="text-xs text-muted-foreground mb-3">
+          {t.exerciseHistory.comparedWith} {formatDate(previous.date)}
+        </div>
 
         <div className="grid grid-cols-3 gap-4">
           {/* Weight comparison */}
           <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Peso</div>
+            <div className="text-xs text-muted-foreground">{t.exerciseHistory.weight}</div>
             <div className="flex items-center gap-1">
               {getIcon(weightDiff)}
               <span className={`font-semibold ${getColorClass(weightDiff)}`}>
@@ -60,18 +68,18 @@ export default function LastWorkoutComparison({ current, previous }: LastWorkout
 
           {/* Reps comparison */}
           <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Reps</div>
+            <div className="text-xs text-muted-foreground">{t.exerciseHistory.reps}</div>
             <div className="flex items-center gap-1">
               {getIcon(repsDiff)}
               <span className={`font-semibold ${getColorClass(repsDiff)}`}>
-                {repsDiff === 0 ? "Igual" : repsDiff > 0 ? `+${repsDiff}` : repsDiff}
+                {repsDiff === 0 ? t.exerciseHistory.same : repsDiff > 0 ? `+${repsDiff}` : repsDiff}
               </span>
             </div>
           </div>
 
           {/* Sets completed */}
           <div className="space-y-1">
-            <div className="text-xs text-muted-foreground">Sets completados</div>
+            <div className="text-xs text-muted-foreground">{t.exerciseHistory.setsCompleted}</div>
             <div className="flex items-center gap-1">
               <CheckCircle className={`w-4 h-4 ${current.completed ? "text-green-500" : "text-orange-500"}`} />
               <span className="font-semibold">
