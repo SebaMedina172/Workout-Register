@@ -2,6 +2,81 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
+export const dynamic = "force-dynamic"
+
+async function recordExerciseHistory(
+  exerciseName: string,
+  muscleGroup: string | null,
+  sets: number,
+  reps: number,
+  weight: number,
+  date: string,
+  userId: string,
+  supabase: any,
+) {
+  try {
+    const weightValue = weight && weight > 0 ? weight : null
+
+    const { error: historyError } = await supabase.from("exercise_history").upsert(
+      {
+        user_id: userId,
+        exercise_name: exerciseName,
+        muscle_group: muscleGroup || null,
+        workout_date: date,
+        sets: sets,
+        reps: reps,
+        weight: weightValue,
+        completed: true,
+      },
+      {
+        onConflict: "user_id,exercise_name,workout_date",
+        ignoreDuplicates: false,
+      },
+    )
+
+    if (historyError) {
+      console.error(`[v0] Error recording exercise history for ${exerciseName}:`, historyError)
+      return { success: false, error: historyError }
+    }
+
+    // Check and update personal records - only max_weight
+    const { data: currentPR } = await supabase
+      .from("personal_records")
+      .select("value, previous_record")
+      .eq("exercise_name", exerciseName)
+      .eq("user_id", userId)
+      .eq("record_type", "max_weight")
+      .single()
+
+    const achievedAt = new Date(date).toISOString()
+
+    if (weightValue) {
+      const currentMaxWeight = currentPR?.value || 0
+      if (weightValue > currentMaxWeight) {
+        await supabase.from("personal_records").upsert(
+          {
+            user_id: userId,
+            exercise_name: exerciseName,
+            record_type: "max_weight",
+            value: weightValue,
+            weight: weightValue,
+            reps: reps,
+            sets: sets,
+            achieved_at: achievedAt,
+            previous_record: currentMaxWeight > 0 ? currentMaxWeight : null,
+          },
+          { onConflict: "user_id,exercise_name,record_type" },
+        )
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error(`[v0] Error in recordExerciseHistory for ${exerciseName}:`, error)
+    return { success: false, error }
+  }
+}
+
 // GET - Obtener todos los entrenamientos del usuario
 export async function GET() {
   try {
@@ -267,6 +342,19 @@ export async function POST(request: Request) {
       console.log(`   Muscle group guardado: ${createdExercise.muscle_group}`) // Verificar que se guardó
 
       // Guardar registros de series si el ejercicio está guardado
+      if (exercise.is_completed && exercise.is_saved) {
+        await recordExerciseHistory(
+          exercise.exercise_name,
+          exercise.muscle_group,
+          exercise.sets,
+          exercise.reps,
+          exercise.weight || 0,
+          date,
+          session.user.id,
+          supabase,
+        )
+      }
+
       if (exercise.is_saved && exercise.set_records && exercise.set_records.length > 0) {
         console.log(`💾 Guardando ${exercise.set_records.length} series para ejercicio ${exercise.exercise_name}`)
 
@@ -301,17 +389,7 @@ export async function POST(request: Request) {
             .eq("user_id", session.user.id)
             .eq("is_active", true)
 
-          if (columnsError) {
-            console.error(`⚠️ Error obteniendo columnas personalizadas:`, columnsError)
-            continue
-          }
-
-          if (userColumns && userColumns.length > 0) {
-            console.log(
-              `📋 Columnas disponibles:`,
-              userColumns.map((col) => `${col.column_name} (${col.column_type}, ID: ${col.id})`),
-            )
-
+          if (!columnsError && userColumns && userColumns.length > 0) {
             const customDataToInsert = []
 
             for (const [columnName, value] of Object.entries(exercise.custom_data)) {
@@ -337,16 +415,7 @@ export async function POST(request: Request) {
             }
 
             if (customDataToInsert.length > 0) {
-              console.log(`📊 Insertando ${customDataToInsert.length} datos personalizados`)
-
-              const { error: customError } = await supabase.from("workout_custom_data").insert(customDataToInsert)
-
-              if (customError) {
-                console.error(`⚠️ Error guardando datos personalizados para ejercicio ${i + 1}:`, customError)
-                // No fallar el entrenamiento por datos personalizados
-              } else {
-                console.log(`✅ Datos personalizados guardados para ejercicio ${i + 1}`)
-              }
+              await supabase.from("workout_custom_data").insert(customDataToInsert)
             }
           }
         } catch (customDataError) {
