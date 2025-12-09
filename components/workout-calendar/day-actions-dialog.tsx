@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Edit, Coffee, Trash2, X, Dumbbell, Clock } from "lucide-react"
+import { Plus, Edit, Coffee, Trash2, X, Dumbbell, Clock, Loader2 } from "lucide-react"
 import { getWorkoutCompletionStatus } from "./utils"
 import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
@@ -19,6 +19,7 @@ interface DayActionsDialogProps {
   onMarkAsRest: () => void
   onClearDay: () => void
   onPostpone: () => void
+  isClearingDay?: boolean
 }
 
 export const DayActionsDialog = ({
@@ -30,6 +31,7 @@ export const DayActionsDialog = ({
   onMarkAsRest,
   onClearDay,
   onPostpone,
+  isClearingDay = false,
 }: DayActionsDialogProps) => {
   const { formatDate, formatWeight, t } = useCalendarTranslation()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
@@ -292,10 +294,20 @@ export const DayActionsDialog = ({
               <Button
                 onClick={onClearDay}
                 variant="destructive"
-                className="w-full h-12 sm:h-14 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base"
+                disabled={isClearingDay}
+                className="w-full h-12 sm:h-14 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-sm sm:text-base disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                {t.clearDay}
+                {isClearingDay ? (
+                  <>
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 animate-spin" />
+                    {t.clearing || "Limpiando..."}
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
+                    {t.clearDay}
+                  </>
+                )}
               </Button>
             )}
           </div>

@@ -20,6 +20,7 @@ export default function WorkoutCalendar() {
   const [loading, setLoading] = useState(true)
   const [showDayActions, setShowDayActions] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [clearingDay, setClearingDay] = useState(false)
 
   const { getDayName, getMonthName, t: calendarT } = useCalendarTranslation()
   const { language } = useLanguage()
@@ -131,7 +132,7 @@ export default function WorkoutCalendar() {
 
   // Limpiar día
   const handleClearDay = async () => {
-    if (!selectedDate) return
+    if (!selectedDate || clearingDay) return
 
     const workout = getWorkoutForDate(selectedDate)
     if (!workout) return
@@ -139,6 +140,7 @@ export default function WorkoutCalendar() {
     const dateString = selectedDate.toISOString().split("T")[0]
     console.log("🗑️ Limpiando día:", dateString, "workout ID:", workout.id)
 
+    setClearingDay(true)
     try {
       const response = await fetch(`/api/workouts/${workout.id}`, {
         method: "DELETE",
@@ -156,6 +158,8 @@ export default function WorkoutCalendar() {
     } catch (error) {
       console.error("💥 Error clearing day:", error)
       alert("Error de conexión al limpiar día")
+    } finally {
+      setClearingDay(false)
     }
   }
 
@@ -519,6 +523,7 @@ export default function WorkoutCalendar() {
             setShowPostponeDialog(true)
             setShowDayActions(false)
           }}
+          isClearingDay={clearingDay}
         />
       )}
 
