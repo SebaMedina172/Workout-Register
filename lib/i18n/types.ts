@@ -138,6 +138,7 @@ export interface Translations {
     edit: string
     postpone: string
     clearDay: string
+    clearing: string
 
     // Status badges
     completed: string

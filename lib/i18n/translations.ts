@@ -141,6 +141,7 @@ export const translations: Record<"es" | "en", Translations> = {
       edit: "Editar",
       postpone: "Aplazar",
       clearDay: "Limpiar Día",
+      clearing: "Limpiando...",
 
       // Status badges
       completed: "✅ Completado",
@@ -622,6 +623,7 @@ export const translations: Record<"es" | "en", Translations> = {
       edit: "Edit",
       postpone: "Postpone",
       clearDay: "Clear Day",
+      clearing: "Clearing...",
 
       // Status badges
       completed: "✅ Completed",
