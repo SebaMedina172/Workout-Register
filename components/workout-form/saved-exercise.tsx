@@ -1,11 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { GripVertical, Lock, Target, Clock, Edit, ChevronDown, ChevronRight, CheckCircle2, Circle } from "lucide-react"
+import { GripVertical, Lock, Target, Clock, Edit, ChevronDown, ChevronRight, CheckCircle2, Circle, BarChart3 } from "lucide-react"
+import { ExerciseHistoryDialog } from "@/components/exercise-history/exercise-history-dialog"
 import { formatWeight, getMuscleGroupColor } from "./utils"
 import type { WorkoutExercise, CustomColumn } from "./types"
 import { useLanguage } from "@/lib/i18n/context"
@@ -39,7 +41,10 @@ export const SavedExercise = ({
   const completedSets = exercise.set_records?.filter((sr) => sr.is_completed === true).length || 0
   const totalSets = exercise.set_records?.length || 0
 
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+
   return (
+  <>
     <Collapsible open={exercise.is_expanded} onOpenChange={() => onToggleExpansion(exercise.id)}>
       {/* Header del ejercicio guardado */}
       <div
@@ -131,6 +136,17 @@ export const SavedExercise = ({
             </Badge>
 
             <Button
+              onClick={() => setIsHistoryOpen(true)}
+              variant="outline"
+              size="sm"
+              className="hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-600 border-2 transition-all duration-200 h-8 px-3"
+              title="View exercise history"
+            >
+              <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400 mr-1" />
+              History
+            </Button>
+
+            <Button
               onClick={() => onEditExercise(exercise.id)}
               variant="outline"
               size="sm"
@@ -187,6 +203,16 @@ export const SavedExercise = ({
                 {translateExercise(exercise.exercise_name)}
               </span>
             </div>
+
+            <Button
+              onClick={() => setIsHistoryOpen(true)}
+              variant="outline"
+              size="sm"
+              className="hover:bg-purple-50 dark:hover:bg-purple-900/30 hover:border-purple-300 dark:hover:border-purple-600 border-2 transition-all duration-200 h-7 px-2 flex-shrink-0"
+              title="View exercise history"
+            >
+              <BarChart3 className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+            </Button>
 
             <Button
               onClick={() => onEditExercise(exercise.id)}
@@ -364,5 +390,12 @@ export const SavedExercise = ({
         </div>
       </CollapsibleContent>
     </Collapsible>
-  )
+
+    <ExerciseHistoryDialog
+      exerciseName={exercise.exercise_name}
+      isOpen={isHistoryOpen}
+      onClose={() => setIsHistoryOpen(false)}
+    />
+  </>
+)
 }
