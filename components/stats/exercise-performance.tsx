@@ -72,9 +72,16 @@ type ViewState = "muscle-groups" | "exercises" | "exercise-detail"
 interface PRData {
   maxWeight: {
     value: number | null
+    reps?: number | null
     date: string | null
     previousValue: number | null
   }
+  bestReps: {
+    value: number | null
+    date: string | null
+    previousValue: number | null
+  }
+  mode: "weighted" | "bodyweight" | "mixed"
 }
 
 interface WorkoutHistory {
@@ -82,6 +89,7 @@ interface WorkoutHistory {
   sets: number
   reps: number
   weight: number
+  bestReps?: number
   completed: boolean
   wasPRDay: boolean
 }
@@ -141,16 +149,34 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
           sets: item.sets,
           reps: item.reps,
           weight: item.weight || 0,
+          bestReps: item.best_reps || item.reps,
           completed: item.completed ?? true,
-          wasPRDay: item.wasPRDay || false,
+          wasPRDay: item.wasPRDay || item.wasRepsPRDay || false,
         }))
+
+        const hasWeightData = recordsData.max_weight?.value > 0
+        const hasRepsData = recordsData.best_reps?.value > 0
+
+        let mode: "weighted" | "bodyweight" | "mixed" = "weighted"
+        if (!hasWeightData && hasRepsData) {
+          mode = "bodyweight"
+        } else if (hasWeightData && hasRepsData) {
+          mode = "mixed"
+        }
 
         setPRData({
           maxWeight: {
             value: recordsData.max_weight?.value || null,
+            reps: recordsData.max_weight?.reps || null,
             date: recordsData.max_weight?.date || null,
             previousValue: recordsData.max_weight?.previousValue || null,
           },
+          bestReps: {
+            value: recordsData.best_reps?.value || null,
+            date: recordsData.best_reps?.date || null,
+            previousValue: recordsData.best_reps?.previousValue || null,
+          },
+          mode,
         })
 
         setHistory(mappedHistory)
@@ -451,11 +477,26 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                         </h3>
                       </div>
                       <PRCard
-                        title={t.exerciseHistory.maxWeight}
-                        value={prData.maxWeight.value}
-                        unit="kg"
-                        date={prData.maxWeight.date}
-                        previousValue={prData.maxWeight.previousValue}
+                        mode={prData.mode}
+                        maxWeight={
+                          prData.mode !== "bodyweight"
+                            ? {
+                                value: prData.maxWeight.value,
+                                reps: prData.maxWeight.reps,
+                                date: prData.maxWeight.date,
+                                previousValue: prData.maxWeight.previousValue,
+                              }
+                            : undefined
+                        }
+                        bestPerformance={
+                          prData.mode === "bodyweight" || prData.mode === "mixed"
+                            ? {
+                                reps: prData.bestReps.value,
+                                date: prData.bestReps.date,
+                                previousReps: prData.bestReps.previousValue,
+                              }
+                            : undefined
+                        }
                       />
                     </div>
                   )}
