@@ -18,6 +18,12 @@ interface ExerciseHistoryDialogProps {
 interface PRData {
   maxWeight: {
     value: number | null
+    reps: number | null
+    date: string | null
+    previousValue: number | null
+  }
+  bestReps: {
+    value: number | null
     date: string | null
     previousValue: number | null
   }
@@ -30,6 +36,7 @@ interface WorkoutHistory {
   weight: number
   completed: boolean
   wasPRDay: boolean
+  bestReps: number
 }
 
 export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: ExerciseHistoryDialogProps) {
@@ -67,13 +74,20 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
           weight: item.weight || 0,
           completed: item.completed ?? true,
           wasPRDay: item.wasPRDay || false,
+          bestReps: item.best_reps || item.reps,
         }))
 
         setPRData({
           maxWeight: {
             value: recordsData.max_weight?.value || null,
+            reps: recordsData.max_weight?.reps || null,
             date: recordsData.max_weight?.date || null,
             previousValue: recordsData.max_weight?.previousValue || null,
+          },
+          bestReps: {
+            value: recordsData.best_reps?.value || null,
+            date: recordsData.best_reps?.date || null,
+            previousValue: recordsData.best_reps?.previousValue || null,
           },
         })
 
@@ -91,6 +105,13 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
 
   const lastWorkout = history.length > 0 ? history[0] : null
   const previousWorkout = history.length > 1 ? history[1] : null
+
+  const hasWeightData = history.some((h) => h.weight > 0)
+  const displayMode: "weighted" | "bodyweight" | "mixed" = !hasWeightData
+    ? "bodyweight"
+    : history.some((h) => h.weight === 0)
+      ? "mixed"
+      : "weighted"
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -120,11 +141,26 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
               <div>
                 <h2 className="text-lg font-semibold mb-4">{t.exerciseHistory.personalRecord}</h2>
                 <PRCard
-                  title={t.exerciseHistory.maxWeight}
-                  value={prData.maxWeight.value}
-                  unit="kg"
-                  date={prData.maxWeight.date}
-                  previousValue={prData.maxWeight.previousValue}
+                  mode={displayMode}
+                  maxWeight={
+                    displayMode !== "bodyweight"
+                      ? {
+                          value: prData.maxWeight.value,
+                          reps: prData.maxWeight.reps,
+                          date: prData.maxWeight.date,
+                          previousValue: prData.maxWeight.previousValue,
+                        }
+                      : undefined
+                  }
+                  bestPerformance={
+                    displayMode !== "weighted"
+                      ? {
+                          reps: prData.bestReps.value,
+                          date: prData.bestReps.date,
+                          previousReps: prData.bestReps.previousValue,
+                        }
+                      : undefined
+                  }
                 />
               </div>
             )}
@@ -139,7 +175,7 @@ export function ExerciseHistoryDialog({ exerciseName, isOpen, onClose }: Exercis
             {/* Progress Chart */}
             {history.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-4">{t.exerciseHistory.weightProgress}</h2>
+                <h2 className="text-lg font-semibold mb-4">{t.exerciseHistory.progressChart}</h2>
                 <ProgressChart data={history} />
               </div>
             )}
