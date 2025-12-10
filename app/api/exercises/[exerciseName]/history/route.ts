@@ -30,7 +30,7 @@ export async function GET(request: Request, { params }: { params: { exerciseName
 
     const { data: history, error } = await supabase
       .from("exercise_history")
-      .select("workout_date, sets, reps, weight, completed")
+      .select("workout_date, sets, reps, weight, completed, best_reps")
       .eq("exercise_name", decodedExerciseName)
       .eq("user_id", user.id)
       .order("workout_date", { ascending: false })
@@ -41,20 +41,25 @@ export async function GET(request: Request, { params }: { params: { exerciseName
       return NextResponse.json({ error: "Error fetching exercise history" }, { status: 500 })
     }
 
-    const { data: prRecord } = await supabase
+    const { data: prRecords } = await supabase
       .from("personal_records")
-      .select("achieved_at")
+      .select("record_type, achieved_at")
       .eq("exercise_name", decodedExerciseName)
       .eq("user_id", user.id)
-      .eq("record_type", "max_weight")
-      .single()
+      .in("record_type", ["max_weight", "max_reps"])
 
-    const prDate = prRecord?.achieved_at ? new Date(prRecord.achieved_at).toISOString().split("T")[0] : null
+    const weightPRDate = prRecords?.find((r: any) => r.record_type === "max_weight")?.achieved_at
+    const repsPRDate = prRecords?.find((r: any) => r.record_type === "max_reps")?.achieved_at
 
-    // Mark which workout was a PR day
+    const weightPRDateStr = weightPRDate ? new Date(weightPRDate).toISOString().split("T")[0] : null
+    const repsPRDateStr = repsPRDate ? new Date(repsPRDate).toISOString().split("T")[0] : null
+
     const historyWithPR = (history || []).map((item: any) => ({
       ...item,
-      wasPRDay: prDate && item.workout_date === prDate,
+      best_reps: item.best_reps || item.reps,
+      wasPRDay:
+        (weightPRDateStr && item.workout_date === weightPRDateStr) ||
+        (repsPRDateStr && item.workout_date === repsPRDateStr),
     }))
 
     return NextResponse.json({

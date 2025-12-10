@@ -33,7 +33,7 @@ export async function GET(request: Request, { params }: { params: { exerciseName
       .select("record_type, value, weight, reps, sets, achieved_at, previous_record")
       .eq("exercise_name", decodedExerciseName)
       .eq("user_id", user.id)
-      .eq("record_type", "max_weight")
+      .in("record_type", ["max_weight", "max_reps"])
 
     if (error) {
       console.error("Error fetching personal records:", error)
@@ -43,10 +43,12 @@ export async function GET(request: Request, { params }: { params: { exerciseName
     if (!records || records.length === 0) {
       return NextResponse.json({
         max_weight: null,
+        best_reps: null,
       })
     }
 
     const weightRecord = records.find((r: any) => r.record_type === "max_weight")
+    const repsRecord = records.find((r: any) => r.record_type === "max_reps")
 
     const normalizeDate = (dateValue: string | null): string | null => {
       if (!dateValue) return null
@@ -61,8 +63,16 @@ export async function GET(request: Request, { params }: { params: { exerciseName
       max_weight: weightRecord
         ? {
             value: weightRecord.value,
+            reps: weightRecord.reps,
             date: normalizeDate(weightRecord.achieved_at),
             previousValue: weightRecord.previous_record,
+          }
+        : null,
+      best_reps: repsRecord
+        ? {
+            value: repsRecord.value,
+            date: normalizeDate(repsRecord.achieved_at),
+            previousValue: repsRecord.previous_record,
           }
         : null,
     })
