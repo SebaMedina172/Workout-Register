@@ -1,3 +1,4 @@
+// components/workout-form.tsx
 "use client"
 
 import type React from "react"
@@ -12,6 +13,7 @@ import { LoadingOverlay } from "./workout-form/loading-overlay"
 import { ColumnSettingsDialog } from "./workout-form/column-settings-dialog"
 import { ExerciseList } from "./workout-form/exercise-list"
 import { Toolbar } from "./workout-form/toolbar"
+import { RestTimerOverlay } from "./workout-form/rest-timer-overlay"
 
 import { useWorkoutData } from "@/hooks/use-workout-data"
 import { useExerciseActions } from "@/hooks/use-exercise-actions"
@@ -294,6 +296,40 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
     }
   }
 
+  const handleMarkSetComplete = (exerciseId: string, setId: string) => {
+    toggleSetCompletion(exerciseId, setId)
+  }
+
+  const getNextSetId = (exerciseId: string, currentSetId: string): string | null => {
+    const exercise = exercises.find((ex) => ex.id === exerciseId)
+    if (!exercise?.set_records) return null
+
+    const currentIndex = exercise.set_records.findIndex((sr) => sr.id === currentSetId)
+    if (currentIndex === -1 || currentIndex >= exercise.set_records.length - 1) return null
+
+    const nextSet = exercise.set_records[currentIndex + 1]
+    return nextSet && !nextSet.is_completed ? nextSet.id : null
+  }
+
+  const handleStartNextSet = (exerciseId: string, nextSetId: string) => {
+    const exercise = exercises.find((ex) => ex.id === exerciseId)
+    if (!exercise?.set_records) return
+
+    const nextSet = exercise.set_records.find((sr) => sr.id === nextSetId)
+    if (!nextSet) return
+
+    const event = new CustomEvent("startNextSetTimer", {
+      detail: {
+        exerciseId,
+        setId: nextSetId,
+        setNumber: nextSet.set_number,
+        duration: exercise.rest_time || 60,
+        exerciseName: exercise.exercise_name,
+      },
+    })
+    window.dispatchEvent(event)
+  }
+
   if (loadingData) {
     return <LoadingOverlay message={t.workoutForm.loadingWorkoutData} />
   }
@@ -383,6 +419,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
               )}
             </Button>
           </div>
+
+          <RestTimerOverlay
+            onMarkSetComplete={handleMarkSetComplete}
+            getNextSetId={getNextSetId}
+            onStartNextSet={handleStartNextSet}
+          />
         </DialogContent>
       </Dialog>
 

@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/lib/i18n/context"
+import { RestTimerProvider } from "@/contexts/rest-timer-context"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -31,7 +32,9 @@ html {
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <LanguageProvider>{children}</LanguageProvider>
+          <LanguageProvider>            
+            <RestTimerProvider>{children}</RestTimerProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

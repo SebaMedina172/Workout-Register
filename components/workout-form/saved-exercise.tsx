@@ -1,18 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { GripVertical, Lock, Target, Clock, Edit, ChevronDown, ChevronRight, CheckCircle2, Circle, BarChart3 } from "lucide-react"
+import { GripVertical, Lock, Target, Clock, Edit, ChevronDown, ChevronRight, CheckCircle2, Circle, BarChart3, Timer } from "lucide-react"
 import { ExerciseHistoryDialog } from "@/components/exercise-history/exercise-history-dialog"
 import { formatWeight, getMuscleGroupColor } from "./utils"
 import type { WorkoutExercise, CustomColumn } from "./types"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
+import { useRestTimer } from "@/contexts/rest-timer-context"
 
 interface SavedExerciseProps {
   exercise: WorkoutExercise
@@ -25,7 +26,7 @@ interface SavedExerciseProps {
   onWeightChange: (exerciseId: string, value: string, isSetRecord: boolean, setId?: string) => void
 }
 
-export const SavedExercise = ({
+export function SavedExercise({
   exercise,
   activeColumns,
   onToggleExpansion,
@@ -34,7 +35,7 @@ export const SavedExercise = ({
   onUpdateSetRecord,
   onEditExercise,
   onWeightChange,
-}: SavedExerciseProps) => {
+}: SavedExerciseProps) {
   const { t } = useLanguage()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
   const { translateExercise } = useExerciseTranslation()
@@ -42,6 +43,52 @@ export const SavedExercise = ({
   const totalSets = exercise.set_records?.length || 0
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+
+  const { startTimer, timerState, isOverlayVisible, setIsOverlayVisible, isMinimized } = useRestTimer()
+
+  useEffect(() => {
+    const handleStartNextSetTimer = (event: CustomEvent) => {
+      const { exerciseId, setId, setNumber, duration, exerciseName } = event.detail
+
+      if (exerciseId === exercise.id) {
+        startTimer({
+          duration,
+          exerciseId,
+          exerciseName: translateExercise(exerciseName),
+          setId,
+          setNumber,
+        })
+      }
+    }
+
+    window.addEventListener("startNextSetTimer", handleStartNextSetTimer as EventListener)
+    return () => {
+      window.removeEventListener("startNextSetTimer", handleStartNextSetTimer as EventListener)
+    }
+  }, [exercise.id, startTimer, translateExercise])
+
+  const handleStartTimer = (setId: string, setNumber: number) => {
+    // Si el timer ya está corriendo para este set, solo mostrar el overlay
+    if (timerState.isRunning && timerState.setId === setId) {
+      setIsOverlayVisible(true)
+      return
+    }
+
+    // Si el timer está corriendo pero minimizado, mostrar el overlay
+    if (timerState.isRunning && isMinimized) {
+      setIsOverlayVisible(true)
+      return
+    }
+
+    // Iniciar nuevo timer
+    startTimer({
+      duration: exercise.rest_time || 60,
+      exerciseId: exercise.id,
+      exerciseName: translateExercise(exercise.exercise_name),
+      setId,
+      setNumber,
+    })
+  }
 
   return (
   <>
@@ -264,13 +311,14 @@ export const SavedExercise = ({
               : "bg-white dark:bg-gray-900 border-green-500 dark:border-green-600"
           }`}
         >
-          <div className="min-w-[600px] sm:min-w-0">
+          <div className="min-w-[650px] sm:min-w-0">
             {/* Header de la tabla de series */}
             <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
               <div
                 className="grid gap-2 sm:gap-4 p-2 sm:p-3 font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-200"
                 style={{
-                  gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")}`,
+                  gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")} 50px`,
+
                 }}
               >
                 <div className="text-center">{t.workoutForm.completed}</div>
@@ -286,6 +334,9 @@ export const SavedExercise = ({
                     <span className="sm:hidden">{column.column_name.slice(0, 3)}</span>
                   </div>
                 ))}
+                <div className="text-center">
+                  <Timer className="w-4 h-4 mx-auto" />
+                </div>
               </div>
             </div>
 
@@ -301,7 +352,8 @@ export const SavedExercise = ({
                       : "bg-white dark:bg-gray-900"
                 }`}
                 style={{
-                  gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")}`,
+                  gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")} 50px`,
+
                 }}
               >
                 {/* Checkbox para completar serie individual */}
@@ -386,6 +438,49 @@ export const SavedExercise = ({
                     )}
                   </div>
                 ))}
+                
+                {/* Columna del Timer */}
+                <div className="flex justify-center">
+                  {(() => {
+                    const isTimerForThisSet = timerState.isRunning && timerState.setId === setRecord.id
+                    const isTimerRunningForOtherSet = timerState.isRunning && timerState.setId !== setRecord.id
+                    const isSetCompleted = setRecord.is_completed
+                    const isDisabled = isSetCompleted || isTimerRunningForOtherSet
+
+                    return (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleStartTimer(setRecord.id, setRecord.set_number)}
+                        disabled={isDisabled}
+                        className={`p-1 h-8 w-8 rounded-full transition-colors ${
+                          isTimerForThisSet
+                            ? "bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50"
+                            : isDisabled
+                              ? "opacity-50 cursor-not-allowed"
+                              : "hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                        }`}
+                        title={
+                          isSetCompleted
+                            ? t.restTimer?.setCompleted || "Set already completed"
+                            : isTimerForThisSet
+                              ? t.restTimer?.viewTimer || "View timer"
+                              : t.restTimer?.startTimer || "Start rest timer"
+                        }
+                      >
+                        <Timer
+                          className={`w-4 h-4 ${
+                            isTimerForThisSet
+                              ? "text-blue-600 dark:text-blue-400 animate-pulse"
+                              : isDisabled
+                                ? "text-gray-400 dark:text-gray-600"
+                                : "text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
+                          }`}
+                        />
+                      </Button>
+                    )
+                  })()}
+                </div>                
               </div>
             ))}
           </div>

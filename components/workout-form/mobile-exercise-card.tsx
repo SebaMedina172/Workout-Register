@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,6 +22,7 @@ import {
   Circle,
   Dumbbell,
   BarChart3,
+  Timer,
 } from "lucide-react"
 import { ExerciseSelector } from "./exercise-selector"
 import { ExerciseHistoryDialog } from "@/components/exercise-history/exercise-history-dialog"
@@ -29,6 +30,7 @@ import { formatWeight, getMuscleGroupColor } from "./utils"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
+import { useRestTimer } from "@/contexts/rest-timer-context"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
 import { DEFAULT_EXERCISES } from "./constants"
 
@@ -80,6 +82,38 @@ export const MobileExerciseCard = ({
   const [showCustomFields, setShowCustomFields] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
+  const { startTimer, timerState, setIsOverlayVisible } = useRestTimer()
+
+  useEffect(() => {
+    const handleStartNextSetTimer = (
+      event: CustomEvent<{
+        exerciseId: string
+        setId: string
+        setNumber: number
+        duration: number
+        exerciseName: string
+      }>,
+    ) => {
+      const { exerciseId, setId, setNumber, duration, exerciseName } = event.detail
+
+      const targetSet = exercise.set_records?.find((sr) => sr.id === setId)
+      if (targetSet && exerciseId === exercise.id) {
+        startTimer({
+          duration,
+          exerciseId,
+          exerciseName,
+          setId,
+          setNumber,
+        })
+      }
+    }
+
+    window.addEventListener("startNextSetTimer", handleStartNextSetTimer as EventListener)
+    return () => {
+      window.removeEventListener("startNextSetTimer", handleStartNextSetTimer as EventListener)
+    }
+  }, [exercise.id, exercise.set_records, startTimer])
+
   const handleExerciseSelect = async (value: string) => {
     if (value.startsWith("CREATE_")) {
       const parts = value.split("|||")
@@ -111,6 +145,21 @@ export const MobileExerciseCard = ({
   }
 
   // Ejercicio no guardado - modo edición
+  const handleStartTimer = (setId: string, setNumber: number) => {
+    if (timerState.isRunning && timerState.setId === setId) {
+      setIsOverlayVisible(true)
+      return
+    }
+
+    startTimer({
+      duration: exercise.rest_time || 60,
+      exerciseId: exercise.id,
+      exerciseName: translateExercise(exercise.exercise_name),
+      setId,
+      setNumber,
+    })
+  }
+
   if (!exercise.is_saved) {
     return (
       <Card className="border-2 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/20">
@@ -427,6 +476,36 @@ export const MobileExerciseCard = ({
                       {t.workoutForm.setNumber.replace("{number}", setRecord.set_number.toString())}
                     </span>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleStartTimer(setRecord.id, setRecord.set_number)}
+                    disabled={setRecord.is_completed || (timerState.isRunning && timerState.setId !== setRecord.id)}
+                    title={
+                      setRecord.is_completed
+                        ? t.restTimer.setCompleted || "Set already completed"
+                        : timerState.isRunning && timerState.setId === setRecord.id
+                          ? t.restTimer.viewTimer || "View timer"
+                          : t.restTimer.startTimer || "Start rest timer"
+                    }
+                    className={`p-1 h-8 w-8 rounded-full transition-colors ${
+                      setRecord.is_completed
+                        ? "opacity-50 cursor-not-allowed"
+                        : timerState.isRunning && timerState.setId === setRecord.id
+                          ? "bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/40"
+                          : "hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                    }`}
+                  >
+                    <Timer
+                      className={`w-4 h-4 ${
+                        setRecord.is_completed
+                          ? "text-gray-400 dark:text-gray-500"
+                          : timerState.isRunning && timerState.setId === setRecord.id
+                            ? "text-blue-600 dark:text-blue-400 animate-pulse"
+                            : "text-gray-500 dark:text-gray-400"
+                      }`}
+                    />
+                  </Button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -467,28 +546,26 @@ export const MobileExerciseCard = ({
 
                 {/* Campos personalizados para series */}
                 {activeColumns.length > 0 && (
-                  <div className="mt-3 space-y-2">
+                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                  <div className="grid grid-cols-2 gap-3">
                     {activeColumns.map((column) => (
                       <div key={column.id}>
                         <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                          {column.column_type === "text" && "📝"}
-                          {column.column_type === "number" && "🔢"}
-                          {column.column_type === "boolean" && "✅"} {column.column_name}
+                          {column.column_name}
                         </Label>
                         {column.column_type === "boolean" ? (
-                          <div className="mt-1 flex items-center space-x-2">
+                          <div className="mt-1 flex items-center h-8">
                             <Checkbox
                               checked={setRecord.custom_data?.[column.column_name] || false}
                               onCheckedChange={(checked) =>
-                                onUpdateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, checked)
+                                onUpdateSetRecord(
+                                  exercise.id,
+                                  setRecord.id,
+                                  `custom_${column.column_name}`,
+                                  checked,
+                                )
                               }
-                              className="w-4 h-4"
                             />
-                            <span className="text-xs text-gray-600 dark:text-gray-300">
-                              {setRecord.custom_data?.[column.column_name]
-                                ? t.columnSettings.active
-                                : t.columnSettings.inactive}
-                            </span>
                           </div>
                         ) : (
                           <Input
@@ -502,14 +579,13 @@ export const MobileExerciseCard = ({
                                 e.target.value,
                               )
                             }
-                            className={`mt-1 text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 ${
-                              setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
-                            }`}
+                            className="mt-1 text-center text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600"
                             placeholder={column.column_type === "number" ? "0" : "..."}
                           />
                         )}
                       </div>
                     ))}
+                  </div>
                   </div>
                 )}
               </Card>
