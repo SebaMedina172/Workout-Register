@@ -285,8 +285,9 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {muscleGroupsWithExercises.map((mg, index) => {
-                    const exerciseCount = exercisesByMuscleGroup[mg.name]?.length || 0
-                    const lastExercise = exercisesByMuscleGroup[mg.name]?.[0]
+                    const completedExercises = getFilteredExercises(mg.name)
+                    const exerciseCount = completedExercises.length
+                    const lastExercise = completedExercises?.[0]
                     const icon = MUSCLE_GROUP_ICONS[mg.name] || "💪"
 
                     return (
