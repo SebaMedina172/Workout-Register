@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { exerciseName, muscleGroup, sets, reps, weight, date, forceUpdate } = body
+    const { exerciseName, muscleGroup, sets, reps, weight, date } = body
 
     if (!exerciseName || !date || sets === undefined || reps === undefined) {
       console.log("[v0] Missing required fields:", { exerciseName, date, sets, reps })
@@ -47,55 +47,42 @@ export async function POST(request: Request) {
 
     console.log("[v0] Recording exercise history:", {
       exerciseName,
-      muscleGroup,
       sets,
       reps,
       weight: weightValue,
       workoutDate,
-      forceUpdate,
     })
 
     const { data: existingRecord } = await supabase
       .from("exercise_history")
-      .select("id, weight, reps")
+      .select("id, weight, reps, sets")
       .eq("user_id", user.id)
       .eq("exercise_name", exerciseName)
       .eq("workout_date", workoutDate)
       .single()
 
     if (existingRecord) {
-      const existingWeight = existingRecord.weight || 0
-      const existingReps = existingRecord.reps || 0
-      const newWeight = weightValue || 0
+      console.log("Updating existing record:", {
+        oldValues: { weight: existingRecord.weight, reps: existingRecord.reps, sets: existingRecord.sets },
+        newValues: { weight: weightValue, reps, sets },
+      })
 
-      const isBetter = newWeight > existingWeight || (newWeight === existingWeight && reps > existingReps)
-
-      if (forceUpdate || isBetter) {
-        console.log("Updating existing record with better values:", {
-          oldWeight: existingWeight,
-          oldReps: existingReps,
-          newWeight,
-          newReps: reps,
+      const { error: updateError } = await supabase
+        .from("exercise_history")
+        .update({
+          sets: sets,
+          reps: reps,
+          weight: weightValue,
+          muscle_group: muscleGroup || null,
         })
+        .eq("id", existingRecord.id)
 
-        const { error: updateError } = await supabase
-          .from("exercise_history")
-          .update({
-            sets: sets,
-            reps: reps,
-            weight: weightValue,
-          })
-          .eq("id", existingRecord.id)
-
-        if (updateError) {
-          console.error("Error updating exercise history:", updateError)
-          return NextResponse.json({ error: "Error updating exercise history" }, { status: 500 })
-        }
-      } else {
-        console.log("Existing record is better, skipping update")
-        return NextResponse.json({ success: true, skipped: true })
+      if (updateError) {
+        console.error("Error updating exercise history:", updateError)
+        return NextResponse.json({ error: "Error updating exercise history" }, { status: 500 })
       }
     } else {
+      // Insert new record
       const { error: historyError } = await supabase.from("exercise_history").insert({
         user_id: user.id,
         exercise_name: exerciseName,
@@ -113,44 +100,103 @@ export async function POST(request: Request) {
       }
     }
 
-    console.log("[v0] Exercise history recorded successfully for date:", workoutDate)
+    console.log("Exercise history recorded successfully")
 
-    try {
-      console.log("[v0] Calling check-pr endpoint...")
-      const prResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/exercises/check-pr`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Cookie: request.headers.get("cookie") || "",
-          },
-          body: JSON.stringify({
-            exerciseName,
-            sets,
-            reps,
-            weight: weightValue,
-            muscleGroup,
-            date: workoutDate,
-          }),
-        },
-      )
+    if (weightValue && weightValue > 0) {
+      try {
+        const { data: currentPRData } = await supabase
+          .from("personal_records")
+          .select("id, value, previous_record")
+          .eq("user_id", user.id)
+          .eq("exercise_name", exerciseName)
+          .eq("record_type", "max_weight")
+          .single()
 
-      if (!prResponse.ok) {
-        console.error("[v0] Error from check-pr endpoint:", prResponse.status)
-        const errorText = await prResponse.text()
-        console.error("[v0] Check-PR error details:", errorText)
-      } else {
-        const prData = await prResponse.json()
-        console.log("[v0] PR check completed:", prData)
+        const { data: maxHistoryRecord } = await supabase
+          .from("exercise_history")
+          .select("weight, reps, sets, workout_date")
+          .eq("user_id", user.id)
+          .eq("exercise_name", exerciseName)
+          .not("weight", "is", null)
+          .order("weight", { ascending: false })
+          .limit(1)
+          .single()
+
+        if (maxHistoryRecord && maxHistoryRecord.weight) {
+          const maxWeight = maxHistoryRecord.weight
+
+          if (!currentPRData) {
+            // No PR exists - create one
+            console.log("Creating first PR:", maxWeight)
+            await supabase.from("personal_records").insert({
+              user_id: user.id,
+              exercise_name: exerciseName,
+              record_type: "max_weight",
+              value: maxWeight,
+              weight: maxWeight,
+              reps: maxHistoryRecord.reps,
+              sets: maxHistoryRecord.sets,
+              achieved_at: new Date(maxHistoryRecord.workout_date).toISOString(),
+              previous_record: null,
+            })
+          } else if (maxWeight !== currentPRData.value) {
+            // PR changed (could be higher or lower due to correction)
+            console.log("Updating PR from", currentPRData.value, "to", maxWeight)
+            await supabase
+              .from("personal_records")
+              .update({
+                value: maxWeight,
+                weight: maxWeight,
+                reps: maxHistoryRecord.reps,
+                sets: maxHistoryRecord.sets,
+                achieved_at: new Date(maxHistoryRecord.workout_date).toISOString(),
+                previous_record: maxWeight > currentPRData.value ? currentPRData.value : null,
+              })
+              .eq("id", currentPRData.id)
+          }
+        }
+      } catch (prError) {
+        console.error("Error in PR check/update:", prError)
       }
-    } catch (prError) {
-      console.error("[v0] Error calling check-pr endpoint:", prError)
+    } else {
+      try {
+        const { data: maxHistoryRecord } = await supabase
+          .from("exercise_history")
+          .select("weight, reps, sets, workout_date")
+          .eq("user_id", user.id)
+          .eq("exercise_name", exerciseName)
+          .not("weight", "is", null)
+          .order("weight", { ascending: false })
+          .limit(1)
+          .single()
+
+        if (maxHistoryRecord && maxHistoryRecord.weight) {
+          // There's still a weighted record - update PR to reflect it
+          await supabase.from("personal_records").upsert(
+            {
+              user_id: user.id,
+              exercise_name: exerciseName,
+              record_type: "max_weight",
+              value: maxHistoryRecord.weight,
+              weight: maxHistoryRecord.weight,
+              reps: maxHistoryRecord.reps,
+              sets: maxHistoryRecord.sets,
+              achieved_at: new Date(maxHistoryRecord.workout_date).toISOString(),
+            },
+            { onConflict: "user_id, exercise_name, record_type" },
+          )
+        } else {
+          // No weighted records at all - delete PR
+          await supabase.from("personal_records").delete().eq("user_id", user.id).eq("exercise_name", exerciseName)
+        }
+      } catch (prError) {
+        console.error("Error recalculating PR:", prError)
+      }
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[v0] Error in POST /api/exercises/record-history:", error)
+    console.error("Error in POST /api/exercises/record-history:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
