@@ -69,7 +69,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       // Marcar todas las columnas como NO activas por defecto para workouts nuevos
       const columnsWithInactiveState = (defaultColumns || []).map((col) => ({
         ...col,
-        is_active: false, // ✅ NUEVO: Columnas desactivadas por defecto en workouts nuevos
+        is_active: false,
       }))
 
       return NextResponse.json({
@@ -121,7 +121,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       // Marcar todas las columnas como NO activas por defecto
       const columnsWithInactiveState = (defaultColumns || []).map((col) => ({
         ...col,
-        is_active: false, // ✅ NUEVO: Columnas desactivadas por defecto
+        is_active: false,
       }))
 
       return NextResponse.json({
@@ -130,7 +130,23 @@ export async function GET(request: Request, { params }: { params: { id: string }
       })
     }
 
-    return NextResponse.json({ columns: visibleColumns.map((vc) => vc.user_columns) })
+    const columnsWithVisibilityState = visibleColumns
+      .filter((vc) => vc.user_columns) 
+      .map((vc) => {
+        const userColumn = Array.isArray(vc.user_columns) ? vc.user_columns[0] : vc.user_columns
+
+        return {
+          ...userColumn,
+          is_active: vc.is_visible, 
+        }
+      })
+      .filter((col) => col && col.id) 
+      .sort((a, b) => a.display_order - b.display_order)
+
+    return NextResponse.json({
+      columns: columnsWithVisibilityState,
+      is_default: false,
+    })
   } catch (error) {
     console.error("💥 Error in GET /api/workouts/[id]/visible-columns:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
