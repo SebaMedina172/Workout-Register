@@ -375,4 +375,19 @@ export interface Translations {
     bodyweightExercise: string
     historyButton: string
   }
+  restTimer: {
+    restTimer: string
+    startTimer: string
+    restComplete: string
+    readyForNextSet: string
+    markAndStartNext: string
+    markComplete: string
+    dismiss: string
+    skip: string
+    afterSet: string
+    setCompleted: string,
+    viewTimer: string, 
+    cancel: string,
+    minimize: string,
+  }
 }
