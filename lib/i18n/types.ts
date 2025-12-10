@@ -356,6 +356,8 @@ export interface Translations {
   exerciseHistory: {
     personalRecord: string
     maxWeight: string
+    bestPerformance: string
+    bestReps: string
     achievedOn: string
     vsAnterior: string
     noRecordYet: string
@@ -366,6 +368,7 @@ export interface Translations {
     setsCompleted: string
     same: string
     weightProgress: string
+    progressChart: string
     recentWorkouts: string
     noHistoryYet: string
     incomplete: string

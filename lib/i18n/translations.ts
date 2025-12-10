@@ -464,6 +464,8 @@ export const translations: Record<"es" | "en", Translations> = {
     exerciseHistory: {
       personalRecord: "Récord Personal",
       maxWeight: "Peso Máximo",
+      bestPerformance: "Mejor Rendimiento",
+      bestReps: "Mejores Reps",
       achievedOn: "Logrado:",
       vsAnterior: "vs anterior",
       noRecordYet: "Sin registro todavía",
@@ -474,6 +476,7 @@ export const translations: Record<"es" | "en", Translations> = {
       setsCompleted: "Sets completados",
       same: "Igual",
       weightProgress: "Progreso de Peso",
+      progressChart: "Progreso",
       recentWorkouts: "Entrenamientos Recientes",
       noHistoryYet: "Sin historial de entrenamientos todavía",
       incomplete: "Incompleto",
@@ -962,6 +965,8 @@ export const translations: Record<"es" | "en", Translations> = {
     exerciseHistory: {
       personalRecord: "Personal Record",
       maxWeight: "Max Weight",
+      bestPerformance: "Best Performance",
+      bestReps: "Best Reps",
       achievedOn: "Achieved on:",
       vsAnterior: "vs previous",
       noRecordYet: "No record yet",
@@ -972,6 +977,7 @@ export const translations: Record<"es" | "en", Translations> = {
       setsCompleted: "Sets completed",
       same: "Same",
       weightProgress: "Weight Progress",
+      progressChart: "Progress",
       recentWorkouts: "Recent Workouts",
       noHistoryYet: "No workout history yet",
       incomplete: "Incomplete",
