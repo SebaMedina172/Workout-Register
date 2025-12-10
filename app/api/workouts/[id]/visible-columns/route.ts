@@ -12,8 +12,6 @@ interface UserColumn {
 // GET - Obtener columnas visibles específicas del workout
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    console.log("[v0] 🚀 Iniciando GET visible-columns para:", params.id)
-
     const cookieStore = cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,25 +25,20 @@ export async function GET(request: Request, { params }: { params: { id: string }
       },
     )
 
-    console.log("[v0] 🔐 Verificando autenticación...")
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      console.log("[v0] ❌ Error de autenticación:", authError)
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    console.log("[v0] ✅ Usuario autenticado:", user.id)
 
     // FIXED: Extraer la fecha real del ID del workout
     const workoutDate = params.id.replace("workout_", "")
-    console.log(`[v0] 🔍 Obteniendo columnas visibles para fecha: ${workoutDate}`)
 
     // 1. Buscar el workout real por fecha
-    console.log("[v0] 📅 Buscando workout por fecha...")
     const { data: workout, error: workoutError } = await supabase
       .from("workouts")
       .select("id")
@@ -54,14 +47,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
       .single()
 
     if (workoutError) {
-      console.log("[v0] ⚠️ Error buscando workout:", workoutError)
+      console.log("⚠️ Error buscando workout:", workoutError)
     }
 
     if (!workout) {
-      console.log(`[v0] ℹ️ Workout para fecha ${workoutDate} no existe, obteniendo columnas por defecto`)
 
       // Para workouts nuevos, devolver todas las columnas DESACTIVADAS por defecto
-      console.log("[v0] 📋 Obteniendo columnas por defecto...")
       const { data: defaultColumns, error: defaultError } = await supabase
         .from("user_columns")
         .select("*")
@@ -70,11 +61,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
         .order("display_order", { ascending: true })
 
       if (defaultError) {
-        console.error("[v0] ❌ Error obteniendo columnas por defecto:", defaultError)
+        console.error("❌ Error obteniendo columnas por defecto:", defaultError)
         return NextResponse.json({ error: "Error obteniendo columnas" }, { status: 500 })
       }
 
-      console.log("[v0] 📊 Columnas por defecto encontradas:", defaultColumns?.length || 0)
 
       // Marcar todas las columnas como NO activas por defecto para workouts nuevos
       const columnsWithInactiveState = (defaultColumns || []).map((col) => ({
@@ -82,14 +72,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
         is_active: false, // ✅ NUEVO: Columnas desactivadas por defecto en workouts nuevos
       }))
 
-      console.log("[v0] ✅ Devolviendo columnas por defecto (desactivadas)")
       return NextResponse.json({
         columns: columnsWithInactiveState,
         is_default: true,
       })
     }
 
-    console.log(`[v0] 🔍 Workout encontrado con ID: ${workout.id}`)
 
     // 2. Obtener configuración específica del workout usando el ID real
     const { data: visibleColumns, error } = await supabase
@@ -117,7 +105,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // 3. Si no hay configuración específica, usar columnas DESACTIVADAS por defecto
     if (!visibleColumns || visibleColumns.length === 0) {
-      console.log(`ℹ️ No hay configuración específica para workout ${workout.id}, usando DESACTIVADAS por defecto`)
 
       const { data: defaultColumns, error: defaultError } = await supabase
         .from("user_columns")
@@ -143,22 +130,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
       })
     }
 
-    console.log(`✅ Devolviendo ${visibleColumns.length} columnas con visibilidad específica del workout`)
-    console.log(`📊 Columnas activas: ${visibleColumns.filter((c) => c.is_visible).length}`)
-    console.log(
-      `📋 Columnas activas:`,
-      visibleColumns
-        .filter((c) => c.is_visible)
-        .map((c) => {
-          const userColumn = Array.isArray(c.user_columns) ? c.user_columns[0] : c.user_columns;
-          return userColumn?.column_name;
-        })
-        .filter(Boolean)    
-      )
-
     return NextResponse.json({ columns: visibleColumns.map((vc) => vc.user_columns) })
   } catch (error) {
-    console.error("[v0] 💥 Error in GET /api/workouts/[id]/visible-columns:", error)
+    console.error("💥 Error in GET /api/workouts/[id]/visible-columns:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
@@ -194,7 +168,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
     // Si el ID tiene formato "workout_YYYY-MM-DD", buscar el workout real
     if (params.id.startsWith("workout_")) {
       const workoutDate = params.id.replace("workout_", "")
-      console.log(`🔍 Buscando workout por fecha: ${workoutDate}`)
 
       const { data: workout } = await supabase
         .from("workouts")
@@ -209,15 +182,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
       }
 
       workoutId = workout.id
-      console.log(`✅ Workout encontrado con ID real: ${workoutId}`)
     }
 
     const body = await request.json()
     const { visible_column_ids } = body
-
-    console.log(`💾 Guardando configuración de columnas para workout ID: ${workoutId}`)
-    console.log(`📊 Columnas visibles: ${visible_column_ids?.length || 0}`)
-    console.log(`📋 IDs de columnas visibles:`, visible_column_ids)
 
     // 1. Eliminar configuración existente
     const { error: deleteError } = await supabase.from("workout_visible_columns").delete().eq("workout_id", workoutId)
@@ -254,11 +222,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
         return NextResponse.json({ error: "Error guardando configuración" }, { status: 500 })
       }
 
-      console.log(`✅ Configuración completa guardada para ${insertData.length} columnas`)
-      console.log(`📊 Columnas marcadas como visibles: ${insertData.filter((item) => item.is_visible).length}`)
     }
 
-    console.log(`✅ Configuración de columnas guardada exitosamente`)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("💥 Error in POST /api/workouts/[id]/visible-columns:", error)

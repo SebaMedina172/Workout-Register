@@ -28,7 +28,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // El ID viene como "workout_YYYY-MM-DD"
     const workoutDate = params.id.replace("workout_", "")
-    console.log("🔍 Cargando custom-data para fecha:", workoutDate)
 
     // Obtener workout
     const { data: workout, error: workoutError } = await supabase
@@ -39,11 +38,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
       .single()
 
     if (workoutError || !workout) {
-      console.log("❌ Workout no encontrado para fecha:", workoutDate)
       return NextResponse.json({ error: "Entrenamiento no encontrado" }, { status: 404 })
     }
 
-    console.log("✅ Workout encontrado, ID:", workout.id)
 
     // Obtener ejercicios con sus datos completos INCLUYENDO muscle_group
     const { data: exercises, error: exercisesError } = await supabase
@@ -57,14 +54,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Error cargando ejercicios" }, { status: 500 })
     }
 
-    console.log(`📋 Ejercicios encontrados: ${exercises?.length || 0}`)
-
     // Para cada ejercicio, obtener sus series
     const exercisesWithSets = await Promise.all(
       (exercises || []).map(async (exercise) => {
-        console.log(`🔍 Cargando series para ejercicio: ${exercise.exercise_name}`)
-        console.log(`   Muscle group: ${exercise.muscle_group}`) // Log del muscle_group cargado
-        console.log(`   Estado del ejercicio: is_completed=${exercise.is_completed}`)
 
         // Obtener series del ejercicio
         const { data: setRecords, error: setsError } = await supabase
@@ -78,16 +70,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
           console.error(`❌ Error cargando series para ${exercise.exercise_name}:`, setsError)
         }
 
-        console.log(`   Series encontradas: ${setRecords?.length || 0}`)
 
         // Log detallado de cada serie
         if (setRecords && setRecords.length > 0) {
           setRecords.forEach((sr, index) => {
-            console.log(`     Serie ${sr.set_number}: ${sr.reps}x${sr.weight}kg - Completada: ${sr.is_completed}`)
           })
 
           const completedSets = setRecords.filter((sr) => sr.is_completed === true).length
-          console.log(`   ✅ Series completadas: ${completedSets}/${setRecords.length}`)
         }
 
         // Formatear series para el frontend
@@ -116,25 +105,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
           set_records: formattedSetRecords,
         }
 
-        console.log(`✅ Ejercicio formateado: ${exercise.exercise_name}`)
-        console.log(`   Muscle group formateado: ${formattedExercise.muscle_group}`) // Verificar que se mantiene
-        console.log(
-          `   is_completed: ${formattedExercise.is_completed} (tipo: ${typeof formattedExercise.is_completed})`,
-        )
-        console.log(`   is_expanded: ${formattedExercise.is_expanded} (tipo: ${typeof formattedExercise.is_expanded})`)
-        console.log(`   Series formateadas: ${formattedSetRecords.length}`)
-
         return formattedExercise
       }),
     )
 
-    console.log("✅ Todos los ejercicios procesados exitosamente")
-    console.log("📊 Resumen final:")
     exercisesWithSets.forEach((ex, index) => {
       const completedSets = ex.set_records?.filter((sr) => sr.is_completed).length || 0
-      console.log(
-        `   ${index + 1}. ${ex.exercise_name} (${ex.muscle_group || "Sin grupo"}): ${ex.is_completed ? "COMPLETADO" : "PENDIENTE"} (${completedSets}/${ex.set_records?.length || 0} series)`,
-      )
+
     })
 
     return NextResponse.json({

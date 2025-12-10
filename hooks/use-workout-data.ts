@@ -34,40 +34,33 @@ export function useWorkoutData({ workout, date }: UseWorkoutDataProps) {
       set_records: [],
     }
     setExercises([initialExercise])
-    console.log("✅ Ejercicio inicial creado")
   }
 
   // Cargar datos del usuario
   const loadUserData = async () => {
     try {
       setLoadingData(true)
-      console.log("🔄 Cargando datos del usuario...")
 
       // Cargar ejercicios personalizados
       const exercisesResponse = await fetch("/api/user-exercises")
       if (exercisesResponse.ok) {
         const userExercisesData = await exercisesResponse.json()
         setUserExercises(userExercisesData)
-        console.log("✅ Ejercicios personalizados cargados:", userExercisesData.length)
       }
 
       // Si es un workout existente, cargar todos los datos
       if (workout && workout.id) {
-        console.log("👀 Cargando workout existente:", workout.id)
-
         // Cargar columnas visibles específicas del workout
         const visibleColumnsResponse = await fetch(`/api/workouts/${workout.id}/visible-columns`)
         if (visibleColumnsResponse.ok) {
           const visibleData = await visibleColumnsResponse.json()
           setCustomColumns(visibleData.columns || [])
-          console.log("✅ Columnas visibles específicas cargadas:", visibleData.columns?.length || 0)
         }
 
         // Cargar datos completos del workout
         const customDataResponse = await fetch(`/api/workouts/${workout.id}/custom-data`)
         if (customDataResponse.ok) {
           const customData = await customDataResponse.json()
-          console.log("📊 Respuesta completa de custom-data:", customData)
 
           if (customData.exercises && customData.exercises.length > 0) {
             // Validar ejercicios

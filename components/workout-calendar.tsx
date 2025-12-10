@@ -10,6 +10,7 @@ import { CalendarDay } from "./workout-calendar/calendar-day"
 import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 import { useLanguage } from "@/lib/i18n/context"
 import type { Workout } from "./workout-calendar/types"
+import { format } from "date-fns"
 
 export default function WorkoutCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
@@ -33,11 +34,10 @@ export default function WorkoutCalendar() {
   // Función para cargar entrenamientos desde la API
   const loadWorkouts = async () => {
     try {
-      console.log("🔄 Cargando entrenamientos...")
+      setLoading(true)
       const response = await fetch("/api/workouts")
       if (response.ok) {
         const data = await response.json()
-        console.log("📊 Workouts cargados:", data.length)
 
         // Procesar workouts para asegurar que tengan la estructura correcta
         const processedWorkouts = data.map((workout: any) => ({
@@ -58,9 +58,8 @@ export default function WorkoutCalendar() {
 
         setWorkouts(processedWorkouts)
       } else {
-        console.error("❌ Error cargando workouts:", response.status, response.statusText)
         const errorText = await response.text()
-        console.error("❌ Error details:", errorText)
+        console.error("❌ Error cargando workouts:", response.status, response.statusText, errorText)
       }
     } catch (error) {
       console.error("💥 Error loading workouts:", error)
@@ -70,16 +69,14 @@ export default function WorkoutCalendar() {
   }
 
   // Obtener entrenamiento para una fecha específica
-  const getWorkoutForDate = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0]
+  const getWorkoutForDate = (date: Date): Workout | undefined => {
+    const dateString = format(date, "yyyy-MM-dd")
     const workout = workouts.find((w) => w.date === dateString)
-    console.log(`🔍 Buscando workout para ${dateString}:`, workout ? "encontrado" : "no encontrado")
     return workout
   }
 
   // Crear nuevo entrenamiento
   const handleCreateWorkout = () => {
-    console.log("➕ Creando nuevo entrenamiento para:", selectedDate?.toISOString().split("T")[0])
     setEditingWorkout(null)
     setShowWorkoutForm(true)
     setShowDayActions(false)
@@ -90,7 +87,6 @@ export default function WorkoutCalendar() {
     if (selectedDate) {
       const workout = getWorkoutForDate(selectedDate)
       if (workout) {
-        console.log("✏️ Editando entrenamiento:", workout.id)
         setEditingWorkout(workout)
         setShowWorkoutForm(true)
         setShowDayActions(false)
@@ -103,7 +99,6 @@ export default function WorkoutCalendar() {
     if (!selectedDate) return
 
     const dateString = selectedDate.toISOString().split("T")[0]
-    console.log("🛌 Marcando día como descanso:", dateString)
 
     try {
       const response = await fetch("/api/workouts", {
@@ -116,7 +111,6 @@ export default function WorkoutCalendar() {
       })
 
       if (response.ok) {
-        console.log("✅ Día marcado como descanso exitosamente")
         await loadWorkouts()
         setShowDayActions(false)
       } else {
@@ -137,17 +131,15 @@ export default function WorkoutCalendar() {
     const workout = getWorkoutForDate(selectedDate)
     if (!workout) return
 
-    const dateString = selectedDate.toISOString().split("T")[0]
-    console.log("🗑️ Limpiando día:", dateString, "workout ID:", workout.id)
+    const dateString = format(selectedDate, "yyyy-MM-dd")
 
-    setClearingDay(true)
     try {
+      setClearingDay(true)
       const response = await fetch(`/api/workouts/${workout.id}`, {
         method: "DELETE",
       })
 
       if (response.ok) {
-        console.log("✅ Día limpiado exitosamente")
         await loadWorkouts()
         setShowDayActions(false)
       } else {
@@ -165,9 +157,6 @@ export default function WorkoutCalendar() {
 
   // Manejar selección de fecha
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      console.log("📅 Fecha seleccionada:", date.toISOString().split("T")[0])
-    }
     setSelectedDate(date)
     if (date) {
       setShowDayActions(true)
@@ -177,7 +166,6 @@ export default function WorkoutCalendar() {
   // Ir a hoy
   const goToToday = () => {
     const today = new Date()
-    console.log("📅 Navegando a hoy:", today.toISOString().split("T")[0])
     setCurrentMonth(today)
     setSelectedDate(today)
     setShowDayActions(false)
@@ -475,11 +463,8 @@ export default function WorkoutCalendar() {
                   return language === "es" ? `${monthName} ${year}` : `${monthName} ${year}`
                 },
                 formatWeekdayName: (date) => {
-                  // Use our custom week day names that maintain Monday-first order
                   const weekDayNames = getWeekDayNames(true)
-                  // Since weekStartsOn={1}, the days will be in correct order
                   const dayIndex = date.getDay()
-                  // Adjust for Monday-first: Sunday (0) becomes index 6, Monday (1) becomes 0, etc.
                   const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1
                   return weekDayNames[adjustedIndex]
                 },
@@ -519,7 +504,6 @@ export default function WorkoutCalendar() {
           onMarkAsRest={handleMarkAsRest}
           onClearDay={handleClearDay}
           onPostpone={() => {
-            console.log("⏰ Abriendo diálogo de aplazamiento para:", selectedWorkout?.id)
             setShowPostponeDialog(true)
             setShowDayActions(false)
           }}

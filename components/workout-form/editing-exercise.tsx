@@ -51,18 +51,13 @@ export const EditingExercise = ({
   const isFirstUnlocked = index === 0 || exercises[index - 1].is_saved
 
   const handleExerciseSelect = async (value: string) => {
-    console.log(`🎯 Seleccionando ejercicio: ${value}`)
-
     if (value.startsWith("CREATE_")) {
       const parts = value.split("|||")
-      console.log(`🔧 Creando ejercicio personalizado:`, parts)
       if (parts.length === 3) {
         const exerciseName = parts[1]
         const muscleGroup = parts[2]
-        console.log(`📝 Nombre: ${exerciseName}, Grupo: ${muscleGroup}`)
         const createdExercise = await onCreateExercise(exerciseName, muscleGroup)
         if (createdExercise) {
-          console.log(`✅ Ejercicio creado:`, createdExercise)
           onUpdateExercise(exercise.id, "exercise_name", createdExercise.name)
           onUpdateExercise(exercise.id, "muscle_group", createdExercise.muscle_group)
         }
@@ -70,17 +65,13 @@ export const EditingExercise = ({
       return
     }
 
-    console.log(`🔍 Buscando ejercicio en lista:`, value)
     const allExercises = [...DEFAULT_EXERCISES, ...userExercises]
     const selectedExercise = allExercises.find((ex) => ex.name === value)
-    console.log(`🎯 Ejercicio encontrado:`, selectedExercise)
 
     if (selectedExercise) {
-      console.log(`📝 Actualizando con: nombre=${selectedExercise.name}, grupo=${selectedExercise.muscle_group}`)
       onUpdateExercise(exercise.id, "exercise_name", selectedExercise.name)
       onUpdateExercise(exercise.id, "muscle_group", selectedExercise.muscle_group)
     } else {
-      console.log(`⚠️ Ejercicio no encontrado, solo actualizando nombre`)
       onUpdateExercise(exercise.id, "exercise_name", value)
     }
   }

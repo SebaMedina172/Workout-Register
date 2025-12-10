@@ -33,9 +33,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // El ID viene como "workout_YYYY-MM-DD", extraer la fecha
     const workoutDate = params.id.replace("workout_", "")
 
-    console.log("🔄 Actualizando estados de completado para fecha:", workoutDate)
-    console.log("📊 Ejercicios recibidos:", exercises.length)
-
     // Obtener workout
     const { data: workout } = await supabase
       .from("workouts")
@@ -48,18 +45,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ error: "Entrenamiento no encontrado" }, { status: 404 })
     }
 
-    console.log("✅ Workout encontrado, ID:", workout.id)
-
     // Actualizar estados de completado de ejercicios y series
     for (const exercise of exercises) {
       if (!exercise.is_saved) {
-        console.log(`⏭️ Saltando ejercicio no guardado: ${exercise.exercise_name}`)
         continue
       }
-
-      console.log(`🔄 Procesando ejercicio: ${exercise.exercise_name}`)
-      console.log(`   Estado del ejercicio: ${exercise.is_completed} (tipo: ${typeof exercise.is_completed})`)
-      console.log(`   Series: ${exercise.set_records?.length || 0}`)
 
       // Buscar el ejercicio real en la base de datos por ID (más confiable que por nombre)
       let dbExercise = null
@@ -89,11 +79,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       }
 
       if (!dbExercise) {
-        console.log(`⚠️ Ejercicio ${exercise.exercise_name} no encontrado en BD`)
         continue
       }
-
-      console.log(`✅ Ejercicio encontrado en BD, ID: ${dbExercise.id}`)
 
       // Actualizar estado del ejercicio usando el ID real de la BD
       const { error: exerciseError } = await supabase
@@ -109,17 +96,9 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         continue
       }
 
-      console.log(`✅ Estado del ejercicio actualizado: is_completed=${Boolean(exercise.is_completed)}`)
-
       // Actualizar estados de las series
       if (exercise.set_records && exercise.set_records.length > 0) {
-        console.log(`🔄 Actualizando ${exercise.set_records.length} series`)
-
         for (const setRecord of exercise.set_records) {
-          console.log(
-            `   Serie ${setRecord.set_number}: is_completed=${setRecord.is_completed} (tipo: ${typeof setRecord.is_completed})`,
-          )
-
           // Buscar la serie real en la base de datos
           const { data: dbSetRecord } = await supabase
             .from("workout_set_records")
@@ -141,23 +120,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
               .eq("id", dbSetRecord.id)
 
             if (setError) {
-              console.error(`❌ Error actualizando serie ${setRecord.set_number}:`, setError)
-            } else {
-              console.log(
-                `   ✅ Serie ${setRecord.set_number} actualizada: is_completed=${Boolean(setRecord.is_completed)}`,
-              )
+              console.error(`Error actualizando serie ${setRecord.set_number}:`, setError)
             }
-          } else {
-            console.log(`   ⚠️ Serie ${setRecord.set_number} no encontrada en BD`)
           }
         }
-
-        const completedSets = exercise.set_records.filter((sr: any) => Boolean(sr.is_completed)).length
-        console.log(`   📊 Resumen: ${completedSets}/${exercise.set_records.length} series completadas`)
       }
     }
 
-    console.log("✅ Estados de completado actualizados exitosamente")
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("💥 Error in PATCH /api/workouts/[id]/completion:", error)

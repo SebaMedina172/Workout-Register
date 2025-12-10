@@ -18,7 +18,6 @@ function findBestCompletedSet(setRecords: SetRecord[]): SetRecord | null {
   const completedSets = setRecords.filter((sr) => sr.is_completed)
   if (completedSets.length === 0) return null
 
-  // Find the best set by weight first, then by reps
   return completedSets.reduce((best, current) => {
     const currentWeight = current.weight || 0
     const bestWeight = best.weight || 0
@@ -39,9 +38,7 @@ async function recordExerciseHistoryOnCompletion(
 ) {
   const recordKey = `${exerciseName}_${workoutDate}`
 
-  // Prevent duplicate simultaneous calls
   if (recordingInProgress.has(recordKey)) {
-    console.log(`[v0] Skipping duplicate recording for ${exerciseName} on ${workoutDate}`)
     return { success: true, skipped: true }
   }
 
@@ -66,11 +63,11 @@ async function recordExerciseHistoryOnCompletion(
       return { success: true, data }
     } else {
       const errorData = await response.json()
-      console.error(`[v0] Error recording exercise history:`, errorData)
+      console.error("Error recording exercise history:", errorData)
       return { success: false, error: errorData }
     }
   } catch (error) {
-    console.error(`[v0] Error calling record-history API:`, error)
+    console.error("Error calling record-history API:", error)
     return { success: false, error }
   } finally {
     setTimeout(() => {
@@ -81,11 +78,9 @@ async function recordExerciseHistoryOnCompletion(
 
 export function useExerciseActions({ exercises, setExercises, workout, setMessage }: UseExerciseActionsProps) {
   const lastRecordedValues = useRef(new Map<string, { weight: number; reps: number; sets: number }>())
-
   const recordedExercises = useRef(new Set<string>())
   const bestRecordedValues = useRef(new Map<string, { weight: number; reps: number }>())
 
-  // Agregar nuevo ejercicio
   const addExercise = () => {
     const newExercise: WorkoutExercise = {
       id: Date.now().toString(),
@@ -102,72 +97,56 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
       set_records: [],
     }
     setExercises((prev) => [...prev, newExercise])
-    console.log("✅ Nuevo ejercicio agregado")
   }
 
-  // Eliminar ejercicio
   const removeExercise = async (id: string) => {
     const exerciseToRemove = exercises.find((ex) => ex.id === id)
 
     if (exerciseToRemove?.exercise_name && workout?.date) {
       try {
-        console.log(`[v0] Deleting history for exercise: ${exerciseToRemove.exercise_name} on ${workout.date}`)
         const response = await fetch(
           `/api/exercises/record-history?exerciseName=${encodeURIComponent(exerciseToRemove.exercise_name)}&date=${workout.date}`,
           { method: "DELETE" },
         )
         if (response.ok) {
-          console.log(`[v0] Successfully deleted history for ${exerciseToRemove.exercise_name}`)
-          // Clear tracking for this exercise
           const recordKey = `${exerciseToRemove.exercise_name}_${workout.date}`
           recordedExercises.current.delete(recordKey)
           bestRecordedValues.current.delete(recordKey)
           lastRecordedValues.current.delete(recordKey)
         }
       } catch (error) {
-        console.error("[v0] Error deleting exercise history:", error)
+        console.error("Error deleting exercise history:", error)
       }
     }
 
     setExercises(exercises.filter((ex) => ex.id !== id))
   }
 
-  // Actualizar ejercicio
   const updateExercise = (id: string, field: string, value: any) => {
-    console.log(`🔄 Actualizando ejercicio ${id}, campo: ${field}, valor:`, value)
-
     setExercises((prevExercises) => {
-      const updatedExercises = prevExercises.map((ex) => {
+      return prevExercises.map((ex) => {
         if (ex.id === id) {
           if (field.startsWith("custom_")) {
             const customField = field.replace("custom_", "")
-            const updatedExercise = {
+            return {
               ...ex,
               custom_data: {
                 ...ex.custom_data,
                 [customField]: value,
               },
             }
-            console.log(`📊 Datos personalizados actualizados para ${ex.exercise_name}:`, updatedExercise.custom_data)
-            return updatedExercise
           }
-          const updatedExercise = { ...ex, [field]: value }
-          console.log(`✅ Ejercicio actualizado:`, updatedExercise)
-          return updatedExercise
+          return { ...ex, [field]: value }
         }
         return ex
       })
-      console.log(`📋 Estado completo de ejercicios:`, updatedExercises)
-      return updatedExercises
     })
   }
 
-  // Guardar ejercicio (bloquear para edición)
   const saveExercise = (id: string) => {
     setExercises(
       exercises.map((ex) => {
         if (ex.id === id) {
-          // Generar registros de series basados en la configuración del ejercicio
           const setRecords: SetRecord[] = Array.from({ length: ex.sets }, (_, index) => ({
             id: `${id}_set_${index + 1}`,
             set_number: index + 1,
@@ -176,8 +155,6 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
             custom_data: { ...ex.custom_data },
             is_completed: false,
           }))
-
-          console.log(`💾 Guardando ejercicio ${ex.exercise_name} con ${setRecords.length} series`)
 
           return {
             ...ex,
@@ -195,12 +172,10 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     setTimeout(() => setMessage(""), 3000)
   }
 
-  // Editar ejercicio (desbloquear)
   const editExercise = (id: string) => {
     setExercises(
       exercises.map((ex) => {
         if (ex.id === id) {
-          console.log(`✏️ Desbloqueando ejercicio ${ex.exercise_name} para edición`)
           return {
             ...ex,
             is_saved: false,
@@ -217,7 +192,6 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     setTimeout(() => setMessage(""), 3000)
   }
 
-  // Alternar expansión del ejercicio
   const toggleExerciseExpansion = (id: string) => {
     setExercises(
       exercises.map((ex) => {
@@ -229,7 +203,6 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     )
   }
 
-  // Guardar automáticamente estados de completado
   const saveCompletionStates = async () => {
     if (!workout || !workout.id) {
       return
@@ -244,14 +217,13 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error("❌ Error guardando estados de completado:", errorData)
+        console.error("Error guardando estados de completado:", errorData)
       }
     } catch (error) {
-      console.error("💥 Error saving completion states:", error)
+      console.error("Error saving completion states:", error)
     }
   }
 
-  // Debounced version para evitar demasiadas llamadas
   const debouncedSaveCompletion = useMemo(() => {
     const timeoutRef = { current: null as NodeJS.Timeout | null }
 
@@ -266,7 +238,6 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     }
   }, [workout, exercises])
 
-  // Alternar completado de ejercicio completo
   const toggleExerciseCompletion = async (id: string) => {
     const exerciseToToggle = exercises.find((ex) => ex.id === id)
     if (!exerciseToToggle) return
@@ -276,7 +247,6 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
 
     let bestSet: SetRecord | null = null
     if (newCompletedState && exerciseToToggle.set_records) {
-      // When marking all complete, find the best set among all of them
       const allSetsAsCompleted = exerciseToToggle.set_records.map((sr) => ({ ...sr, is_completed: true }))
       bestSet = findBestCompletedSet(allSetsAsCompleted)
     }
@@ -305,10 +275,9 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
       const bestWeight = bestSet.weight || 0
       const bestReps = bestSet.reps || exerciseToToggle.reps
 
-      // Always record - the API will handle updates and PR recalculation
       lastRecordedValues.current.set(recordKey, { weight: bestWeight, reps: bestReps, sets: completedSetsCount })
 
-      const result = await recordExerciseHistoryOnCompletion(
+      await recordExerciseHistoryOnCompletion(
         exerciseToToggle.exercise_name,
         exerciseToToggle.muscle_group,
         completedSetsCount,
@@ -316,11 +285,6 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
         bestWeight,
         workout.date,
       )
-
-      if (result.success && !result.skipped) {
-        setMessage(`Ejercicio completado: ${bestWeight}kg x ${bestReps} reps x ${completedSetsCount} sets`)
-        setTimeout(() => setMessage(""), 3000)
-      }
     }
 
     if (workout && workout.id) {
@@ -328,15 +292,11 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     }
   }
 
-  // Alternar completado de serie individual
   const toggleSetCompletion = async (exerciseId: string, setId: string) => {
     const exercise = exercises.find((ex) => ex.id === exerciseId)
     if (!exercise) return
 
     const recordKey = workout?.date ? `${exercise.exercise_name}_${workout.date}` : null
-
-    const currentSet = exercise.set_records?.find((sr) => sr.id === setId)
-    const isCompletingSet = currentSet && !currentSet.is_completed
 
     const updatedSetRecords =
       exercise.set_records?.map((setRecord) => {
@@ -349,15 +309,15 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     const allSetsCompleted = updatedSetRecords.length > 0 && updatedSetRecords.every((sr) => sr.is_completed)
     const noSetsCompleted = updatedSetRecords.every((sr) => !sr.is_completed)
 
-    // Update state with auto-completion logic
     setExercises(
       exercises.map((ex) => {
         if (ex.id === exerciseId) {
           return {
             ...ex,
             set_records: updatedSetRecords,
-            // Auto-mark exercise as completed if all sets are done, or uncomplete if no sets are done
-            is_completed: allSetsCompleted ? true : noSetsCompleted ? false : ex.is_completed,
+            // Auto-mark exercise as completed only if ALL sets are done
+            // Unmark exercise if not all sets are completed
+            is_completed: allSetsCompleted,
           }
         }
         return ex
@@ -369,14 +329,12 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
       const completedSetsCount = completedSets.length
 
       if (completedSetsCount > 0) {
-        // Find best among completed sets
         const bestSet = findBestCompletedSet(updatedSetRecords)
 
         if (bestSet) {
           const bestWeight = bestSet.weight || 0
           const bestReps = bestSet.reps || exercise.reps
 
-          // Check if anything changed from last recorded values
           const lastRecorded = lastRecordedValues.current.get(recordKey)
           const hasChanged =
             !lastRecorded ||
@@ -387,7 +345,7 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
           if (hasChanged) {
             lastRecordedValues.current.set(recordKey, { weight: bestWeight, reps: bestReps, sets: completedSetsCount })
 
-            const result = await recordExerciseHistoryOnCompletion(
+            await recordExerciseHistoryOnCompletion(
               exercise.exercise_name,
               exercise.muscle_group,
               completedSetsCount,
@@ -395,11 +353,6 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
               bestWeight,
               workout.date,
             )
-
-            if (result.success && !result.skipped) {
-              setMessage(`${exercise.exercise_name}: ${bestWeight}kg x ${bestReps} reps x ${completedSetsCount} sets`)
-              setTimeout(() => setMessage(""), 3000)
-            }
           }
         }
       } else {
@@ -410,9 +363,8 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
             `/api/exercises/record-history?exerciseName=${encodeURIComponent(exercise.exercise_name)}&date=${workout.date}`,
             { method: "DELETE" },
           )
-          console.log(`[v0] Deleted history for ${exercise.exercise_name} - no completed sets`)
         } catch (error) {
-          console.error("[v0] Error deleting history:", error)
+          console.error("Error deleting history:", error)
         }
       }
     }
@@ -422,10 +374,7 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
     }
   }
 
-  // Actualizar registro de serie
   const updateSetRecord = (exerciseId: string, setId: string, field: string, value: any) => {
-    console.log(`🔄 Actualizando serie ${setId}, campo: ${field}, valor:`, value)
-
     setExercises(
       exercises.map((ex) => {
         if (ex.id === exerciseId) {
@@ -452,9 +401,7 @@ export function useExerciseActions({ exercises, setExercises, workout, setMessag
       }),
     )
 
-    // Guardar automáticamente cambios en series si es un workout existente
     if (workout && workout.id && (field === "reps" || field === "weight" || field.startsWith("custom_"))) {
-      console.log("💾 Guardando cambio en datos de serie...")
       debouncedSaveCompletion()
     }
   }
