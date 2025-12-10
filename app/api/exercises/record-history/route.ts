@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { exerciseName, muscleGroup, sets, reps, weight, date } = body
+    const { exerciseName, muscleGroup, sets, reps, weight, date, bestReps } = body
 
     if (!exerciseName || !date || sets === undefined || reps === undefined) {
       console.log("[v0] Missing required fields:", { exerciseName, date, sets, reps })
@@ -44,18 +44,20 @@ export async function POST(request: Request) {
 
     // The DB constraint requires: weight IS NULL OR weight > 0
     const weightValue = weight && weight > 0 ? weight : null
+    const bestRepsValue = bestReps && bestReps > 0 ? bestReps : reps
 
     console.log("[v0] Recording exercise history:", {
       exerciseName,
       sets,
       reps,
       weight: weightValue,
+      bestReps: bestRepsValue,
       workoutDate,
     })
 
     const { data: existingRecord } = await supabase
       .from("exercise_history")
-      .select("id, weight, reps, sets")
+      .select("id, weight, reps, sets, best_reps")
       .eq("user_id", user.id)
       .eq("exercise_name", exerciseName)
       .eq("workout_date", workoutDate)
@@ -63,8 +65,13 @@ export async function POST(request: Request) {
 
     if (existingRecord) {
       console.log("Updating existing record:", {
-        oldValues: { weight: existingRecord.weight, reps: existingRecord.reps, sets: existingRecord.sets },
-        newValues: { weight: weightValue, reps, sets },
+        oldValues: {
+          weight: existingRecord.weight,
+          reps: existingRecord.reps,
+          sets: existingRecord.sets,
+          best_reps: existingRecord.best_reps,
+        },
+        newValues: { weight: weightValue, reps, sets, best_reps: bestRepsValue },
       })
 
       const { error: updateError } = await supabase
@@ -74,6 +81,7 @@ export async function POST(request: Request) {
           reps: reps,
           weight: weightValue,
           muscle_group: muscleGroup || null,
+          best_reps: bestRepsValue,
         })
         .eq("id", existingRecord.id)
 
@@ -92,6 +100,7 @@ export async function POST(request: Request) {
         reps: reps,
         weight: weightValue,
         completed: true,
+        best_reps: bestRepsValue,
       })
 
       if (historyError) {
@@ -102,6 +111,63 @@ export async function POST(request: Request) {
 
     console.log("Exercise history recorded successfully")
 
+    try {
+      const { data: currentRepsPR } = await supabase
+        .from("personal_records")
+        .select("id, value, previous_record")
+        .eq("user_id", user.id)
+        .eq("exercise_name", exerciseName)
+        .eq("record_type", "max_reps")
+        .single()
+
+      // Find the max best_reps from all history
+      const { data: maxRepsRecord } = await supabase
+        .from("exercise_history")
+        .select("best_reps, reps, sets, workout_date, weight")
+        .eq("user_id", user.id)
+        .eq("exercise_name", exerciseName)
+        .order("best_reps", { ascending: false, nullsFirst: false })
+        .limit(1)
+        .single()
+
+      if (maxRepsRecord) {
+        const maxReps = maxRepsRecord.best_reps || maxRepsRecord.reps
+
+        if (!currentRepsPR) {
+          // No reps PR exists - create one
+          console.log("Creating first max_reps PR:", maxReps)
+          await supabase.from("personal_records").insert({
+            user_id: user.id,
+            exercise_name: exerciseName,
+            record_type: "max_reps",
+            value: maxReps,
+            weight: maxRepsRecord.weight,
+            reps: maxReps,
+            sets: maxRepsRecord.sets,
+            achieved_at: new Date(maxRepsRecord.workout_date).toISOString(),
+            previous_record: null,
+          })
+        } else if (maxReps !== currentRepsPR.value) {
+          // PR changed
+          console.log("Updating max_reps PR from", currentRepsPR.value, "to", maxReps)
+          await supabase
+            .from("personal_records")
+            .update({
+              value: maxReps,
+              weight: maxRepsRecord.weight,
+              reps: maxReps,
+              sets: maxRepsRecord.sets,
+              achieved_at: new Date(maxRepsRecord.workout_date).toISOString(),
+              previous_record: maxReps > currentRepsPR.value ? currentRepsPR.value : null,
+            })
+            .eq("id", currentRepsPR.id)
+        }
+      }
+    } catch (repsPrError) {
+      console.error("Error in max_reps PR check/update:", repsPrError)
+    }
+
+    // Handle max_weight PR
     if (weightValue && weightValue > 0) {
       try {
         const { data: currentPRData } = await supabase
@@ -186,8 +252,13 @@ export async function POST(request: Request) {
             { onConflict: "user_id, exercise_name, record_type" },
           )
         } else {
-          // No weighted records at all - delete PR
-          await supabase.from("personal_records").delete().eq("user_id", user.id).eq("exercise_name", exerciseName)
+          // No weighted records - only delete max_weight PR, keep max_reps
+          await supabase
+            .from("personal_records")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("exercise_name", exerciseName)
+            .eq("record_type", "max_weight")
         }
       } catch (prError) {
         console.error("Error recalculating PR:", prError)
@@ -262,7 +333,7 @@ export async function DELETE(request: Request) {
       console.log("No history remains, deleting PR for:", decodedExerciseName)
       await supabase.from("personal_records").delete().eq("user_id", user.id).eq("exercise_name", decodedExerciseName)
     } else {
-      const { data: currentPR } = await supabase
+      const { data: currentWeightPR } = await supabase
         .from("personal_records")
         .select("achieved_at")
         .eq("user_id", user.id)
@@ -270,8 +341,10 @@ export async function DELETE(request: Request) {
         .eq("record_type", "max_weight")
         .single()
 
-      if (currentPR) {
-        const prDate = currentPR.achieved_at.includes("T") ? currentPR.achieved_at.split("T")[0] : currentPR.achieved_at
+      if (currentWeightPR) {
+        const prDate = currentWeightPR.achieved_at.includes("T")
+          ? currentWeightPR.achieved_at.split("T")[0]
+          : currentWeightPR.achieved_at
 
         if (prDate === date) {
           console.log("PR was achieved on deleted date, recalculating...")
@@ -308,8 +381,64 @@ export async function DELETE(request: Request) {
               .delete()
               .eq("user_id", user.id)
               .eq("exercise_name", decodedExerciseName)
+              .eq("record_type", "max_weight")
 
             console.log("No weighted records remain, PR deleted")
+          }
+        }
+      }
+
+      const { data: currentRepsPR } = await supabase
+        .from("personal_records")
+        .select("achieved_at")
+        .eq("user_id", user.id)
+        .eq("exercise_name", decodedExerciseName)
+        .eq("record_type", "max_reps")
+        .single()
+
+      if (currentRepsPR) {
+        const prDate = currentRepsPR.achieved_at.includes("T")
+          ? currentRepsPR.achieved_at.split("T")[0]
+          : currentRepsPR.achieved_at
+
+        if (prDate === date) {
+          console.log("Reps PR was achieved on deleted date, recalculating...")
+
+          const { data: maxRepsRecord } = await supabase
+            .from("exercise_history")
+            .select("best_reps, reps, sets, workout_date, weight")
+            .eq("user_id", user.id)
+            .eq("exercise_name", decodedExerciseName)
+            .order("best_reps", { ascending: false, nullsFirst: false })
+            .limit(1)
+            .single()
+
+          if (maxRepsRecord) {
+            const maxReps = maxRepsRecord.best_reps || maxRepsRecord.reps
+            await supabase
+              .from("personal_records")
+              .update({
+                value: maxReps,
+                weight: maxRepsRecord.weight,
+                reps: maxReps,
+                sets: maxRepsRecord.sets,
+                achieved_at: maxRepsRecord.workout_date,
+                previous_record: null,
+              })
+              .eq("user_id", user.id)
+              .eq("exercise_name", decodedExerciseName)
+              .eq("record_type", "max_reps")
+
+            console.log("Reps PR recalculated to:", maxReps)
+          } else {
+            await supabase
+              .from("personal_records")
+              .delete()
+              .eq("user_id", user.id)
+              .eq("exercise_name", decodedExerciseName)
+              .eq("record_type", "max_reps")
+
+            console.log("No records remain, max_reps PR deleted")
           }
         }
       }

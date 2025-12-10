@@ -154,14 +154,34 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
           wasPRDay: item.wasPRDay || item.wasRepsPRDay || false,
         }))
 
-        const hasWeightData = recordsData.max_weight?.value > 0
-        const hasRepsData = recordsData.best_reps?.value > 0
+        const hasWeightRecord = recordsData.max_weight?.value > 0
+        const hasRepsRecord = recordsData.best_reps?.value > 0
 
-        let mode: "weighted" | "bodyweight" | "mixed" = "weighted"
-        if (!hasWeightData && hasRepsData) {
+        // Also check history for weight data in case records don't exist yet
+        const historyHasWeight = mappedHistory.some((h) => h.weight > 0)
+        const historyHasReps = mappedHistory.some((h) => (h.bestReps || h.reps) > 0)
+
+        let mode: "weighted" | "bodyweight" | "mixed" = "bodyweight" // Default to bodyweight
+
+        if (historyHasWeight && historyHasReps) {
+          // Has both weight and reps data
+          const allHaveWeight = mappedHistory.every((h) => h.weight > 0)
+          mode = allHaveWeight ? "weighted" : "mixed"
+        } else if (historyHasWeight) {
+          mode = "weighted"
+        } else if (historyHasReps) {
           mode = "bodyweight"
-        } else if (hasWeightData && hasRepsData) {
-          mode = "mixed"
+        }
+
+        // If no history, fallback to records data
+        if (mappedHistory.length === 0) {
+          if (hasWeightRecord && hasRepsRecord) {
+            mode = "mixed"
+          } else if (hasWeightRecord) {
+            mode = "weighted"
+          } else {
+            mode = "bodyweight"
+          }
         }
 
         setPRData({
@@ -489,7 +509,7 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                             : undefined
                         }
                         bestPerformance={
-                          prData.mode === "bodyweight" || prData.mode === "mixed"
+                          prData.mode !== "weighted"
                             ? {
                                 reps: prData.bestReps.value,
                                 date: prData.bestReps.date,
