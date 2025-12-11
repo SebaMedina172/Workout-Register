@@ -27,6 +27,18 @@ interface ExerciseData {
   isCompleted: boolean
 }
 
+interface GroupedExerciseData {
+  name: string
+  timesThisWeek: number
+  totalCompletedSets: number
+  totalSets: number
+  bestWeight: number
+  bestReps: number
+  lastDate: string
+  allCompleted: boolean
+  sessions: ExerciseData[]
+}
+
 interface MuscleGroupData {
   name: string
   sets: number
@@ -116,6 +128,52 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
 
   const getFilteredExercises = (muscleGroup: string) => {
     return (exercisesByMuscleGroup[muscleGroup] || []).filter((ex) => ex.completedSets > 0)
+  }
+
+  const getGroupedExercises = (muscleGroup: string): GroupedExerciseData[] => {
+    const exercises = getFilteredExercises(muscleGroup)
+    console.log("[v0] getFilteredExercises for", muscleGroup, ":", exercises)
+    const grouped = new Map<string, GroupedExerciseData>()
+
+    exercises.forEach((exercise) => {
+      console.log("[v0] Processing exercise:", exercise.name, "date:", exercise.date)
+      const existing = grouped.get(exercise.name)
+
+      if (existing) {
+        console.log("[v0] Found existing group for", exercise.name, "adding to it")
+        existing.timesThisWeek += 1
+        existing.totalCompletedSets += exercise.completedSets
+        existing.totalSets += exercise.totalSets
+        existing.bestWeight = Math.max(existing.bestWeight, exercise.weight)
+        existing.bestReps = Math.max(existing.bestReps, exercise.reps)
+        existing.allCompleted = existing.allCompleted && exercise.isCompleted
+        existing.sessions.push(exercise)
+        // Keep the most recent date
+        if (new Date(exercise.date) > new Date(existing.lastDate)) {
+          existing.lastDate = exercise.date
+        }
+      } else {
+        console.log("[v0] Creating new group for", exercise.name)
+        grouped.set(exercise.name, {
+          name: exercise.name,
+          timesThisWeek: 1,
+          totalCompletedSets: exercise.completedSets,
+          totalSets: exercise.totalSets,
+          bestWeight: exercise.weight,
+          bestReps: exercise.reps,
+          lastDate: exercise.date,
+          allCompleted: exercise.isCompleted,
+          sessions: [exercise],
+        })
+      }
+    })
+
+    const result = Array.from(grouped.values()).sort(
+      (a, b) => new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime(),
+    )
+    console.log("[v0] getGroupedExercises result:", result)
+    // Sort by most recent date
+    return result
   }
 
   const muscleGroupsWithExercises = muscleGroups.filter((mg) => {
@@ -237,7 +295,7 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
     setCurrentView("exercises")
   }
 
-  const exercises = selectedMuscleGroup ? getFilteredExercises(selectedMuscleGroup) : []
+  const groupedExercises = selectedMuscleGroup ? getGroupedExercises(selectedMuscleGroup) : []
 
   // Animation variants
   const slideVariants = {
@@ -275,7 +333,7 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
           ? "Selecciona un grupo muscular para ver los ejercicios"
           : "Select a muscle group to see exercises"
       case "exercises":
-        return `${exercises.length} ${exercises.length === 1 ? (language === "es" ? "ejercicio" : "exercise") : language === "es" ? "ejercicios" : "exercises"} ${language === "es" ? "esta semana" : "this week"}`
+        return `${groupedExercises.length} ${groupedExercises.length === 1 ? (language === "es" ? "ejercicio" : "exercise") : language === "es" ? "ejercicios" : "exercises"} ${language === "es" ? "esta semana" : "this week"}`
       case "exercise-detail":
         return t.exerciseHistory.personalRecord + " & " + t.exerciseHistory.recentWorkouts
     }
@@ -331,9 +389,9 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {muscleGroupsWithExercises.map((mg, index) => {
-                    const completedExercises = getFilteredExercises(mg.name)
-                    const exerciseCount = completedExercises.length
-                    const lastExercise = completedExercises?.[0]
+                    const groupedExs = getGroupedExercises(mg.name)
+                    const exerciseCount = groupedExs.length          
+                    const lastExercise = groupedExs[0]              
                     const icon = MUSCLE_GROUP_ICONS[mg.name] || "💪"
 
                     return (
@@ -402,7 +460,7 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="space-y-3"
             >
-              {exercises.length === 0 ? (
+              {groupedExercises.length === 0 ? (
                 <div className="text-center py-12">
                   <Dumbbell className="h-16 w-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
                   <p className="text-gray-500 dark:text-gray-400">
@@ -412,9 +470,9 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                   </p>
                 </div>
               ) : (
-                exercises.map((exercise, index) => (
+                groupedExercises.map((exercise, index) => (
                   <motion.button
-                    key={`${exercise.name}-${exercise.date}-${index}`}
+                    key={`${exercise.name}-${index}`}
                     onClick={() => handleExerciseClick(exercise.name)}
                     className="w-full text-left p-4 rounded-xl bg-white/70 dark:bg-gray-800/70 hover:bg-white dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-200 shadow-sm hover:shadow-md group"
                     whileHover={{ scale: 1.01 }}
@@ -423,7 +481,7 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
-                          {exercise.isCompleted ? (
+                          {exercise.allCompleted ? (
                             <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
                           ) : (
                             <Circle className="h-5 w-5 text-gray-400 flex-shrink-0" />
@@ -431,15 +489,28 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                           <h4 className="font-semibold text-gray-900 dark:text-white truncate">
                             {translateExercise(exercise.name)}
                           </h4>
+                          {exercise.timesThisWeek > 1 && (
+                            <Badge
+                              variant="secondary"
+                              className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            >
+                              ×{exercise.timesThisWeek}
+                            </Badge>
+                          )}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 ml-7">
                           <Badge variant="outline" className="text-xs">
-                            {exercise.completedSets}/{exercise.totalSets} sets
+                            {exercise.totalCompletedSets}/{exercise.totalSets} sets
                           </Badge>
-                          {exercise.weight > 0 && (
+                          {exercise.bestWeight > 0 && (
                             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              {exercise.weight} kg × {exercise.reps} reps
+                              {exercise.bestWeight} kg × {exercise.bestReps} reps
+                            </span>
+                          )}
+                          {exercise.bestWeight === 0 && exercise.bestReps > 0 && (
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {exercise.bestReps} reps
                             </span>
                           )}
                         </div>
@@ -447,7 +518,11 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                         <div className="flex items-center gap-2 mt-2 ml-7">
                           <Calendar className="h-3 w-3 text-gray-400" />
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {format(new Date(exercise.date + "T12:00:00"), "EEEE, d MMM", { locale })}
+                            {exercise.timesThisWeek > 1
+                              ? language === "es"
+                                ? `Último: ${format(new Date(exercise.lastDate + "T12:00:00"), "EEEE, d MMM", { locale })}`
+                                : `Last: ${format(new Date(exercise.lastDate + "T12:00:00"), "EEEE, d MMM", { locale })}`
+                              : format(new Date(exercise.lastDate + "T12:00:00"), "EEEE, d MMM", { locale })}
                           </p>
                         </div>
                       </div>
