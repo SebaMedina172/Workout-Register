@@ -93,8 +93,6 @@ export async function POST(request: Request) {
 
       if (upsertError) {
         console.error("Error updating max_weight PR:", upsertError)
-      } else {
-        console.log(`[v0] New PR for ${decodedExerciseName}: ${weightValue}kg on ${date}`)
       }
     }
 

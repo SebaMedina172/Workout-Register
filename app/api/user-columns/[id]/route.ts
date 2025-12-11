@@ -27,8 +27,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const body = await request.json()
     const { is_active, column_name, column_type, display_order } = body
 
-    console.log(`📝 Actualizando columna ${params.id}:`, body)
-
     // Verificar que la columna pertenece al usuario
     const { data: existingColumn } = await supabase
       .from("user_columns")
@@ -61,7 +59,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Error al actualizar columna" }, { status: 500 })
     }
 
-    console.log(`✅ Columna actualizada exitosamente:`, updatedColumn)
     return NextResponse.json(updatedColumn)
   } catch (error) {
     console.error("Error in PUT /api/user-columns/[id]:", error)
@@ -91,8 +88,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    console.log(`🗑️ Eliminando columna ${params.id}`)
-
     // Verificar que la columna pertenece al usuario
     const { data: existingColumn } = await supabase
       .from("user_columns")
@@ -113,7 +108,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Error al eliminar columna" }, { status: 500 })
     }
 
-    console.log(`✅ Columna eliminada exitosamente: ${existingColumn.column_name}`)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error in DELETE /api/user-columns/[id]:", error)

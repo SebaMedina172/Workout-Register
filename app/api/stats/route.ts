@@ -33,7 +33,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Se requieren fechas de inicio y fin" }, { status: 400 })
     }
 
-    console.log(`📊 Cargando estadísticas del ${startDate} al ${endDate} para usuario:`, session.user.id)
 
     const { data: workouts, error: workoutsError } = await supabase
       .from("workouts")
@@ -68,12 +67,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Error al obtener estadísticas" }, { status: 500 })
     }
 
-    console.log(`📊 Workouts encontrados: ${workouts?.length || 0}`)
-
     // Calcular estadísticas
     const stats = calculateWeeklyStats(workouts || [], startDate, endDate)
 
-    console.log("✅ Estadísticas calculadas:", stats)
     return NextResponse.json(stats)
   } catch (error) {
     console.error("💥 Error in GET /api/stats:", error)
@@ -140,26 +136,18 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
 
   const ESTIMATED_SET_EXECUTION_TIME = 45 // segundos por cada set ejecutado
 
-  console.log("🔍 Iniciando cálculo de estadísticas...")
-  console.log(`📊 Total de workouts encontrados: ${workouts.length}`)
 
   // Procesar cada día
   allDays.forEach((day) => {
     const dayWorkout = workouts.find((w) => w.date === day)
     const isPastDay = day < today
 
-    console.log(`📅 Procesando día: ${day}`)
-
     if (!dayWorkout) {
-      console.log(`   ❌ No hay workout registrado para ${day}`)
       unregisteredDays++
     } else if (dayWorkout.is_rest_day) {
-      console.log(`   🛌 Día de descanso: ${day}`)
       restDays++
     } else {
       // Es un día de entrenamiento
-      console.log(`   💪 Día de entrenamiento: ${day}`)
-      console.log(`   📋 Ejercicios en el workout: ${dayWorkout.workout_exercises?.length || 0}`)
 
       let hasCompletedExercises = false
       let savedExercisesCount = 0
@@ -167,14 +155,9 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
 
       if (dayWorkout.workout_exercises && dayWorkout.workout_exercises.length > 0) {
         dayWorkout.workout_exercises.forEach((ex: any, index: number) => {
-          console.log(`     🏋️ Ejercicio ${index + 1}: ${ex.exercise_name}`)
-          console.log(`       - is_saved: ${ex.is_saved} (tipo: ${typeof ex.is_saved})`)
-          console.log(`       - is_completed: ${ex.is_completed} (tipo: ${typeof ex.is_completed})`)
-          console.log(`       - workout_set_records: ${ex.workout_set_records?.length || 0}`)
 
           if (ex.is_saved) {
             savedExercisesCount++
-            console.log(`       ✅ Ejercicio guardado`)
 
             if (ex.workout_set_records && ex.workout_set_records.length > 0) {
               const completedSets = ex.workout_set_records.filter((sr: any) => {
@@ -186,35 +169,23 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
               })
 
               completedSetsCount += completedSets.length
-              console.log(`       📊 Series completadas: ${completedSets.length}/${ex.workout_set_records.length}`)
 
               if (completedSets.length > 0) {
                 hasCompletedExercises = true
-                console.log(`       ✅ Ejercicio tiene series completadas`)
               }
             } else {
-              console.log(`       ⚠️ Ejercicio guardado pero sin registros de series`)
             }
           } else {
-            console.log(`       ⏭️ Ejercicio no guardado, saltando`)
           }
         })
       }
 
-      console.log(`   📊 Resumen del día ${day}:`)
-      console.log(`     - Ejercicios guardados: ${savedExercisesCount}`)
-      console.log(`     - Series completadas: ${completedSetsCount}`)
-      console.log(`     - Tiene ejercicios completados: ${hasCompletedExercises}`)
-
       if (hasCompletedExercises) {
         workoutDays++
-        console.log(`   ✅ Día contado como entrenamiento completado`)
       } else if (isPastDay) {
         missedDays++
-        console.log(`   ❌ Día pasado sin completar - contado como perdido`)
       } else {
         unregisteredDays++
-        console.log(`   ⏳ Día futuro sin completar - contado como no registrado`)
       }
 
       // Procesar ejercicios del día para estadísticas detalladas
@@ -285,7 +256,6 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
                 }s`,
               )
             } else {
-              console.log(`⏱️ Tiempo agregado - Ejecución: ${executionTime}s (sin descanso, solo 1 set)`)
             }
 
             // Contar sets por grupo muscular
@@ -328,16 +298,6 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
   })
 
   const totalTrainingMinutes = Math.round(totalTrainingSeconds / 60)
-
-  console.log(`⏰ Tiempo total de entrenamiento: ${totalTrainingSeconds}s = ${totalTrainingMinutes} minutos`)
-
-  console.log(`📊 RESUMEN FINAL DE ESTADÍSTICAS:`)
-  console.log(`   - Días de entrenamiento: ${workoutDays}`)
-  console.log(`   - Días de descanso: ${restDays}`)
-  console.log(`   - Días no registrados: ${unregisteredDays}`)
-  console.log(`   - Días perdidos: ${missedDays}`)
-  console.log(`   - Series planificadas: ${totalPlannedSets}`)
-  console.log(`   - Series completadas: ${totalCompletedSets}`)
 
   // Calcular porcentaje de cumplimiento
   const completionRate = totalPlannedSets > 0 ? Math.round((totalCompletedSets / totalPlannedSets) * 100) : 0

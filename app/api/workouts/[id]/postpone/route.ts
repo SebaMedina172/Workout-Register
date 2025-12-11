@@ -15,7 +15,6 @@ const calculateDate = (dateString: string, daysToAdd: number): string => {
   const newDay = String(date.getDate()).padStart(2, "0")
   const result = `${newYear}-${newMonth}-${newDay}`
 
-  console.log(`📅 Calculando: ${dateString} + ${daysToAdd} días = ${result}`)
   return result
 }
 
@@ -53,12 +52,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
     // Extraer fecha del ID (formato: workout_YYYY-MM-DD)
     const workoutDate = params.id.replace("workout_", "")
 
-    console.log(`🔄 Aplazando entrenamiento:`, {
-      workoutDate,
-      days,
-      mode,
-    })
-
     // Obtener el workout original
     const { data: originalWorkout, error: workoutError } = await supabase
       .from("workouts")
@@ -76,7 +69,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     if (mode === "single") {
       // Modo: Solo este entrenamiento
-      console.log("🎯 Modo: Solo este entrenamiento")
 
       // Verificar si ya existe un entrenamiento en la fecha destino
       const { data: existingWorkout } = await supabase
@@ -117,11 +109,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
         return NextResponse.json({ error: "Error actualizando fecha" }, { status: 500 })
       }
 
-      console.log("✅ Entrenamiento aplazado exitosamente")
       return NextResponse.json({ success: true })
     } else {
       // Modo: Este y todos los posteriores
-      console.log("🔄 Modo: Este y todos los posteriores")
 
       // Obtener todos los entrenamientos desde la fecha original en adelante
       const { data: futureWorkouts, error: futureError } = await supabase
@@ -136,15 +126,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
         return NextResponse.json({ error: "Error obteniendo entrenamientos futuros" }, { status: 500 })
       }
 
-      console.log(`📊 Entrenamientos encontrados: ${futureWorkouts?.length || 0}`)
-
       if (!futureWorkouts || futureWorkouts.length === 0) {
         return NextResponse.json({ error: "No hay entrenamientos para aplazar" }, { status: 400 })
       }
 
       // Agrupar por fecha para obtener fechas únicas
       const uniqueDates = [...new Set(futureWorkouts.map((w) => w.date))].sort()
-      console.log(`📅 Fechas únicas a procesar: ${uniqueDates.length}`)
 
       // Obtener todos los datos necesarios antes de eliminar
       const workoutData = []
@@ -152,8 +139,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
       for (let i = 0; i < uniqueDates.length; i++) {
         const currentDate = uniqueDates[i]
         const targetDate = calculateDate(currentDate, days)
-
-        console.log(`📅 Preparando mover ${currentDate} → ${targetDate}`)
 
         // Obtener workouts de esta fecha
         const dateWorkouts = futureWorkouts.filter((w) => w.date === currentDate)
@@ -167,9 +152,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
             .select("*")
             .eq("workout_id", workout.id)
 
-          if (exercisesError) {
-            console.log(`⚠️ Error obteniendo ejercicios para ${workout.id}:`, exercisesError.message)
-          }
 
           // Obtener set records para cada ejercicio
           const exercisesWithSetRecords = []
@@ -180,9 +162,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
               .eq("exercise_id", exercise.id)
               .order("set_number", { ascending: true })
 
-            if (setRecordsError) {
-              console.log(`⚠️ Error obteniendo set records para ${exercise.id}:`, setRecordsError.message)
-            }
 
             exercisesWithSetRecords.push({
               ...exercise,
@@ -204,7 +183,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
       }
 
       // Eliminar entrenamientos futuros
-      console.log("🗑️ Eliminando entrenamientos futuros...")
 
       // Eliminar set records primero
       for (const workout of futureWorkouts) {
@@ -218,9 +196,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
             .delete()
             .in("exercise_id", exerciseIds)
 
-          if (setRecordsDeleteError) {
-            console.log("⚠️ Error eliminando set records:", setRecordsDeleteError.message)
-          }
         }
       }
 
@@ -232,10 +207,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
           "workout_id",
           futureWorkouts.map((w) => w.id),
         )
-
-      if (exercisesDeleteError) {
-        console.log("⚠️ Error eliminando ejercicios:", exercisesDeleteError.message)
-      }
 
       // Eliminar workouts
       const { error: workoutsDeleteError } = await supabase
@@ -251,13 +222,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
         return NextResponse.json({ error: "Error eliminando entrenamientos" }, { status: 500 })
       }
 
-      console.log("✅ Entrenamientos eliminados")
 
       // Recrear entrenamientos con nuevas fechas
-      console.log("📝 Recreando entrenamientos con nuevas fechas...")
 
       for (const dateGroup of workoutData) {
-        console.log(`🔄 Procesando fecha ${dateGroup.targetDate} con ${dateGroup.workouts.length} entrenamientos`)
 
         for (const workoutWithExercises of dateGroup.workouts) {
           const { workout, exercises } = workoutWithExercises
@@ -286,7 +254,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
             continue
           }
 
-          console.log(`✅ Workout principal creado: ${newWorkout.id}`)
 
           // Recrear ejercicios si no es día de descanso
           if (!workout.is_rest_day && exercises && exercises.length > 0) {
@@ -331,13 +298,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
                 .select()
                 .single()
 
-              if (exerciseError) {
-                console.log(`⚠️ Error creando ejercicio:`, exerciseError.message)
-                continue
-              }
-
-              console.log(`✅ Ejercicio recreado: ${newExercise.id}`)
-
               // Recrear set records si existen
               if (exercise.set_records && exercise.set_records.length > 0) {
                 const setRecordsToInsert = exercise.set_records.map((setRecord: any) => ({
@@ -352,18 +312,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
                 const { error: setRecordError } = await supabase.from("workout_set_records").insert(setRecordsToInsert)
 
-                if (setRecordError) {
-                  console.log(`⚠️ Error creando set records:`, setRecordError.message)
-                } else {
-                  console.log(`✅ Set records recreados: ${setRecordsToInsert.length}`)
-                }
               }
             }
           }
         }
       }
 
-      console.log("✅ Todos los entrenamientos posteriores aplazados exitosamente")
       return NextResponse.json({ success: true })
     }
   } catch (error) {
