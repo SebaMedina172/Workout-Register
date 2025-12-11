@@ -13,6 +13,7 @@ import ExercisePerformance from "@/components/stats/exercise-performance"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/lib/i18n/context"
+import { ExportButton } from "@/components/export-button"
 
 interface WeeklyStats {
   summary: {
@@ -68,13 +69,10 @@ export default function StatsContainer() {
       const startDate = format(weekStart, "yyyy-MM-dd")
       const endDate = format(weekEnd, "yyyy-MM-dd")
 
-      console.log(t.stats.loadingStats.replace("{startDate}", startDate).replace("{endDate}", endDate))
-
       const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
       if (response.ok) {
         const data = await response.json()
         setStats(data)
-        console.log(t.stats.statsLoaded, data)
       } else {
         console.error(t.stats.errorLoadingStats)
       }
@@ -155,6 +153,7 @@ export default function StatsContainer() {
         </div>
 
         <div className="flex items-center gap-2 justify-center sm:justify-end">
+          <ExportButton startDate={format(weekStart, "yyyy-MM-dd")} endDate={format(weekEnd, "yyyy-MM-dd")} />
           <Button
             variant="ghost"
             size="icon"
