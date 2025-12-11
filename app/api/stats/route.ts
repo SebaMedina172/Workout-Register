@@ -162,9 +162,6 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
             if (ex.workout_set_records && ex.workout_set_records.length > 0) {
               const completedSets = ex.workout_set_records.filter((sr: any) => {
                 const isCompleted = sr.is_completed === true || sr.is_completed === "true"
-                console.log(
-                  `         Serie ${sr.set_number}: is_completed=${sr.is_completed} (tipo: ${typeof sr.is_completed}) -> ${isCompleted}`,
-                )
                 return isCompleted
               })
 
@@ -236,10 +233,6 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
           })
           const completedSetCount = completedSetRecords.length
 
-          console.log(
-            `🏋️ Ejercicio: ${exercise.exercise_name}, Sets completados: ${completedSetCount}, Descanso: ${exercise.rest_seconds}s`,
-          )
-
           if (completedSetCount > 0) {
             // Tiempo de ejecución de los sets (45s por set)
             const executionTime = completedSetCount * ESTIMATED_SET_EXECUTION_TIME
@@ -250,11 +243,6 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
             if (completedSetCount > 1) {
               const restTime = (completedSetCount - 1) * (exercise.rest_seconds || 0)
               totalTrainingSeconds += restTime
-              console.log(
-                `⏱️ Tiempo agregado - Ejecución: ${executionTime}s, Descanso: ${restTime}s, Total ejercicio: ${
-                  executionTime + restTime
-                }s`,
-              )
             } else {
             }
 

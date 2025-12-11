@@ -47,7 +47,6 @@ export async function GET(request: Request, { params }: { params: { id: string }
       .single()
 
     if (workoutError) {
-      console.log("⚠️ Error buscando workout:", workoutError)
     }
 
     if (!workout) {

@@ -44,8 +44,6 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
     setLoading(true)
 
     try {
-      console.log("⏰ Enviando solicitud de aplazamiento:", { workoutId: workout.id, days, mode })
-
       const response = await fetch(`/api/workouts/${workout.id}/postpone`, {
         method: "POST",
         headers: {
@@ -57,7 +55,6 @@ export default function PostponeDialog({ workout, onClose, onPostpone }: Postpon
       const data = await response.json()
 
       if (response.ok) {
-        console.log("✅ Entrenamiento aplazado exitosamente")
         onPostpone()
       } else {
         console.error("❌ Error aplazando entrenamiento:", data)

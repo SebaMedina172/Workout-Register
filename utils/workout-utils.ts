@@ -53,9 +53,6 @@ export const saveColumnVisibilityConfig = async (workoutId: string, customColumn
 
   const visibleColumnIds = customColumns.filter((col) => col.is_active).map((col) => col.id)
 
-  console.log(`💾 Guardando configuración de columnas para workout ${workoutId}`)
-  console.log(`📊 Columnas visibles (${visibleColumnIds.length}):`, visibleColumnIds)
-
   try {
     const response = await fetch(`/api/workouts/${workoutId}/visible-columns`, {
       method: "POST",
@@ -64,7 +61,6 @@ export const saveColumnVisibilityConfig = async (workoutId: string, customColumn
     })
 
     if (response.ok) {
-      console.log("✅ Configuración de columnas guardada exitosamente")
     } else {
       const errorData = await response.json()
       console.error("❌ Error guardando configuración de columnas:", errorData)

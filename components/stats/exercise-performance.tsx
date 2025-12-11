@@ -132,15 +132,12 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
 
   const getGroupedExercises = (muscleGroup: string): GroupedExerciseData[] => {
     const exercises = getFilteredExercises(muscleGroup)
-    console.log("[v0] getFilteredExercises for", muscleGroup, ":", exercises)
     const grouped = new Map<string, GroupedExerciseData>()
 
     exercises.forEach((exercise) => {
-      console.log("[v0] Processing exercise:", exercise.name, "date:", exercise.date)
       const existing = grouped.get(exercise.name)
 
       if (existing) {
-        console.log("[v0] Found existing group for", exercise.name, "adding to it")
         existing.timesThisWeek += 1
         existing.totalCompletedSets += exercise.completedSets
         existing.totalSets += exercise.totalSets
@@ -153,7 +150,6 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
           existing.lastDate = exercise.date
         }
       } else {
-        console.log("[v0] Creating new group for", exercise.name)
         grouped.set(exercise.name, {
           name: exercise.name,
           timesThisWeek: 1,
@@ -171,7 +167,6 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
     const result = Array.from(grouped.values()).sort(
       (a, b) => new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime(),
     )
-    console.log("[v0] getGroupedExercises result:", result)
     // Sort by most recent date
     return result
   }
