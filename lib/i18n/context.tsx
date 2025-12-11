@@ -9,6 +9,7 @@ interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
   t: Translations
+  locale: string
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -35,6 +36,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     language,
     setLanguage,
     t: translations[language],
+    locale: language,
   }
 
   // Show loading state to prevent flash of wrong language
