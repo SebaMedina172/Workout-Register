@@ -501,6 +501,18 @@ export const translations: Record<"es" | "en", Translations> = {
       cancel: "Cancelar",
       minimize: "Minimizar",
     },
+    export: {
+      export: "Exportar",
+      exportToCSV: "Exportar a CSV",
+      weeklySummary: "Resumen Semanal",
+      weeklySummaryDesc: "Series por grupo muscular y totales",
+      weeklyDetail: "Detalle por Series",
+      weeklyDetailDesc: "Cada serie individual con todos los datos",
+      includeCustomColumns: "Incluir columnas personalizadas",
+      includeCustomColumnsDesc: "Solo las que tienen datos en el período",
+      exportSuccess: "Datos exportados correctamente",
+      exportError: "Error al exportar los datos",
+    },
   },
   en: {
     auth: {
@@ -1001,6 +1013,18 @@ export const translations: Record<"es" | "en", Translations> = {
       viewTimer: "View timer", 
       cancel: "Cancel",
       minimize: "Minimize",
+    },
+    export: {
+      export: "Export",
+      exportToCSV: "Export to CSV",
+      weeklySummary: "Weekly Summary",
+      weeklySummaryDesc: "Sets by muscle group and totals",
+      weeklyDetail: "Detail by Sets",
+      weeklyDetailDesc: "Each individual set with all data",
+      includeCustomColumns: "Include custom columns",
+      includeCustomColumnsDesc: "Only those with data in the period",
+      exportSuccess: "Data exported successfully",
+      exportError: "Error exporting data",
     },
   },
 }

@@ -388,9 +388,21 @@ export interface Translations {
     dismiss: string
     skip: string
     afterSet: string
-    setCompleted: string,
-    viewTimer: string, 
-    cancel: string,
-    minimize: string,
+    setCompleted: string
+    viewTimer: string
+    cancel: string
+    minimize: string
+  }
+  export: {
+    export: string
+    exportToCSV: string
+    weeklySummary: string
+    weeklySummaryDesc: string
+    weeklyDetail: string
+    weeklyDetailDesc: string
+    includeCustomColumns: string
+    includeCustomColumnsDesc: string
+    exportSuccess: string
+    exportError: string
   }
 }
