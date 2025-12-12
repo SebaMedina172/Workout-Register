@@ -13,7 +13,7 @@ import ExercisePerformance from "@/components/stats/exercise-performance"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/lib/i18n/context"
-import { ExportButton } from "@/components/export-button"
+import { ExportDialog } from "@/components/export-dialog"
 
 interface WeeklyStats {
   summary: {
@@ -153,7 +153,7 @@ export default function StatsContainer() {
         </div>
 
         <div className="flex items-center gap-2 justify-center sm:justify-end">
-          <ExportButton startDate={format(weekStart, "yyyy-MM-dd")} endDate={format(weekEnd, "yyyy-MM-dd")} />
+          <ExportDialog startDate={format(weekStart, "yyyy-MM-dd")} endDate={format(weekEnd, "yyyy-MM-dd")} />
           <Button
             variant="ghost"
             size="icon"
