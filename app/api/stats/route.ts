@@ -134,8 +134,25 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
     exercisesByMuscleGroup[group] = []
   })
 
-  const ESTIMATED_SET_EXECUTION_TIME = 45 // segundos por cada set ejecutado
-
+  // CONSTANTES BASADAS EN ESTUDIOS Y PROMEDIOS REALES
+  // Estas son mediciones conservadoras pero realistas para la mayoría de usuarios
+  const TIME_CONSTANTS = {
+    // Tiempo de ejecución por repetición según intensidad
+    REP_DURATION_LIGHT: 2.5,      // Ejercicios ligeros/accesorios (ej: curls, elevaciones)
+    REP_DURATION_MODERATE: 3.5,   // Ejercicios moderados (ej: press banca, sentadillas ligeras)
+    REP_DURATION_HEAVY: 5,        // Ejercicios pesados (ej: sentadillas pesadas, peso muerto)
+    
+    // Overhead por ejercicio
+    EXERCISE_TRANSITION: 60,      // Cambiar de ejercicio/máquina (60s es conservador)
+    FIRST_SET_PREP: 20,          // Preparación del primer set (posicionarse, ajustar)
+    
+    // Overhead por set
+    BETWEEN_SET_TRANSITION: 10,   // Pequeña transición entre sets del mismo ejercicio
+    
+    // Overhead por sesión (solo si hubo sets completados)
+    SESSION_WARMUP: 300,          // 5 min de calentamiento general/cardio
+    SESSION_COOLDOWN: 180,        // 3 min de estiramiento/vuelta a la calma
+  }
 
   // Procesar cada día
   allDays.forEach((day) => {
@@ -154,8 +171,7 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
       let completedSetsCount = 0
 
       if (dayWorkout.workout_exercises && dayWorkout.workout_exercises.length > 0) {
-        dayWorkout.workout_exercises.forEach((ex: any, index: number) => {
-
+        dayWorkout.workout_exercises.forEach((ex: any) => {
           if (ex.is_saved) {
             savedExercisesCount++
 
@@ -170,9 +186,7 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
               if (completedSets.length > 0) {
                 hasCompletedExercises = true
               }
-            } else {
             }
-          } else {
           }
         })
       }
@@ -185,8 +199,12 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
         unregisteredDays++
       }
 
-      // Procesar ejercicios del día para estadísticas detalladas
-      dayWorkout.workout_exercises?.forEach((exercise: any) => {
+      // CALCULO DEL TIEMPO DE ENTRENAMIENTO
+      let dayTrainingSeconds = 0
+      let hasAnyCompletedSet = false
+      let exercisesWithCompletedSets = 0
+
+      dayWorkout.workout_exercises?.forEach((exercise: any, exerciseIndex: number) => {
         let muscleGroup = exercise.muscle_group || "Sin clasificar"
         const lowerCaseMuscleGroup = muscleGroup.toLowerCase()
 
@@ -234,16 +252,49 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
           const completedSetCount = completedSetRecords.length
 
           if (completedSetCount > 0) {
-            // Tiempo de ejecución de los sets (45s por set)
-            const executionTime = completedSetCount * ESTIMATED_SET_EXECUTION_TIME
-            totalTrainingSeconds += executionTime
+            hasAnyCompletedSet = true
+            exercisesWithCompletedSets++
 
-            // Tiempo de descanso entre sets
-            // Solo hay descanso ENTRE sets, no después del último
+            // 1. Transición de ejercicio
+            if (exerciseIndex > 0) {
+              dayTrainingSeconds += TIME_CONSTANTS.EXERCISE_TRANSITION
+            }
+
+            // 2. Preparación del primer set
+            dayTrainingSeconds += TIME_CONSTANTS.FIRST_SET_PREP
+
+            // 3. Calcular tiempo de ejecución de sets basado en repeticiones reales
+            completedSetRecords.forEach((setRecord: any) => {
+              const actualReps = setRecord.reps || exercise.reps || 10
+              const weight = setRecord.weight || exercise.weight || 0
+              
+              // Determinar intensidad basada en peso y reps
+              // Reps bajas (1-6) con peso = Heavy
+              // Reps medias (7-12) = Moderate  
+              // Reps altas (13+) o sin peso = Light
+              let repDuration = TIME_CONSTANTS.REP_DURATION_MODERATE
+              
+              if (actualReps <= 6 && weight > 0) {
+                repDuration = TIME_CONSTANTS.REP_DURATION_HEAVY
+              } else if (actualReps >= 13 || weight === 0) {
+                repDuration = TIME_CONSTANTS.REP_DURATION_LIGHT
+              }
+              
+              // Tiempo del set = (reps × duración) + setup entre reps
+              // Setup entre reps: ~5s de descanso interno en el set
+              const setExecutionTime = (actualReps * repDuration) + 5
+              dayTrainingSeconds += setExecutionTime
+            })
+
+            // 4. Descanso configurado por el usuario
+            if (completedSetCount > 0) {
+              const restPerSet = exercise.rest_seconds || 60
+              dayTrainingSeconds += completedSetCount * restPerSet
+            }
+
+            // 5. Transiciones pequeñas entre sets (ajustar peso, respirar, posicionarse)
             if (completedSetCount > 1) {
-              const restTime = (completedSetCount - 1) * (exercise.rest_seconds || 0)
-              totalTrainingSeconds += restTime
-            } else {
+              dayTrainingSeconds += (completedSetCount - 1) * TIME_CONSTANTS.BETWEEN_SET_TRANSITION
             }
 
             // Contar sets por grupo muscular
@@ -255,6 +306,7 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
             })
           }
 
+          // Guardar ejercicios por grupo muscular
           if (allMuscleGroups.includes(muscleGroup)) {
             // Find best set (highest weight, or highest reps if weight is same)
             let bestWeight = exercise.weight || 0
@@ -282,6 +334,14 @@ function calculateWeeklyStats(workouts: any[], startDate: string, endDate: strin
           }
         }
       })
+
+      // 6. Overhead de sesión (calentamiento y cooldown generales)
+      if (hasAnyCompletedSet) {
+        dayTrainingSeconds += TIME_CONSTANTS.SESSION_WARMUP
+        dayTrainingSeconds += TIME_CONSTANTS.SESSION_COOLDOWN
+      }
+
+      totalTrainingSeconds += dayTrainingSeconds
     }
   })
 
