@@ -404,5 +404,25 @@ export interface Translations {
     includeCustomColumnsDesc: string
     exportSuccess: string
     exportError: string
+    exportData: string
+    exportDescription: string
+    selectFormat: string
+    pdfDesc: string
+    csvDesc: string
+    selected: string
+    sectionsToInclude: string
+    sectionsSelected: string
+    overviewSection: string
+    overviewSectionDesc: string
+    volumeChartSection: string
+    volumeChartSectionDesc: string
+    exercisePerformanceSection: string
+    exercisePerformanceSectionDesc: string
+    weeklyProgressSection: string
+    weeklyProgressSectionDesc: string
+    csvType: string
+    cancel: string
+    exporting: string
+    exportNow: string
   }
 }
