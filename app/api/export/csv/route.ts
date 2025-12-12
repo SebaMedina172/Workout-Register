@@ -292,7 +292,7 @@ export async function GET(request: Request) {
       },
     })
   } catch (error) {
-    console.error("💥 Error in GET /api/export:", error)
+    console.error("💥 Error in GET /api/export/csv:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }

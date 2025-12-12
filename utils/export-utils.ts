@@ -34,7 +34,7 @@ export async function downloadExport(options: ExportOptions): Promise<void> {
   })
 
 
-  const response = await fetch(`/api/export?${params.toString()}`)
+  const response = await fetch(`/api/export/csv?${params.toString()}`)
 
   if (!response.ok) {
     const error = await response.json()
