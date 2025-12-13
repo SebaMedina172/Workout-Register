@@ -182,6 +182,17 @@ export interface Translations {
     fri: string
     sat: string
     sun: string
+
+    // Templates
+    saveAsTemplate: string
+    loadTemplate: string
+    noTemplatesAvailable: string
+    errorLoadingTemplates: string
+    errorDeletingTemplate: string
+    deleteTemplate: string
+    deleteTemplateConfirm: string
+    selectedTemplate: string
+    more: string
   }
   workoutForm: {
     // Main titles
@@ -282,6 +293,23 @@ export interface Translations {
     invalidNumber: string
     minimumValue: string
     maximumValue: string
+
+    // Templates
+    saveAsTemplate: string
+    templateName: string
+    templateDescription: string
+    enterTemplateName: string
+    enterTemplateDescription: string
+    exercisesToSave: string
+    templateNameRequired: string
+    templateExercisesRequired: string
+    errorSavingTemplate: string
+    loadTemplate: string
+    searchPlaceholder: string
+    noTemplatesAvailable: string
+    updated: string
+    deleteTemplate: string
+    deleteTemplateConfirm: string
   }
   postponeDialog: {
     title: string

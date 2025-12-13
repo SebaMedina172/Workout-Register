@@ -185,6 +185,17 @@ export const translations: Record<"es" | "en", Translations> = {
       fri: "Vie",
       sat: "Sáb",
       sun: "Dom",
+
+      // Templates
+      saveAsTemplate: "Guardar como Plantilla",
+      loadTemplate: "Cargar Plantilla",
+      noTemplatesAvailable: "No hay plantillas disponibles",
+      errorLoadingTemplates: "Error al cargar plantillas",
+      errorDeletingTemplate: "Error al eliminar plantillas",
+      deleteTemplate: "Eliminar Plantilla",
+      deleteTemplateConfirm: "¿Estás seguro de que deseas eliminar esta plantilla? Esta acción no se puede deshacer.",
+      selectedTemplate: "Plantilla seleccionada",
+      more: "más",
     },
     workoutForm: {
       // Main titles
@@ -285,6 +296,23 @@ export const translations: Record<"es" | "en", Translations> = {
       invalidNumber: "Debe ser un número válido",
       minimumValue: "El valor mínimo es {min}",
       maximumValue: "El valor máximo es {max}",
+
+      // Templates
+      saveAsTemplate: "Guardar como Plantilla",
+      templateName: "Nombre de la Plantilla",
+      templateDescription: "Descripción de la Plantilla (opcional)",
+      enterTemplateName: "Ej: Pecho y Espalda",
+      enterTemplateDescription: "Ej: Rutina para desarrollar pecho y espalda",
+      exercisesToSave: "Ejercicios a guardar",
+      templateNameRequired: "El nombre de la plantilla es requerido",
+      templateExercisesRequired: "Se requiere al menos un ejercicio con nombre",
+      errorSavingTemplate: "Error al guardar plantilla",
+      loadTemplate: "Cargar Plantilla",
+      searchPlaceholder: "Buscar plantillas...",
+      noTemplatesAvailable: "No hay plantillas disponibles",
+      updated: "Actualizado: ",
+      deleteTemplate: "Eliminar Plantilla",
+      deleteTemplateConfirm: "¿Estás seguro de que deseas eliminar esta plantilla? Esta acción no se puede deshacer.",
     },
     postponeDialog: {
       title: "Aplazar Entrenamiento",
@@ -718,6 +746,17 @@ export const translations: Record<"es" | "en", Translations> = {
       fri: "Fri",
       sat: "Sat",
       sun: "Sun",
+
+      // Templates
+      saveAsTemplate: "Save as Template",
+      loadTemplate: "Load Template",
+      noTemplatesAvailable: "No templates available",
+      errorLoadingTemplates: "Error loading templates",
+      errorDeletingTemplate: "Error deleting template",
+      deleteTemplate: "Delete Template",
+      deleteTemplateConfirm: "Are you sure you want to delete this template? This action cannot be undone.",
+      selectedTemplate: "Selected template",
+      more: "more",
     },
     workoutForm: {
       // Main titles
@@ -818,6 +857,23 @@ export const translations: Record<"es" | "en", Translations> = {
       invalidNumber: "Must be a valid number",
       minimumValue: "Minimum value is {min}",
       maximumValue: "Maximum value is {max}",
+
+      // Templates
+      saveAsTemplate: "Save as Template",
+      templateName: "Template Name",
+      templateDescription: "Template Description (optional)",
+      enterTemplateName: "Ex: Chest and Back",
+      enterTemplateDescription: "Ex: Routine to develop chest and back",
+      exercisesToSave: "Exercises to save",
+      templateNameRequired: "Template name is required",
+      templateExercisesRequired: "At least one exercise with name is required",
+      errorSavingTemplate: "Error saving template",
+      loadTemplate: "Load Template",
+      searchPlaceholder: "Search template...",
+      noTemplatesAvailable: "No templates available",
+      updated: "Updated: ",
+      deleteTemplate: "Delete Template",
+      deleteTemplateConfirm: "Are you sure you want to delete this template? This action cannot be undone.",
     },
     postponeDialog: {
       title: "Postpone Workout",
