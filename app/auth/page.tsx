@@ -183,7 +183,7 @@ export default function AuthPage() {
         <div className="relative z-10 flex flex-col items-center text-white dark:text-slate-100 text-center max-w-md mx-auto">
           <div className="mb-8">
             <Image 
-              src="/android-chrome-192x192.png" 
+              src="/icon-192.png" 
               alt="Mi Entrenamiento Logo" 
               width={192} 
               height={192}

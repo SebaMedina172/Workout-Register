@@ -44,7 +44,7 @@ export default function HomePage() {
             <div className="flex items-center space-x-3">
               <div className="p-2 rounded-lg">
                 <Image 
-                  src="/android-chrome-512x512.png" 
+                  src="/icon-512.png" 
                   alt="Mi Entrenamiento Logo" 
                   width={48}
                   height={48}
