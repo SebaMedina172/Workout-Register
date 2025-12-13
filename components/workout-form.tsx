@@ -6,7 +6,7 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Dumbbell, Save, Loader2 } from "lucide-react"
+import { Dumbbell, Save, Loader2, FolderOpen } from "lucide-react"
 
 import ExerciseManager from "./exercise-manager"
 import { LoadingOverlay } from "./workout-form/loading-overlay"
@@ -14,6 +14,7 @@ import { ColumnSettingsDialog } from "./workout-form/column-settings-dialog"
 import { ExerciseList } from "./workout-form/exercise-list"
 import { Toolbar } from "./workout-form/toolbar"
 import { RestTimerOverlay } from "./workout-form/rest-timer-overlay"
+import { SaveTemplateDialog } from "./workout-form/save-template-dialog"
 
 import { useWorkoutData } from "@/hooks/use-workout-data"
 import { useExerciseActions } from "@/hooks/use-exercise-actions"
@@ -38,6 +39,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   const [exerciseSearches, setExerciseSearches] = useState<Record<string, string>>({})
   const [showColumnSettings, setShowColumnSettings] = useState(false)
   const [showExerciseManager, setShowExerciseManager] = useState(false)
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false)
   const [newColumnName, setNewColumnName] = useState("")
   const [newColumnType, setNewColumnType] = useState<"text" | "number" | "boolean">("text")
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -395,16 +397,26 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
 
           <div className="flex-shrink-0 p-2 sm:p-4 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
             <Button
-              onClick={onClose}
+            onClick={onClose}
+            variant="outline"
+            className="w-full sm:w-auto border-2 bg-transparent dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 order-3 sm:order-1"
+          >
+            {t.workoutForm.cancel}
+          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 order-1 sm:order-2">
+            <Button
+              onClick={() => setShowSaveTemplate(true)}
+              disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
               variant="outline"
-              className="border-2 bg-transparent dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 order-2 sm:order-1"
+              className="w-full sm:w-auto border-2 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-white dark:bg-gray-800 order-2 sm:order-1"
             >
-              {t.workoutForm.cancel}
+              <FolderOpen className="w-4 h-4 mr-2" />
+              {t.calendar.saveAsTemplate}
             </Button>
             <Button
               onClick={handleSave}
               disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
-              className="bg-green-600 hover:bg-green-700 text-white min-w-[120px] order-1 sm:order-2"
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white sm:min-w-[120px] order-1 sm:order-2"
             >
               {saving ? (
                 <>
@@ -418,6 +430,7 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
                 </>
               )}
             </Button>
+          </div>
           </div>
 
           <RestTimerOverlay
@@ -440,6 +453,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       {showExerciseManager && (
         <ExerciseManager onClose={() => setShowExerciseManager(false)} onExerciseChange={loadUserData} />
       )}
+
+      <SaveTemplateDialog
+        isOpen={showSaveTemplate}
+        onClose={() => setShowSaveTemplate(false)}
+        exercises={exercises}
+      />
     </>
   )
 }

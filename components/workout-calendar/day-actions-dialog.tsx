@@ -1,13 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Edit, Coffee, Trash2, X, Dumbbell, Clock, Loader2 } from "lucide-react"
+import { Plus, Edit, Coffee, Trash2, X, Dumbbell, Clock, Loader2, FolderOpen } from "lucide-react"
 import { getWorkoutCompletionStatus } from "./utils"
 import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
+import { LoadTemplateDialog } from "./load-template-dialog"
 import type { Workout } from "./types"
 
 interface DayActionsDialogProps {
@@ -19,6 +21,7 @@ interface DayActionsDialogProps {
   onMarkAsRest: () => void
   onClearDay: () => void
   onPostpone: () => void
+  onLoadTemplate?: (exercises: any[]) => void
   isClearingDay?: boolean
 }
 
@@ -31,8 +34,10 @@ export const DayActionsDialog = ({
   onMarkAsRest,
   onClearDay,
   onPostpone,
+  onLoadTemplate,
   isClearingDay = false,
 }: DayActionsDialogProps) => {
+  const [showLoadTemplate, setShowLoadTemplate] = useState(false)
   const { formatDate, formatWeight, t } = useCalendarTranslation()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
   const { translateExercise } = useExerciseTranslation()       
@@ -260,6 +265,14 @@ export const DayActionsDialog = ({
                   {t.createWorkout}
                 </Button>
                 <Button
+                  onClick={() => setShowLoadTemplate(true)}
+                  variant="outline"
+                  className="w-full h-12 sm:h-14 border-2 border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 bg-white dark:bg-gray-800 font-semibold rounded-xl hover:border-green-400 dark:hover:border-green-500 transition-all duration-200 text-sm sm:text-base"
+                >
+                  <FolderOpen className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
+                  {t.loadTemplate}
+                </Button>
+                <Button
                   onClick={onMarkAsRest}
                   variant="outline"
                   className="w-full h-12 sm:h-14 border-2 border-orange-300 dark:border-orange-600 text-orange-700 dark:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 bg-white dark:bg-gray-800 font-semibold rounded-xl hover:border-orange-400 dark:hover:border-orange-500 transition-all duration-200 text-sm sm:text-base"
@@ -313,6 +326,18 @@ export const DayActionsDialog = ({
           </div>
         </CardContent>
       </Card>
+
+      <LoadTemplateDialog
+        isOpen={showLoadTemplate}
+        onClose={() => setShowLoadTemplate(false)}
+        onLoadTemplate={(exercises) => {
+          if (onLoadTemplate) {
+            onLoadTemplate(exercises)
+            setShowLoadTemplate(false)
+            onClose()
+          }
+        }}
+      />
     </div>
   )
 }

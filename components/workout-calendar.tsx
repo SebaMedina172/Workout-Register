@@ -507,6 +507,18 @@ export default function WorkoutCalendar() {
             setShowPostponeDialog(true)
             setShowDayActions(false)
           }}
+          onLoadTemplate={(exercises) => {
+            // Crear un workout con los ejercicios del template
+            const newWorkout: Workout = {
+              id: `temp_${Date.now()}`,
+              date: selectedDate!.toISOString().split("T")[0],
+              type: "workout",
+              exercises: exercises,
+            }
+            setEditingWorkout(newWorkout)
+            setShowWorkoutForm(true)
+            setShowDayActions(false)
+          }}
           isClearingDay={clearingDay}
         />
       )}
