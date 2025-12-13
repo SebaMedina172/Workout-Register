@@ -1,22 +1,10 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { createSupabaseServerClient } from "@/lib/supabase-server"
 import { NextResponse } from "next/server"
 
 // PUT - Actualizar entrenamiento
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
     const {
       data: { user },
@@ -149,7 +137,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             const customDataToInsert = []
 
             for (const [columnName, value] of Object.entries(exercise.custom_data)) {
-              const column = userColumns.find((col) => col.column_name === columnName)
+              const column = userColumns.find((col: any) => col.column_name === columnName)
               if (column && value !== null && value !== undefined && value !== "") {
                 let processedValue = String(value)
 
@@ -192,18 +180,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // POST - Crear nuevo entrenamiento
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
     const {
       data: { user },
@@ -313,7 +290,7 @@ export async function POST(request: Request) {
             const customDataToInsert = []
 
             for (const [columnName, value] of Object.entries(exercise.custom_data)) {
-              const column = userColumns.find((col) => col.column_name === columnName)
+              const column = userColumns.find((col: any) => col.column_name === columnName)
               if (column && value !== null && value !== undefined && value !== "") {
                 let processedValue = String(value)
 
@@ -356,18 +333,7 @@ export async function POST(request: Request) {
 // DELETE - Eliminar entrenamiento
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
     const {
       data: { user },
@@ -416,7 +382,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     if (exercisesOnDate && exercisesOnDate.length > 0) {
-      const uniqueExercises = [...new Set(exercisesOnDate.map((e) => e.exercise_name))]
+      const uniqueExercises = [...new Set(exercisesOnDate.map((e: any) => e.exercise_name))]
 
       for (const exerciseName of uniqueExercises) {
         // Check if there's any remaining history for this exercise

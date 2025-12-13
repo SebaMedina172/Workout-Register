@@ -1,5 +1,4 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { createSupabaseServerClient } from "@/lib/supabase-server"
 import { NextResponse } from "next/server"
 
 interface UserColumn {
@@ -12,18 +11,7 @@ interface UserColumn {
 // GET - Obtener columnas visibles específicas del workout
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
     const {
       data: { user },
@@ -155,18 +143,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // POST - Guardar configuración de columnas visibles para el workout
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
     const {
       data: { user },

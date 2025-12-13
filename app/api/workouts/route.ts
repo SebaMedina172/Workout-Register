@@ -1,5 +1,4 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { createSupabaseServerClient } from "@/lib/supabase-server"
 import { NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
@@ -80,24 +79,14 @@ async function recordExerciseHistory(
 // GET - Obtener todos los entrenamientos del usuario
 export async function GET() {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
     // Verificar autenticación
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session) {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -135,7 +124,7 @@ export async function GET() {
           )
         )
       `)
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .order("date", { ascending: true })
       .order("exercise_order", { foreignTable: "workout_exercises", ascending: true })
 
@@ -215,24 +204,14 @@ export async function GET() {
 // POST - Crear nuevo entrenamiento
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
     // Verificar autenticación
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session) {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -244,7 +223,7 @@ export async function POST(request: Request) {
       .from("workouts")
       .upsert(
         {
-          user_id: session.user.id,
+          user_id: user.id,
           date,
           is_rest_day: type === "rest",
           type: type === "rest" ? "rest" : "workout",
@@ -326,7 +305,7 @@ export async function POST(request: Request) {
           exercise.reps,
           exercise.weight || 0,
           date,
-          session.user.id,
+          user.id,
           supabase,
         )
       }
@@ -356,7 +335,7 @@ export async function POST(request: Request) {
           const { data: userColumns, error: columnsError } = await supabase
             .from("user_columns")
             .select("id, column_name, column_type")
-            .eq("user_id", session.user.id)
+            .eq("user_id", user.id)
             .eq("is_active", true)
 
           if (!columnsError && userColumns && userColumns.length > 0) {

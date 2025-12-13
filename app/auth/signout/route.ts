@@ -1,34 +1,23 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { createSupabaseServerClient } from "@/lib/supabase-server"
 import { NextResponse } from "next/server"
 
 export async function POST() {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-          set(name: string, value: string, options: any) {
-            cookieStore.set({ name, value, ...options })
-          },
-          remove(name: string, options: any) {
-            cookieStore.set({ name, value: "", ...options })
-          },
-        },
-      },
-    )
+    const supabase = createSupabaseServerClient()
 
-    // Cerrar sesión del usuario
-    const { error } = await supabase.auth.signOut()
+    // Obtener el usuario autenticado (más seguro que getSession)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-    if (error) {
-      console.error("Error signing out:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    // Si hay usuario, intentar cerrar sesión
+    if (user) {
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error("Error signing out:", error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
     }
 
     // Retornar respuesta exitosa
