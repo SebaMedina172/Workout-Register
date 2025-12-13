@@ -7,6 +7,7 @@ import { SavedExercise } from "./saved-exercise"
 import { ExerciseSkeleton } from "./exercise-skeleton"
 import { MobileExerciseCard } from "./mobile-exercise-card"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsTablet } from "@/hooks/use-tablet"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
 
 interface ExerciseListProps {
@@ -64,6 +65,7 @@ export const ExerciseList = ({
   onCreateExercise,
 }: ExerciseListProps) => {
   const isMobile = useIsMobile()
+  const isTablet = useIsTablet()
 
   if (!initialDataLoaded) {
     return (
@@ -75,8 +77,8 @@ export const ExerciseList = ({
     )
   }
 
-  // Vista móvil - tarjetas individuales
-  if (isMobile) {
+  // Vista móvil/tablet - tarjetas individuales
+  if (isMobile || isTablet) {
     return (
       <div className="space-y-3">
         {exercises.map((exercise, index) => (
@@ -117,7 +119,7 @@ export const ExerciseList = ({
     )
   }
 
-  // Vista desktop/tablet - tabla tradicional
+  // Vista desktop - tabla tradicional
   return (
     <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
       {exercises.map((exercise, index) => (
@@ -156,6 +158,11 @@ export const ExerciseList = ({
               onUpdateExercise={onUpdateExercise}
               onSaveExercise={onSaveExercise}
               onRemoveExercise={onRemoveExercise}
+              onEditExercise={onEditExercise}
+              onToggleExpansion={onToggleExpansion}
+              onToggleCompletion={onToggleCompletion}
+              onToggleSetCompletion={onToggleSetCompletion}
+              onUpdateSetRecord={onUpdateSetRecord}
               onWeightChange={onWeightChange}
               onCreateExercise={onCreateExercise}
             />

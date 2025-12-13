@@ -14,6 +14,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
 import { useRestTimer } from "@/contexts/rest-timer-context"
+import { useIsTablet } from "@/hooks/use-tablet"
 
 interface SavedExerciseProps {
   exercise: WorkoutExercise
@@ -41,6 +42,7 @@ export function SavedExercise({
   const { translateExercise } = useExerciseTranslation()
   const completedSets = exercise.set_records?.filter((sr) => sr.is_completed === true).length || 0
   const totalSets = exercise.set_records?.length || 0
+  const isTablet = useIsTablet()
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
@@ -101,8 +103,8 @@ export function SavedExercise({
             : "bg-gray-50 dark:bg-gray-900 border-green-500 dark:border-green-600"
         }`}
       >
-        {/* Desktop/Tablet layout - original single row */}
-        <div className="hidden sm:flex sm:items-center justify-between gap-3">
+        {/* Desktop layout - hide on tablet and below */}
+        <div className={`${isTablet ? "hidden" : "hidden sm:flex"} sm:items-center justify-between gap-3`}>
           <div className="flex items-center space-x-4 min-w-0 flex-1">
             <GripVertical className="w-5 h-5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
 
@@ -205,8 +207,8 @@ export function SavedExercise({
           </div>
         </div>
 
-        {/* Mobile layout - reorganized for better spacing */}
-        <div className="flex flex-col gap-3 sm:hidden">
+        {/* Mobile/Tablet layout - reorganized for better spacing */}
+        <div className={`flex flex-col gap-3 ${isTablet ? "md:hidden" : "sm:hidden"}`}>
           {/* First row: Controls and exercise name */}
           <div className="flex items-center space-x-2 min-w-0">
             <GripVertical className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing flex-shrink-0" />
@@ -259,7 +261,7 @@ export function SavedExercise({
               title="View exercise history"
             >
               <BarChart3 className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-              {t.exerciseHistory.historyButton}
+              <span className={isTablet ? "ml-1 text-xs" : "hidden"}>{t.exerciseHistory.historyButton}</span>
             </Button>
 
             <Button
@@ -269,21 +271,17 @@ export function SavedExercise({
               className="hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-600 border-2 transition-all duration-200 h-7 px-2 flex-shrink-0"
             >
               <Edit className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-              {t.workoutForm.edit}
+              <span className={isTablet ? "ml-1 text-xs" : "hidden"}>{t.workoutForm.edit}</span>
             </Button>
           </div>
 
-          {/* Second row: Muscle group badge */}
-          {exercise.muscle_group && (
-            <div className="pl-12">
+          <div className="pl-12 flex flex-wrap items-center gap-2">
+            {exercise.muscle_group && (
               <Badge variant="outline" className={`${getMuscleGroupColor(exercise.muscle_group)} text-xs`}>
                 {translateMuscleGroup(exercise.muscle_group)}
               </Badge>
-            </div>
-          )}
+            )}
 
-          {/* Third row: Exercise details */}
-          <div className="pl-12 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
               className="bg-white dark:bg-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 text-xs px-2 py-1"
@@ -298,6 +296,19 @@ export function SavedExercise({
               <Clock className="w-3 h-3 mr-1" />
               {exercise.rest_time}s
             </Badge>
+
+            <Badge
+              variant="outline"
+              className={`text-xs px-2 py-1 ${
+                exercise.is_completed
+                  ? "bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-300 dark:border-green-600"
+                  : completedSets > 0
+                    ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-600"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+              }`}
+            >
+              {completedSets}/{totalSets} {t.workoutForm.sets}
+            </Badge>
           </div>
         </div>
       </div>
@@ -305,20 +316,20 @@ export function SavedExercise({
       {/* Contenido expandible - tabla de series */}
       <CollapsibleContent>
         <div
-          className={`border-l-4 transition-all duration-200 overflow-x-auto ${
+          className={`border-l-4 transition-all duration-200 ${
             exercise.is_completed
               ? "bg-gray-50 dark:bg-gray-800 border-green-500 dark:border-green-600"
               : "bg-white dark:bg-gray-900 border-green-500 dark:border-green-600"
           }`}
         >
-          <div className="min-w-[650px] sm:min-w-0">
+        <div className="overflow-x-auto">
+          <div className="min-w-full inline-block">
             {/* Header de la tabla de series */}
-            <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+            <div className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 sticky top-0 z-10">
               <div
-                className="grid gap-2 sm:gap-4 p-2 sm:p-3 font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-200"
+                className="grid gap-2 sm:gap-3 p-2 sm:p-3 font-semibold text-xs sm:text-sm text-gray-700 dark:text-gray-200"
                 style={{
                   gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")} 50px`,
-
                 }}
               >
                 <div className="text-center">{t.workoutForm.completed}</div>
@@ -344,7 +355,7 @@ export function SavedExercise({
             {exercise.set_records?.map((setRecord, setIndex) => (
               <div
                 key={setRecord.id}
-                className={`grid gap-2 sm:gap-4 p-2 sm:p-3 items-center transition-all duration-200 ${
+                className={`grid gap-2 sm:gap-3 p-2 sm:p-3 items-center transition-all duration-200 ${
                   setRecord.is_completed
                     ? "bg-gray-200 dark:bg-gray-600"
                     : setIndex % 2 === 0
@@ -353,7 +364,6 @@ export function SavedExercise({
                 }`}
                 style={{
                   gridTemplateColumns: `60px 80px minmax(80px, 1fr) minmax(100px, 1fr) ${activeColumns.map(() => "minmax(80px, 1fr)").join(" ")} 50px`,
-
                 }}
               >
                 {/* Checkbox para completar serie individual */}
@@ -483,6 +493,7 @@ export function SavedExercise({
                 </div>                
               </div>
             ))}
+          </div>
           </div>
         </div>
       </CollapsibleContent>

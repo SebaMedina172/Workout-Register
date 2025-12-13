@@ -10,6 +10,7 @@ import { getMuscleGroupColor } from "./utils"
 import { useLanguage } from "@/lib/i18n/context"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
+import { useIsTablet } from "@/hooks/use-tablet"
 import type { WorkoutExercise, CustomColumn, UserExercise } from "./types"
 import { DEFAULT_EXERCISES } from "./constants"
 
@@ -24,6 +25,11 @@ interface EditingExerciseProps {
   onUpdateExercise: (id: string, field: string, value: any) => void
   onSaveExercise: (id: string) => void
   onRemoveExercise: (id: string) => void
+  onEditExercise: (id: string) => void
+  onToggleExpansion: (id: string) => void
+  onToggleCompletion: (id: string) => void
+  onToggleSetCompletion: (exerciseId: string, setIndex: string) => void
+  onUpdateSetRecord: (exerciseId: string, setIndex: string, field: string, value: any) => void
   onWeightChange: (exerciseId: string, value: string) => void
   onCreateExercise: (
     exerciseName: string,
@@ -48,6 +54,7 @@ export const EditingExercise = ({
   const { t } = useLanguage()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
   const { translateExercise } = useExerciseTranslation()
+  const isTablet = useIsTablet()
   const isFirstUnlocked = index === 0 || exercises[index - 1].is_saved
 
   const handleExerciseSelect = async (value: string) => {
@@ -79,7 +86,7 @@ export const EditingExercise = ({
   return (
     <>
       {/* Encabezado de la tabla (solo para el primer ejercicio no guardado) */}
-      {isFirstUnlocked && (
+      {isFirstUnlocked && !isTablet && (
         <div className="bg-gray-100 dark:bg-gray-800 border-b-2 border-gray-300 dark:border-gray-600 overflow-x-auto">
           <div className="min-w-[800px] sm:min-w-0">
             <div
