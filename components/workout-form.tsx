@@ -266,8 +266,9 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         exercises: validExercises,
       }
 
-      const url = workout ? `/api/workouts/${workout.id}` : "/api/workouts"
-      const method = workout ? "PUT" : "POST"
+      const isTemporaryWorkout = workout?.id?.startsWith("temp_")
+      const url = workout && !isTemporaryWorkout ? `/api/workouts/${workout.id}` : "/api/workouts"
+      const method = workout && !isTemporaryWorkout ? "PUT" : "POST"
 
       const response = await fetch(url, {
         method,
