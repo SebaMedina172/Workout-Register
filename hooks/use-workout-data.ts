@@ -49,7 +49,7 @@ export function useWorkoutData({ workout, date }: UseWorkoutDataProps) {
       }
 
       // Si es un workout existente, cargar todos los datos
-      if (workout && workout.id) {
+      if (workout && workout.id && !workout.id.startsWith("temp_")) {
         // Cargar columnas visibles específicas del workout
         const visibleColumnsResponse = await fetch(`/api/workouts/${workout.id}/visible-columns`)
         if (visibleColumnsResponse.ok) {
@@ -85,6 +85,24 @@ export function useWorkoutData({ workout, date }: UseWorkoutDataProps) {
           }
         } else {
           createInitialExercise()
+        }
+      } else if (workout && workout.id && workout.id.startsWith("temp_")) {
+        // Es un workout temporal (cargado desde template)
+        if (workout.exercises && workout.exercises.length > 0) {
+          setExercises(workout.exercises)
+        } else {
+          createInitialExercise()
+        }
+
+        // Cargar columnas desactivadas por defecto para nuevos workouts
+        const columnsResponse = await fetch("/api/user-columns")
+        if (columnsResponse.ok) {
+          const columnsData = await columnsResponse.json()
+          const inactiveColumns = columnsData.map((col: any) => ({
+            ...col,
+            is_active: false,
+          }))
+          setCustomColumns(inactiveColumns)
         }
       } else {
         // Para workouts nuevos, cargar columnas desactivadas por defecto
