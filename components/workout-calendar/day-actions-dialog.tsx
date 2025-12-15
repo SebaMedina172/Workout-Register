@@ -9,6 +9,7 @@ import { getWorkoutCompletionStatus } from "./utils"
 import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 import { useMuscleGroupTranslation } from "@/lib/i18n/muscle-groups"
 import { useExerciseTranslation } from "@/lib/i18n/exercise-translations"
+import { useOnlineStatus } from "@/lib/offline-cache"
 import { LoadTemplateDialog } from "./load-template-dialog"
 import type { Workout } from "./types"
 
@@ -40,13 +41,26 @@ export const DayActionsDialog = ({
   const [showLoadTemplate, setShowLoadTemplate] = useState(false)
   const { formatDate, formatWeight, t } = useCalendarTranslation()
   const { translateMuscleGroup } = useMuscleGroupTranslation()
-  const { translateExercise } = useExerciseTranslation()       
+  const { translateExercise } = useExerciseTranslation()
+  const isOnlineStatus = useOnlineStatus()
+  
+  // Debug logging
+  // console.log("🎯 DayActionsDialog Props:", {
+  //   selectedWorkout,
+  //   hasType: selectedWorkout?.type,
+  //   hasExercises: selectedWorkout?.exercises?.length ?? 0,
+  // })
 
   const getDayStatus = (workout: Workout | null, date: Date) => {
     if (!workout) return null
 
     if (workout.type === "rest") {
       return "rest"
+    }
+
+    // Si es workout pero no tiene ejercicios, mostrar como "uncached"
+    if (!workout.exercises || workout.exercises.length === 0) {
+      return "uncached"
     }
 
     const today = new Date()
@@ -83,21 +97,25 @@ export const DayActionsDialog = ({
                     ${
                       selectedWorkout.type === "rest"
                         ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 border-orange-200 dark:border-orange-700 hover:bg-orange-200 dark:hover:bg-orange-800/40"
-                        : getDayStatus(selectedWorkout, selectedDate) === "completed"
-                          ? "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700"
-                          : getDayStatus(selectedWorkout, selectedDate) === "incomplete"
-                            ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700 hover:bg-yellow-200 dark:hover:bg-yellow-800/40"
-                            : "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-800/40"
+                        : getDayStatus(selectedWorkout, selectedDate) === "uncached"
+                          ? "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-700 hover:bg-purple-200 dark:hover:bg-purple-800/40"
+                          : getDayStatus(selectedWorkout, selectedDate) === "completed"
+                            ? "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700"
+                            : getDayStatus(selectedWorkout, selectedDate) === "incomplete"
+                              ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-700 hover:bg-yellow-200 dark:hover:bg-yellow-800/40"
+                              : "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-800/40"
                     }
                   `}
                   >
                     {selectedWorkout.type === "rest"
                       ? t.rest
-                      : getDayStatus(selectedWorkout, selectedDate) === "completed"
-                        ? t.completed
-                        : getDayStatus(selectedWorkout, selectedDate) === "incomplete"
-                          ? t.incomplete
-                          : t.planned}
+                      : getDayStatus(selectedWorkout, selectedDate) === "uncached"
+                        ? t.uncached
+                        : getDayStatus(selectedWorkout, selectedDate) === "completed"
+                          ? t.completed
+                          : getDayStatus(selectedWorkout, selectedDate) === "incomplete"
+                            ? t.incomplete
+                            : t.planned}
                   </Badge>
                 )}
               </CardTitle>
@@ -144,7 +162,23 @@ export const DayActionsDialog = ({
           )}
 
           {/* Resumen del entrenamiento si existe */}
-          {selectedWorkout && selectedWorkout.type === "workout" && (
+          {selectedWorkout && selectedWorkout.type === "workout" && getDayStatus(selectedWorkout, selectedDate) === "uncached" && (
+            <div className="p-4 sm:p-5 rounded-xl border-2 bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-900/20 dark:to-fuchsia-900/20 border-purple-300 dark:border-purple-700">
+              <div className="flex items-center mb-3">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 mr-2 bg-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">?</span>
+                </div>
+                <p className="text-xs sm:text-sm font-bold text-purple-800 dark:text-purple-200">
+                  {t.exercisesNotCached || "Datos no disponibles offline"}
+                </p>
+              </div>
+              <p className="text-xs text-purple-700 dark:text-purple-300">
+                {t.openOnlineToCache || "Abre esta rutina cuando estés online para poder verla sin conexión"}
+              </p>
+            </div>
+          )}
+
+          {selectedWorkout && selectedWorkout.type === "workout" && getDayStatus(selectedWorkout, selectedDate) !== "uncached" && (
             <div
               className={`p-4 sm:p-5 rounded-xl border-2 ${
                 getDayStatus(selectedWorkout, selectedDate) === "completed"
@@ -283,7 +317,7 @@ export const DayActionsDialog = ({
               </>
             )}
 
-            {selectedWorkout && selectedWorkout.type === "workout" && (
+            {selectedWorkout && selectedWorkout.type === "workout" && getDayStatus(selectedWorkout, selectedDate) !== "uncached" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <Button
                   onClick={onEditWorkout}
@@ -300,6 +334,14 @@ export const DayActionsDialog = ({
                   <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                   {t.postpone}
                 </Button>
+              </div>
+            )}
+
+            {selectedWorkout && selectedWorkout.type === "workout" && getDayStatus(selectedWorkout, selectedDate) === "uncached" && (
+              <div className="p-3 sm:p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700">
+                <p className="text-xs sm:text-sm text-purple-700 dark:text-purple-300 text-center">
+                  {t.goOnlineToEdit || "Conecta online para editar o aplazar esta rutina"}
+                </p>
               </div>
             )}
 

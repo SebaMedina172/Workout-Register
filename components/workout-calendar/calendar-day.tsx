@@ -3,6 +3,7 @@
 import { Dumbbell, Coffee } from "lucide-react"
 import { getWorkoutCompletionStatus } from "./utils"
 import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
+import { useOnlineStatus } from "@/lib/offline-cache"
 import type { Workout } from "./types"
 
 interface CalendarDayProps {
@@ -17,6 +18,7 @@ interface CalendarDayProps {
 export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, onClick }: CalendarDayProps) => {
   const isOutside = date.getMonth() !== displayMonth.getMonth()
   const { formatDate, t } = useCalendarTranslation()
+  const isOnline = useOnlineStatus()
 
   // Determinar el estado visual del día
   const getDayStatus = () => {
@@ -24,6 +26,12 @@ export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, 
 
     if (workout.type === "rest") {
       return "rest"
+    }
+
+    // Si es workout pero no tiene ejercicios, mostrar como "uncached"
+    // Esto indica que los datos no están cacheados
+    if (!workout.exercises || workout.exercises.length === 0) {
+      return "uncached"
     }
 
     const today = new Date()
@@ -64,13 +72,15 @@ export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, 
       " bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-200 shadow-md ring-1 sm:ring-2 ring-blue-400 dark:ring-blue-500 ring-offset-1 sm:ring-offset-2 font-bold"
   } else if (status === "planned") {
     customClass = "calendar-day-planned"
+  } else if (status === "uncached") {
+    customClass = "calendar-day-uncached"
   } else if (status === "completed") {
     customClass = "calendar-day-completed"
   } else if (status === "incomplete") {
     customClass = "calendar-day-incomplete"
   } else if (status === "rest") {
     customClass = "calendar-day-rest"
-  } else {
+  } else if (!customClass) {
     baseClass +=
       " bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-700 hover:shadow-md text-gray-900 dark:text-white"
   }
@@ -107,7 +117,7 @@ export const CalendarDay = ({ date, displayMonth, workout, isSelected, isToday, 
       <div className="calendar-day-content">
         <div className="calendar-day-number text-sm sm:text-base md:text-lg font-bold">{date.getDate()}</div>
         <div className="calendar-day-icon">
-          {(status === "planned" || status === "completed" || status === "incomplete") && (
+          {(status === "planned" || status === "completed" || status === "incomplete" || status === "uncached") && (
             <Dumbbell className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
           )}
           {status === "rest" && <Coffee className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />}
