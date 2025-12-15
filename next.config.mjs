@@ -42,6 +42,18 @@ const withPWAConfig = withPWA({
         },
       },
     },
+    {
+      urlPattern: /^https?:\/\/localhost:\d+\/api\/.*/i,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "local-api",
+        networkTimeoutSeconds: 5,
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 5 * 60,
+        },
+      },
+    },
   ],
 });
 

@@ -131,6 +131,9 @@ export interface Translations {
     activeRest: string
     exercisesScheduled: string
     moreExercises: string
+    exercisesNotCached: string
+    openOnlineToCache: string
+    goOnlineToEdit: string
 
     // Action buttons
     createWorkout: string
@@ -145,6 +148,7 @@ export interface Translations {
     incomplete: string
     planned: string
     rest: string
+    uncached: string
 
     // Weight and exercise info
     freeWeight: string
@@ -452,5 +456,9 @@ export interface Translations {
     cancel: string
     exporting: string
     exportNow: string
+  }
+  offlineIndicator:{
+    title: string
+    description: string
   }
 }

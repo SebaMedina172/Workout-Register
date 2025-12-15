@@ -134,6 +134,9 @@ export const translations: Record<"es" | "en", Translations> = {
       activeRest: "Descanso activo",
       exercisesScheduled: "Ejercicios programados:",
       moreExercises: "+{count} ejercicios más...",
+      exercisesNotCached: "Datos no disponibles offline",
+      openOnlineToCache: "Abre esta rutina cuando estés online para poder verla sin conexión",
+      goOnlineToEdit: "Conecta online para editar o aplazar esta rutina",
 
       // Action buttons
       createWorkout: "Crear Entrenamiento",
@@ -148,6 +151,7 @@ export const translations: Record<"es" | "en", Translations> = {
       incomplete: "⚠️ Incompleto",
       planned: "💪 Planificado",
       rest: "🛌 Descanso",
+      uncached: "⚠️ Sin Datos",
 
       // Weight and exercise info
       freeWeight: "Libre",
@@ -561,6 +565,10 @@ export const translations: Record<"es" | "en", Translations> = {
       exporting: "Exportando...",
       exportNow: "Exportar",
     },
+    offlineIndicator:{
+      title: "Sin conexión a Internet",
+      description: "Estás viendo datos guardados localmente. Los cambios no se guardarán hasta que vuelvas a conectarte.",
+    }
   },
   en: {
     auth: {
@@ -695,6 +703,9 @@ export const translations: Record<"es" | "en", Translations> = {
       activeRest: "Active rest",
       exercisesScheduled: "Scheduled exercises:",
       moreExercises: "+{count} more exercises...",
+      exercisesNotCached: "Data not available offline",
+      openOnlineToCache: "Open this workout while online to view it without connection",
+      goOnlineToEdit: "Go online to edit or postpone this workout",
 
       // Action buttons
       createWorkout: "Create Workout",
@@ -709,6 +720,7 @@ export const translations: Record<"es" | "en", Translations> = {
       incomplete: "⚠️ Incomplete",
       planned: "💪 Planned",
       rest: "🛌 Rest",
+      uncached: "⚠️ Uncached",
 
       // Weight and exercise info
       freeWeight: "Free",
@@ -1121,6 +1133,10 @@ export const translations: Record<"es" | "en", Translations> = {
       cancel: "Cancel",
       exporting: "Exporting...",
       exportNow: "Export",
+    },
+    offlineIndicator:{
+      title: "No Internet Connection",
+      description: "You are viewing locally saved data. Changes will not be saved until you reconnect.",
     },
   },
 }
