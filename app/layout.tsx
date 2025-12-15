@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/lib/i18n/context"
 import { RestTimerProvider } from "@/contexts/rest-timer-context"
 import { PWARegister } from "@/components/pwa-register"
+import { OfflineIndicator } from "@/components/offline-indicator"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -50,6 +51,7 @@ html {
         <PWARegister />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <LanguageProvider>            
+            <OfflineIndicator />
             <RestTimerProvider>{children}</RestTimerProvider>
           </LanguageProvider>
         </ThemeProvider>
