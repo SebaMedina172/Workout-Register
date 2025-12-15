@@ -11,9 +11,10 @@ export async function GET(request: Request) {
 
     // Verificar autenticación
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    if (!session) {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
@@ -45,7 +46,7 @@ export async function GET(request: Request) {
           )
         )
       `)
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .gte("date", startDate)
       .lte("date", endDate)
       .order("date", { ascending: true })
