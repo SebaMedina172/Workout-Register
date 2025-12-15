@@ -11,6 +11,7 @@ import { useCalendarTranslation } from "@/lib/i18n/calendar-utils"
 import { useLanguage } from "@/lib/i18n/context"
 import type { Workout } from "./workout-calendar/types"
 import { format } from "date-fns"
+import { setCacheData, getCacheData, isOnline } from "@/lib/offline-cache"
 
 export default function WorkoutCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
@@ -35,31 +36,49 @@ export default function WorkoutCalendar() {
   const loadWorkouts = async () => {
     try {
       setLoading(true)
-      const response = await fetch("/api/workouts")
-      if (response.ok) {
-        const data = await response.json()
 
-        // Procesar workouts para asegurar que tengan la estructura correcta
-        const processedWorkouts = data.map((workout: any) => ({
-          ...workout,
-          exercises:
-            workout.exercises?.map((ex: any) => ({
-              ...ex,
-              is_saved: ex.is_saved || false,
-              is_expanded: ex.is_expanded || false,
-              is_completed: Boolean(ex.is_completed),
-              set_records:
-                ex.set_records?.map((sr: any) => ({
-                  ...sr,
-                  is_completed: Boolean(sr.is_completed),
-                })) || [],
-            })) || [],
-        }))
+      // Si está online, cargar del servidor
+      if (isOnline()) {
+        //console\.log("🔗 Online - fetching from API")
+        const response = await fetch("/api/workouts")
+        if (response.ok) {
+          const data = await response.json()
+          //console\.log(`✅ API returned ${data.length} workouts`)
 
-        setWorkouts(processedWorkouts)
+          // Procesar workouts para asegurar que tengan la estructura correcta
+          // IMPORTANTE: Se cachean sin ejercicios para optimizar espacio
+          // Los ejercicios se cargan individualmente en use-workout-data.ts
+          const processedWorkouts = data.map((workout: any) => ({
+            id: workout.id,
+            date: workout.date,
+            type: workout.type,
+            exercises: [], // No cachear ejercicios aquí - se cargan on-demand
+          }))
+
+          setWorkouts(data) // Mantener datos completos en memoria para sesión actual
+          // Cachear workouts SIN ejercicios para optimizar espacio
+          await setCacheData("workouts", processedWorkouts)
+          //console\.log(`✅ Cached ${processedWorkouts.length} workouts (optimized - without exercises)`)
+        } else {
+          // Si falla, intentar cargar del cache
+          //console\.log("⚠️ API fetch failed - trying cache")
+          const cachedWorkouts = await getCacheData("workouts")
+          if (cachedWorkouts) {
+            //console\.log(`✅ Loaded ${cachedWorkouts.length} workouts from cache`)
+            setWorkouts(cachedWorkouts)
+          }
+        }
       } else {
-        const errorText = await response.text()
-        console.error("❌ Error cargando workouts:", response.status, response.statusText, errorText)
+        // Si está offline, cargar del cache
+        //console\.log("📴 Offline - loading from cache")
+        const cachedWorkouts = await getCacheData("workouts")
+        //console\.log(`📂 Cache returned:`, cachedWorkouts)
+        if (cachedWorkouts && cachedWorkouts.length > 0) {
+          //console\.log(`✅ Loaded ${cachedWorkouts.length} workouts from cache`)
+          setWorkouts(cachedWorkouts)
+        } else {
+          //console\.log("❌ No workouts in cache")
+        }
       }
     } catch (error) {
       console.error("💥 Error loading workouts:", error)
@@ -173,6 +192,13 @@ export default function WorkoutCalendar() {
 
   const selectedWorkout = selectedDate ? getWorkoutForDate(selectedDate) : null
 
+  // Debug logging
+  if (selectedDate && showDayActions) {
+    //console\.log("📅 Selected Date:", format(selectedDate, "yyyy-MM-dd"))
+    //console\.log("📋 Selected Workout:", selectedWorkout)
+    //console\.log("🗂️ All Workouts:", workouts)
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8 sm:py-16">
@@ -206,10 +232,11 @@ export default function WorkoutCalendar() {
   return (
     <div className="relative">
       {/* Estilos CSS personalizados optimizados */}
-      <style jsx>{`
+      <style jsx global>{`
+        /* Calendar day styles */
         .calendar-day-planned {
           background: linear-gradient(135deg, #10b981, #059669) !important;
-          color: white !important;
+          color: black !important;
           border: 1px solid #059669 !important;
           font-weight: bold !important;
           box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2) !important;
@@ -222,9 +249,24 @@ export default function WorkoutCalendar() {
           transition: all 0.2s ease !important;
         }
 
+        .calendar-day-uncached {
+          background: linear-gradient(135deg, #a855f7, #9333ea) !important;
+          color: black !important;
+          border: 1px solid #9333ea !important;
+          font-weight: bold !important;
+          box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2) !important;
+        }
+        
+        .calendar-day-uncached:hover {
+          background: linear-gradient(135deg, #c084fc, #a855f7) !important;
+          box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3) !important;
+          transform: translateY(-1px) !important;
+          transition: all 0.2s ease !important;
+        }
+
         .calendar-day-completed {
           background: linear-gradient(135deg, #6b7280, #4b5563) !important;
-          color: white !important;
+          color: black !important;
           border: 1px solid #4b5563 !important;
           font-weight: bold !important;
           box-shadow: 0 2px 8px rgba(107, 114, 128, 0.2) !important;
@@ -236,33 +278,33 @@ export default function WorkoutCalendar() {
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
-
+        
         .calendar-day-incomplete {
-          background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-          color: white !important;
-          border: 1px solid #d97706 !important;
+          background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+          color: black !important;
+          border: 1px solid #f59e0b !important;
           font-weight: bold !important;
-          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
+          box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3) !important;
         }
         
         .calendar-day-incomplete:hover {
-          background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+          background: linear-gradient(135deg, #fcd34d, #fbbf24) !important;
+          box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
         
         .calendar-day-rest {
-          background: linear-gradient(135deg, #f97316, #ea580c) !important;
-          color: white !important;
+          background: linear-gradient(135deg, #fb923c, #f97316) !important;
+          color: black !important;
           border: 1px solid #ea580c !important;
           font-weight: bold !important;
-          box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2) !important;
+          box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3) !important;
         }
         
         .calendar-day-rest:hover {
-          background: linear-gradient(135deg, #fb923c, #f97316) !important;
-          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
+          background: linear-gradient(135deg, #fdba74, #fb923c) !important;
+          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4) !important;
           transform: translateY(-1px) !important;
           transition: all 0.2s ease !important;
         }
@@ -308,6 +350,7 @@ export default function WorkoutCalendar() {
           }
           
           .calendar-day-planned,
+          .calendar-day-uncached,
           .calendar-day-completed,
           .calendar-day-incomplete,
           .calendar-day-rest {
@@ -315,6 +358,7 @@ export default function WorkoutCalendar() {
           }
           
           .calendar-day-planned:hover,
+          .calendar-day-uncached:hover,
           .calendar-day-completed:hover,
           .calendar-day-incomplete:hover,
           .calendar-day-rest:hover {
@@ -349,17 +393,14 @@ export default function WorkoutCalendar() {
 
         /* Dark mode styles for calendar days */
         .dark .calendar-day-planned,
+        .dark .calendar-day-uncached,
         .dark .calendar-day-completed,
         .dark .calendar-day-incomplete,
         .dark .calendar-day-rest {
           border-width: 2px !important;
         }
 
-        /* Dark mode styles for calendar navigation and headers */
-        .dark [data-calendar] {
-          background-color: rgb(17 24 39) !important;
-        }
-
+        /* Dark mode styles for calendar navigation and headers - NO background on container */
         .dark [data-calendar] .calendar-nav-button {
           background-color: rgb(31 41 55) !important;
           border-color: rgb(55 65 81) !important;
@@ -387,7 +428,7 @@ export default function WorkoutCalendar() {
         }
 
         .dark [data-calendar] .calendar-day-outside {
-          background-color: rgb(17 24 39) !important;
+          background-color: transparent !important;
           color: rgb(75 85 99) !important;
           border-color: rgb(31 41 55) !important;
         }
@@ -417,8 +458,8 @@ export default function WorkoutCalendar() {
         </div>
 
         {/* Contenedor del calendario */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-4xl lg:max-w-6xl">
+        <div className="flex justify-center bg-transparent dark:bg-transparent">
+          <div className="w-full max-w-4xl lg:max-w-6xl calendar-wrapper bg-transparent dark:bg-transparent">
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -426,7 +467,7 @@ export default function WorkoutCalendar() {
               onMonthChange={setCurrentMonth}
               onSelect={handleDateSelect}
               weekStartsOn={1} // Always start with Monday (1) regardless of locale
-              className="rounded-xl sm:rounded-2xl border-0 shadow-none w-full"
+              className="rounded-xl sm:rounded-2xl border-0 shadow-none w-full dark:bg-transparent dark:shadow-none" // <-- Agregado dark:bg-transparent dark:shadow-none
               data-calendar="true"
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
@@ -477,10 +518,9 @@ export default function WorkoutCalendar() {
 
                   return (
                     <CalendarDay
-                      {...props}
                       date={date}
                       displayMonth={displayMonth}
-                      workout={workout || null}
+                      workout={workout ?? null}
                       isSelected={isSelected}
                       isToday={isToday}
                       onClick={() => handleDateSelect(date)}

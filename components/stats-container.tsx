@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useLanguage } from "@/lib/i18n/context"
 import { ExportDialog } from "@/components/export-dialog"
+import { setCacheData, getCacheData, isOnline } from "@/lib/offline-cache"
 
 interface WeeklyStats {
   summary: {
@@ -68,13 +69,32 @@ export default function StatsContainer() {
       setLoading(true)
       const startDate = format(weekStart, "yyyy-MM-dd")
       const endDate = format(weekEnd, "yyyy-MM-dd")
+      const cacheKey = `stats_${startDate}_${endDate}`
 
-      const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data)
+      // Si está online, cargar del servidor
+      if (isOnline()) {
+        const response = await fetch(`/api/stats?startDate=${startDate}&endDate=${endDate}`)
+        if (response.ok) {
+          const data = await response.json()
+          setStats(data)
+          // Cachear los datos
+          await setCacheData("stats", { ...data, id: cacheKey, _cachedAt: new Date().toISOString() })
+        } else {
+          console.error(t.stats.errorLoadingStats)
+          // Intentar cargar del cache si falla
+          const cachedData = await getCacheData("stats", cacheKey)
+          if (cachedData) {
+            setStats(cachedData)
+          }
+        }
       } else {
-        console.error(t.stats.errorLoadingStats)
+        // Si está offline, cargar del cache
+        const cachedData = await getCacheData("stats", cacheKey)
+        if (cachedData) {
+          setStats(cachedData)
+        } else {
+          console.error("No hay datos cacheados para esta semana")
+        }
       }
     } catch (error) {
       console.error(t.stats.error, error)
