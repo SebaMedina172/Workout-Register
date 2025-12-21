@@ -300,11 +300,35 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   }
 
   const handleMarkSetComplete = (exerciseId: string, setId: string) => {
-    toggleSetCompletion(exerciseId, setId)
+    const exercise = exercises.find((ex) => ex.id === exerciseId)
+    if (exercise) {
+      toggleSetCompletion(exerciseId, setId)
+    } else {
+      for (const ex of exercises) {
+        const setRecord = ex.set_records?.find((sr) => sr.id === setId)
+        if (setRecord) {
+          toggleSetCompletion(ex.id, setId)
+          return
+        }
+      }
+    }
   }
 
   const getNextSetId = (exerciseId: string, currentSetId: string): string | null => {
-    const exercise = exercises.find((ex) => ex.id === exerciseId)
+    // Primero intentar por ID de ejercicio
+    let exercise = exercises.find((ex) => ex.id === exerciseId)
+
+    // Si no encontramos por ID, buscar el ejercicio que contiene el set
+    if (!exercise) {
+      for (const ex of exercises) {
+        const hasSet = ex.set_records?.some((sr) => sr.id === currentSetId)
+        if (hasSet) {
+          exercise = ex
+          break
+        }
+      }
+    }
+
     if (!exercise?.set_records) return null
 
     const currentIndex = exercise.set_records.findIndex((sr) => sr.id === currentSetId)
@@ -315,7 +339,20 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
   }
 
   const handleStartNextSet = (exerciseId: string, nextSetId: string) => {
-    const exercise = exercises.find((ex) => ex.id === exerciseId)
+    // Primero intentar por ID de ejercicio
+    let exercise = exercises.find((ex) => ex.id === exerciseId)
+
+    // Si no encontramos por ID, buscar el ejercicio que contiene el set
+    if (!exercise) {
+      for (const ex of exercises) {
+        const hasSet = ex.set_records?.some((sr) => sr.id === nextSetId)
+        if (hasSet) {
+          exercise = ex
+          break
+        }
+      }
+    }
+
     if (!exercise?.set_records) return
 
     const nextSet = exercise.set_records.find((sr) => sr.id === nextSetId)
@@ -323,8 +360,45 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
 
     const event = new CustomEvent("startNextSetTimer", {
       detail: {
-        exerciseId,
+        exerciseId: exercise.id, // Usar el ID actual del ejercicio
         setId: nextSetId,
+        setNumber: nextSet.set_number,
+        duration: exercise.rest_time || 60,
+        exerciseName: exercise.exercise_name,
+      },
+    })
+    window.dispatchEvent(event)
+  }
+
+  const handleMarkSetCompleteByName = (exerciseName: string, setNumber: number) => {
+    // Buscar el ejercicio por nombre (puede haber cambiado de ID al recargar)
+    const exercise = exercises.find((ex) => ex.exercise_name === exerciseName)
+    if (!exercise) {
+      console.warn(`Exercise not found by name: ${exerciseName}`)
+      return
+    }
+
+    // Buscar el set por número
+    const setRecord = exercise.set_records?.find((sr) => sr.set_number === setNumber)
+    if (!setRecord) {
+      console.warn(`Set #${setNumber} not found for exercise: ${exerciseName}`)
+      return
+    }
+
+    toggleSetCompletion(exercise.id, setRecord.id)
+  }
+
+  const handleStartNextSetByName = (exerciseName: string, nextSetNumber: number) => {
+    const exercise = exercises.find((ex) => ex.exercise_name === exerciseName)
+    if (!exercise?.set_records) return
+
+    const nextSet = exercise.set_records.find((sr) => sr.set_number === nextSetNumber)
+    if (!nextSet || nextSet.is_completed) return
+
+    const event = new CustomEvent("startNextSetTimer", {
+      detail: {
+        exerciseId: exercise.id,
+        setId: nextSet.id,
         setNumber: nextSet.set_number,
         duration: exercise.rest_time || 60,
         exerciseName: exercise.exercise_name,
@@ -342,8 +416,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
       {saving && <LoadingOverlay message={t.workoutForm.savingWorkout} />}
 
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-7xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6 dark:bg-gray-900 dark:border-gray-700">
-          <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
+        <DialogContent
+          className="w-full max-w-[95vw] sm:max-w-[90vw] lg:max-w-7xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col p-3 sm:p-6 dark:bg-gray-900 dark:border-gray-700"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
+          <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4 pointer-events-auto">
             <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white flex items-center">
               <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mr-2 sm:mr-3 text-blue-600 dark:text-blue-400" />
               <span className="truncate">
@@ -353,12 +431,12 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
           </DialogHeader>
 
           {message && (
-            <div className="flex-shrink-0 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg text-blue-800 dark:text-blue-200 text-xs sm:text-sm font-medium">
+            <div className="flex-shrink-0 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg text-blue-800 dark:text-blue-200 text-xs sm:text-sm font-medium pointer-events-auto">
               {message}
             </div>
           )}
 
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0 pointer-events-auto">
             <Toolbar
               exercises={exercises}
               activeColumnsCount={activeColumns.length}
@@ -396,49 +474,43 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
             </div>
           </div>
 
-          <div className="flex-shrink-0 p-2 sm:p-4 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 flex flex-col sm:flex-row justify-between gap-2 sm:gap-0">
+          <div className="flex-shrink-0 p-2 sm:p-4 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 flex flex-col sm:flex-row justify-between gap-2 sm:gap-0 pointer-events-auto">
             <Button
-            onClick={onClose}
-            variant="outline"
-            className="w-full sm:w-auto border-2 bg-transparent dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 order-3 sm:order-1"
-          >
-            {t.workoutForm.cancel}
-          </Button>
-          <div className="flex flex-col sm:flex-row gap-2 order-1 sm:order-2">
-            <Button
-              onClick={() => setShowSaveTemplate(true)}
-              disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
+              onClick={onClose}
               variant="outline"
-              className="w-full sm:w-auto border-2 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-white dark:bg-gray-800 order-2 sm:order-1"
+              className="w-full sm:w-auto border-2 bg-transparent dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 order-3 sm:order-1"
             >
-              <FolderOpen className="w-4 h-4 mr-2" />
-              {t.calendar.saveAsTemplate}
+              {t.workoutForm.cancel}
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
-              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white sm:min-w-[120px] order-1 sm:order-2"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t.workoutForm.saving}
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  {t.workoutForm.save}
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 order-1 sm:order-2">
+              <Button
+                onClick={() => setShowSaveTemplate(true)}
+                disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
+                variant="outline"
+                className="w-full sm:w-auto border-2 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-white dark:bg-gray-800 order-2 sm:order-1"
+              >
+                <FolderOpen className="w-4 h-4 mr-2" />
+                {t.calendar.saveAsTemplate}
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={saving || exercises.filter((ex) => ex.exercise_name.trim() !== "").length === 0}
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white sm:min-w-[120px] order-1 sm:order-2"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t.workoutForm.saving}
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    {t.workoutForm.save}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-          </div>
-
-          <RestTimerOverlay
-            onMarkSetComplete={handleMarkSetComplete}
-            getNextSetId={getNextSetId}
-            onStartNextSet={handleStartNextSet}
-          />
         </DialogContent>
       </Dialog>
 
@@ -455,10 +527,14 @@ export default function WorkoutForm({ date, workout, onClose, onSave }: WorkoutF
         <ExerciseManager onClose={() => setShowExerciseManager(false)} onExerciseChange={loadUserData} />
       )}
 
-      <SaveTemplateDialog
-        isOpen={showSaveTemplate}
-        onClose={() => setShowSaveTemplate(false)}
-        exercises={exercises}
+      <SaveTemplateDialog isOpen={showSaveTemplate} onClose={() => setShowSaveTemplate(false)} exercises={exercises} />
+
+      <RestTimerOverlay
+        onMarkSetComplete={handleMarkSetComplete}
+        getNextSetId={getNextSetId}
+        onStartNextSet={handleStartNextSet}
+        onMarkSetCompleteByName={handleMarkSetCompleteByName}
+        onStartNextSetByName={handleStartNextSetByName}
       />
     </>
   )
