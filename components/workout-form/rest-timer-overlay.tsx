@@ -13,9 +13,17 @@ interface RestTimerOverlayProps {
   onMarkSetComplete?: (exerciseId: string, setId: string) => void
   onStartNextSet?: (exerciseId: string, nextSetId: string) => void
   getNextSetId?: (exerciseId: string, currentSetId: string) => string | null
+  onMarkSetCompleteByName?: (exerciseName: string, setNumber: number) => void
+  onStartNextSetByName?: (exerciseName: string, setNumber: number) => void
 }
 
-export function RestTimerOverlay({ onMarkSetComplete, onStartNextSet, getNextSetId }: RestTimerOverlayProps) {
+export function RestTimerOverlay({
+  onMarkSetComplete,
+  onStartNextSet,
+  getNextSetId,
+  onMarkSetCompleteByName,
+  onStartNextSetByName,
+}: RestTimerOverlayProps) {
   const { t } = useLanguage()
   const {
     timerState,
@@ -54,14 +62,25 @@ export function RestTimerOverlay({ onMarkSetComplete, onStartNextSet, getNextSet
 
   const handleMarkAndStartNext = (e: React.MouseEvent) => {
     blockAllEvents(e)
-    if (pendingSetCompletion && onMarkSetComplete) {
-      onMarkSetComplete(pendingSetCompletion.exerciseId, pendingSetCompletion.setId)
+    if (pendingSetCompletion) {
+      // Usar identificadores estables (nombre + número) primero
+      if (onMarkSetCompleteByName && pendingSetCompletion.exerciseName && pendingSetCompletion.setNumber) {
+        onMarkSetCompleteByName(pendingSetCompletion.exerciseName, pendingSetCompletion.setNumber)
 
-      // Check if there's a next set and start timer for it
-      if (getNextSetId && onStartNextSet) {
-        const nextSetId = getNextSetId(pendingSetCompletion.exerciseId, pendingSetCompletion.setId)
-        if (nextSetId) {
-          onStartNextSet(pendingSetCompletion.exerciseId, nextSetId)
+        // Iniciar siguiente set
+        if (onStartNextSetByName) {
+          onStartNextSetByName(pendingSetCompletion.exerciseName, pendingSetCompletion.setNumber + 1)
+        }
+      } else if (onMarkSetComplete) {
+        // Fallback a IDs si no hay callbacks por nombre
+        onMarkSetComplete(pendingSetCompletion.exerciseId, pendingSetCompletion.setId)
+
+        // Check if there's a next set and start timer for it
+        if (getNextSetId && onStartNextSet) {
+          const nextSetId = getNextSetId(pendingSetCompletion.exerciseId, pendingSetCompletion.setId)
+          if (nextSetId) {
+            onStartNextSet(pendingSetCompletion.exerciseId, nextSetId)
+          }
         }
       }
     }
@@ -72,8 +91,12 @@ export function RestTimerOverlay({ onMarkSetComplete, onStartNextSet, getNextSet
   // Handle just mark complete
   const handleMarkComplete = (e: React.MouseEvent) => {
     blockAllEvents(e)
-    if (pendingSetCompletion && onMarkSetComplete) {
-      onMarkSetComplete(pendingSetCompletion.exerciseId, pendingSetCompletion.setId)
+    if (pendingSetCompletion) {
+      if (onMarkSetCompleteByName && pendingSetCompletion.exerciseName && pendingSetCompletion.setNumber) {
+        onMarkSetCompleteByName(pendingSetCompletion.exerciseName, pendingSetCompletion.setNumber)
+      } else if (onMarkSetComplete) {
+        onMarkSetComplete(pendingSetCompletion.exerciseId, pendingSetCompletion.setId)
+      }
     }
     setPendingSetCompletion(null)
     setIsOverlayVisible(false)
@@ -126,13 +149,18 @@ export function RestTimerOverlay({ onMarkSetComplete, onStartNextSet, getNextSet
               <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 {t.restTimer?.readyForNextSet || "Ready for your next set"}
               </p>
-              {timerState.exerciseName && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{timerState.exerciseName}</p>
+              {(pendingSetCompletion?.exerciseName || timerState.exerciseName) && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  {pendingSetCompletion?.exerciseName || timerState.exerciseName}
+                  {(pendingSetCompletion?.setNumber || timerState.setNumber) && (
+                    <span> - Set #{pendingSetCompletion?.setNumber || timerState.setNumber}</span>
+                  )}
+                </p>
               )}
             </div>
 
             <div className="flex flex-col gap-2">
-              {pendingSetCompletion && onMarkSetComplete && (
+              {pendingSetCompletion && (onMarkSetComplete || onMarkSetCompleteByName) && (
                 <>
                   <Button
                     onClick={handleMarkAndStartNext}
@@ -171,7 +199,7 @@ export function RestTimerOverlay({ onMarkSetComplete, onStartNextSet, getNextSet
     )
   }
 
-  // Full timer view - ahora se queda abierto hasta que el usuario lo minimice o cancele
+  // Full timer view
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300 p-4 sm:p-0 pointer-events-auto"
