@@ -33,8 +33,11 @@ interface TimerContextType {
   setIsOverlayVisible: (value: boolean) => void
   onTimerComplete: (callback: () => void) => void
   markSetAndStartNext: () => void
-  pendingSetCompletion: { exerciseId: string; setId: string } | null
-  setPendingSetCompletion: (value: { exerciseId: string; setId: string } | null) => void
+  pendingSetCompletion: { exerciseId: string; setId: string; exerciseName: string; setNumber: number } | null
+  setPendingSetCompletion: (
+    value: { exerciseId: string; setId: string; exerciseName: string; setNumber: number } | null,
+  ) => void
+  isTimerForSet: (exerciseName: string, setNumber: number) => boolean
 }
 
 const defaultTimerState: TimerState = {
@@ -57,7 +60,12 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
   const [timerState, setTimerState] = useState<TimerState>(defaultTimerState)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isOverlayVisible, setIsOverlayVisible] = useState(false)
-  const [pendingSetCompletion, setPendingSetCompletion] = useState<{ exerciseId: string; setId: string } | null>(null)
+  const [pendingSetCompletion, setPendingSetCompletion] = useState<{
+    exerciseId: string
+    setId: string
+    exerciseName: string
+    setNumber: number
+  } | null>(null)
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -115,9 +123,15 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
     playNotificationSound()
     vibrateDevice()
 
-    // Store the current set info before resetting
     const completedSetInfo =
-      timerState.setId && timerState.exerciseId ? { exerciseId: timerState.exerciseId, setId: timerState.setId } : null
+      timerState.setId && timerState.exerciseId && timerState.exerciseName && timerState.setNumber
+        ? {
+            exerciseId: timerState.exerciseId,
+            setId: timerState.setId,
+            exerciseName: timerState.exerciseName,
+            setNumber: timerState.setNumber,
+          }
+        : null
 
     setPendingSetCompletion(completedSetInfo)
 
@@ -137,7 +151,14 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
 
     // Clear persisted state
     localStorage.removeItem(TIMER_STORAGE_KEY)
-  }, [playNotificationSound, vibrateDevice, timerState.setId, timerState.exerciseId])
+  }, [
+    playNotificationSound,
+    vibrateDevice,
+    timerState.setId,
+    timerState.exerciseId,
+    timerState.exerciseName,
+    timerState.setNumber,
+  ])
 
   // Timer tick logic
   const tick = useCallback(() => {
@@ -181,6 +202,7 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
             ...parsed,
             timeRemaining: remaining,
           })
+          setIsOverlayVisible(true)
         } else if (remaining <= 0 && parsed.isRunning) {
           // Timer completed while away
           handleTimerComplete()
@@ -331,6 +353,15 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
     setPendingSetCompletion(null)
   }, [])
 
+  const isTimerForSet = useCallback(
+    (exerciseName: string, setNumber: number): boolean => {
+      if (!timerState.isRunning) return false
+      // Comparar por nombre de ejercicio y número de set (identificadores estables)
+      return timerState.exerciseName === exerciseName && timerState.setNumber === setNumber
+    },
+    [timerState.isRunning, timerState.exerciseName, timerState.setNumber],
+  )
+
   return (
     <RestTimerContext.Provider
       value={{
@@ -348,6 +379,7 @@ export function RestTimerProvider({ children }: { children: React.ReactNode }) {
         markSetAndStartNext,
         pendingSetCompletion,
         setPendingSetCompletion,
+        isTimerForSet,
       }}
     >
       {children}
