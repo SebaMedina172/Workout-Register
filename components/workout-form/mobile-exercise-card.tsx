@@ -82,7 +82,9 @@ export const MobileExerciseCard = ({
   const [showCustomFields, setShowCustomFields] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
-  const { startTimer, timerState, setIsOverlayVisible } = useRestTimer()
+  const { startTimer, timerState, setIsOverlayVisible, isTimerForSet } = useRestTimer()
+
+  const translatedExerciseName = translateExercise(exercise.exercise_name)
 
   useEffect(() => {
     const handleStartNextSetTimer = (
@@ -96,12 +98,12 @@ export const MobileExerciseCard = ({
     ) => {
       const { exerciseId, setId, setNumber, duration, exerciseName } = event.detail
 
-      const targetSet = exercise.set_records?.find((sr) => sr.id === setId)
-      if (targetSet && exerciseId === exercise.id) {
+      const targetSet = exercise.set_records?.find((sr) => sr.set_number === setNumber)
+      if (targetSet && (exerciseName === exercise.exercise_name || exerciseId === exercise.id)) {
         startTimer({
           duration,
-          exerciseId,
-          exerciseName,
+          exerciseId: exercise.id,
+          exerciseName: translateExercise(exerciseName),
           setId,
           setNumber,
         })
@@ -112,7 +114,7 @@ export const MobileExerciseCard = ({
     return () => {
       window.removeEventListener("startNextSetTimer", handleStartNextSetTimer as EventListener)
     }
-  }, [exercise.id, exercise.set_records, startTimer])
+  }, [exercise.id, exercise.exercise_name, exercise.set_records, startTimer, translateExercise])
 
   const handleExerciseSelect = async (value: string) => {
     if (value.startsWith("CREATE_")) {
@@ -144,9 +146,8 @@ export const MobileExerciseCard = ({
     }
   }
 
-  // Ejercicio no guardado - modo edición
   const handleStartTimer = (setId: string, setNumber: number) => {
-    if (timerState.isRunning && timerState.setId === setId) {
+    if (isTimerForSet(translatedExerciseName, setNumber)) {
       setIsOverlayVisible(true)
       return
     }
@@ -154,7 +155,7 @@ export const MobileExerciseCard = ({
     startTimer({
       duration: exercise.rest_time || 60,
       exerciseId: exercise.id,
-      exerciseName: translateExercise(exercise.exercise_name),
+      exerciseName: translatedExerciseName,
       setId,
       setNumber,
     })
@@ -211,7 +212,9 @@ export const MobileExerciseCard = ({
           {/* Grupo muscular */}
           {exercise.muscle_group && (
             <div>
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">{t.workoutForm.muscleGroup}</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                {t.workoutForm.muscleGroup}
+              </Label>
               <div className="mt-1">
                 <Badge variant="outline" className={getMuscleGroupColor(exercise.muscle_group)}>
                   {translateMuscleGroup(exercise.muscle_group)}
@@ -276,7 +279,10 @@ export const MobileExerciseCard = ({
           {activeColumns.length > 0 && (
             <Collapsible open={showCustomFields} onOpenChange={setShowCustomFields}>
               <CollapsibleTrigger asChild>
-                <Button variant="outline" className="w-full bg-transparent border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
+                <Button
+                  variant="outline"
+                  className="w-full bg-transparent border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
                   {showCustomFields ? (
                     <>
                       <ChevronDown className="w-4 h-4 mr-2" />
@@ -376,7 +382,7 @@ export const MobileExerciseCard = ({
                       : "text-gray-900 dark:text-gray-100"
                   }`}
                 >
-                  {translateExercise(exercise.exercise_name)}
+                  {translatedExerciseName}
                 </span>
               </div>
 
@@ -435,7 +441,10 @@ export const MobileExerciseCard = ({
       {/* Series expandibles */}
       <Collapsible open={exercise.is_expanded} onOpenChange={() => onToggleExpansion(exercise.id)}>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="w-full justify-between px-6 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800">
+          <Button
+            variant="ghost"
+            className="w-full justify-between px-6 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
             <span>{t.workoutForm.sets}</span>
             {exercise.is_expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </Button>
@@ -443,13 +452,15 @@ export const MobileExerciseCard = ({
 
         <CollapsibleContent>
           <CardContent className="pt-0 space-y-3">
-            {exercise.set_records?.map((setRecord, setIndex) => (
-              <Card 
-                key={setRecord.id} 
+          {exercise.set_records?.map((setRecord, setIndex) => {
+            const isTimerForThisSet = isTimerForSet(translatedExerciseName, setRecord.set_number)
+            const isTimerRunningForOtherSet = timerState.isRunning && !isTimerForThisSet
+
+            return (
+              <Card
+                key={setRecord.id}
                 className={`p-3 ${
-                  setRecord.is_completed 
-                    ? "bg-green-100 dark:bg-green-900/30" 
-                    : "bg-white dark:bg-gray-800"
+                  setRecord.is_completed ? "bg-green-100 dark:bg-green-900/30" : "bg-white dark:bg-gray-800"
                 } border-gray-200 dark:border-gray-700`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -468,49 +479,48 @@ export const MobileExerciseCard = ({
                     </Button>
                     <span
                       className={`font-semibold text-sm ${
-                        setRecord.is_completed 
-                          ? "text-green-700 dark:text-green-300" 
-                          : "text-gray-600 dark:text-gray-300"
+                        setRecord.is_completed
+                          ? "line-through text-green-700 dark:text-green-300"
+                          : "text-gray-900 dark:text-gray-100"
                       }`}
                     >
-                      {t.workoutForm.setNumber.replace("{number}", setRecord.set_number.toString())}
+                      {t.workoutForm.sets} #{setRecord.set_number}
                     </span>
                   </div>
+
+                  {/* Timer button - usar identificación estable */}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleStartTimer(setRecord.id, setRecord.set_number)}
-                    disabled={setRecord.is_completed || (timerState.isRunning && timerState.setId !== setRecord.id)}
+                    disabled={setRecord.is_completed || isTimerRunningForOtherSet}
+                    className={`p-1 h-auto ${
+                      setRecord.is_completed
+                        ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                        : isTimerForThisSet
+                          ? "text-blue-600 dark:text-blue-400 animate-pulse"
+                          : isTimerRunningForOtherSet
+                            ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                            : "text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-300"
+                    }`}
                     title={
                       setRecord.is_completed
-                        ? t.restTimer.setCompleted || "Set already completed"
-                        : timerState.isRunning && timerState.setId === setRecord.id
-                          ? t.restTimer.viewTimer || "View timer"
-                          : t.restTimer.startTimer || "Start rest timer"
+                        ? t.workoutForm.completed
+                        : isTimerForThisSet
+                          ? t.restTimer?.restTimer || "Rest Timer"
+                          : isTimerRunningForOtherSet
+                            ? t.restTimer?.viewTimer || "View Timer"
+                            : t.restTimer?.startTimer || "Start timer"
                     }
-                    className={`p-1 h-8 w-8 rounded-full transition-colors ${
-                      setRecord.is_completed
-                        ? "opacity-50 cursor-not-allowed"
-                        : timerState.isRunning && timerState.setId === setRecord.id
-                          ? "bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/40"
-                          : "hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                    }`}
                   >
-                    <Timer
-                      className={`w-4 h-4 ${
-                        setRecord.is_completed
-                          ? "text-gray-400 dark:text-gray-500"
-                          : timerState.isRunning && timerState.setId === setRecord.id
-                            ? "text-blue-600 dark:text-blue-400 animate-pulse"
-                            : "text-gray-500 dark:text-gray-400"
-                      }`}
-                    />
+                    <Timer className="w-4 h-4" />
                   </Button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                {/* Campos del set */}
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">{t.workoutForm.reps}</Label>
+                    <Label className="text-xs text-gray-500 dark:text-gray-400">{t.workoutForm.reps}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -518,13 +528,13 @@ export const MobileExerciseCard = ({
                       onChange={(e) =>
                         onUpdateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
                       }
-                      className={`mt-1 text-center font-semibold text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 ${
+                      className={`text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 h-9 ${
                         setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                       }`}
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">{t.workoutForm.weight}</Label>
+                    <Label className="text-xs text-gray-500 dark:text-gray-400">{t.workoutForm.weight}</Label>
                     <Input
                       type="number"
                       min="0"
@@ -536,25 +546,26 @@ export const MobileExerciseCard = ({
                           e.target.value = ""
                         }
                       }}
-                      placeholder={t.calendar.freeWeight}
-                      className={`mt-1 text-center font-semibold text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 ${
+                      placeholder={t.workoutForm.bodyweight}
+                      className={`text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 h-9 ${
                         setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                       }`}
                     />
                   </div>
                 </div>
 
-                {/* Campos personalizados para series */}
+                {/* Columnas personalizadas */}
                 {activeColumns.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="mt-2 grid grid-cols-2 gap-2">
                     {activeColumns.map((column) => (
                       <div key={column.id}>
-                        <Label className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                          {column.column_name}
+                        <Label className="text-xs text-gray-500 dark:text-gray-400">
+                          {column.column_type === "text" && "📝"}
+                          {column.column_type === "number" && "🔢"}
+                          {column.column_type === "boolean" && "✅"} {column.column_name}
                         </Label>
                         {column.column_type === "boolean" ? (
-                          <div className="mt-1 flex items-center h-8">
+                          <div className="flex items-center space-x-2 mt-1">
                             <Checkbox
                               checked={setRecord.custom_data?.[column.column_name] || false}
                               onCheckedChange={(checked) =>
@@ -579,17 +590,17 @@ export const MobileExerciseCard = ({
                                 e.target.value,
                               )
                             }
-                            className="mt-1 text-center text-sm h-8 bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600"
+                            className="text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 h-9"
                             placeholder={column.column_type === "number" ? "0" : "..."}
                           />
                         )}
                       </div>
                     ))}
                   </div>
-                  </div>
                 )}
               </Card>
-            ))}
+            )
+          })}
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

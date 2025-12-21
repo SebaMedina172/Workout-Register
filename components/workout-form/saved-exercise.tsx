@@ -46,16 +46,18 @@ export function SavedExercise({
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
-  const { startTimer, timerState, isOverlayVisible, setIsOverlayVisible, isMinimized } = useRestTimer()
+  const { startTimer, timerState, isOverlayVisible, setIsOverlayVisible, isMinimized, isTimerForSet } = useRestTimer()
+
+  const translatedExerciseName = translateExercise(exercise.exercise_name)
 
   useEffect(() => {
     const handleStartNextSetTimer = (event: CustomEvent) => {
       const { exerciseId, setId, setNumber, duration, exerciseName } = event.detail
 
-      if (exerciseId === exercise.id) {
+      if (exerciseName === exercise.exercise_name || exerciseId === exercise.id) {
         startTimer({
           duration,
-          exerciseId,
+          exerciseId: exercise.id, // Usar el ID actual
           exerciseName: translateExercise(exerciseName),
           setId,
           setNumber,
@@ -67,11 +69,10 @@ export function SavedExercise({
     return () => {
       window.removeEventListener("startNextSetTimer", handleStartNextSetTimer as EventListener)
     }
-  }, [exercise.id, startTimer, translateExercise])
+  }, [exercise.id, exercise.exercise_name, startTimer, translateExercise])
 
   const handleStartTimer = (setId: string, setNumber: number) => {
-    // Si el timer ya está corriendo para este set, solo mostrar el overlay
-    if (timerState.isRunning && timerState.setId === setId) {
+    if (isTimerForSet(translatedExerciseName, setNumber)) {
       setIsOverlayVisible(true)
       return
     }
@@ -86,7 +87,7 @@ export function SavedExercise({
     startTimer({
       duration: exercise.rest_time || 60,
       exerciseId: exercise.id,
-      exerciseName: translateExercise(exercise.exercise_name),
+      exerciseName: translatedExerciseName,
       setId,
       setNumber,
     })
@@ -144,7 +145,7 @@ export function SavedExercise({
                     : "text-gray-900 dark:text-gray-100"
                 }`}
               >
-                {translateExercise(exercise.exercise_name)}
+                {translatedExerciseName}
               </span>
             </div>
           </div>
@@ -249,7 +250,7 @@ export function SavedExercise({
                     : "text-gray-900 dark:text-gray-100"
                 }`}
               >
-                {translateExercise(exercise.exercise_name)}
+                {translatedExerciseName}
               </span>
             </div>
 
@@ -352,7 +353,11 @@ export function SavedExercise({
             </div>
 
             {/* Filas de series */}
-            {exercise.set_records?.map((setRecord, setIndex) => (
+            {exercise.set_records?.map((setRecord, setIndex) => {
+              const isTimerForThisSet = isTimerForSet(translatedExerciseName, setRecord.set_number)
+              const isTimerRunningForOtherSet = timerState.isRunning && !isTimerForThisSet
+
+            return (
               <div
                 key={setRecord.id}
                 className={`grid gap-2 sm:gap-3 p-2 sm:p-3 items-center transition-all duration-200 ${
@@ -438,61 +443,52 @@ export function SavedExercise({
                         type={column.column_type === "number" ? "number" : "text"}
                         value={setRecord.custom_data?.[column.column_name] || ""}
                         onChange={(e) =>
-                          onUpdateSetRecord(exercise.id, setRecord.id, `custom_${column.column_name}`, e.target.value)
+                          onUpdateSetRecord(
+                            exercise.id,
+                            setRecord.id,
+                            `custom_${column.column_name}`,
+                            e.target.value,
+                          )
                         }
-                        className={`text-center bg-white dark:bg-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
-                          setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
-                        }`}
+                        className="text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
                         placeholder={column.column_type === "number" ? "0" : "..."}
                       />
                     )}
                   </div>
                 ))}
-                
-                {/* Columna del Timer */}
-                <div className="flex justify-center">
-                  {(() => {
-                    const isTimerForThisSet = timerState.isRunning && timerState.setId === setRecord.id
-                    const isTimerRunningForOtherSet = timerState.isRunning && timerState.setId !== setRecord.id
-                    const isSetCompleted = setRecord.is_completed
-                    const isDisabled = isSetCompleted || isTimerRunningForOtherSet
 
-                    return (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleStartTimer(setRecord.id, setRecord.set_number)}
-                        disabled={isDisabled}
-                        className={`p-1 h-8 w-8 rounded-full transition-colors ${
-                          isTimerForThisSet
-                            ? "bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50"
-                            : isDisabled
-                              ? "opacity-50 cursor-not-allowed"
-                              : "hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                        }`}
-                        title={
-                          isSetCompleted
-                            ? t.restTimer?.setCompleted || "Set already completed"
-                            : isTimerForThisSet
-                              ? t.restTimer?.viewTimer || "View timer"
-                              : t.restTimer?.startTimer || "Start rest timer"
-                        }
-                      >
-                        <Timer
-                          className={`w-4 h-4 ${
-                            isTimerForThisSet
-                              ? "text-blue-600 dark:text-blue-400 animate-pulse"
-                              : isDisabled
-                                ? "text-gray-400 dark:text-gray-600"
-                                : "text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-                          }`}
-                        />
-                      </Button>
-                    )
-                  })()}
-                </div>                
+                {/* Timer button - usar identificación estable */}
+                <div className="flex justify-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleStartTimer(setRecord.id, setRecord.set_number)}
+                    disabled={setRecord.is_completed || isTimerRunningForOtherSet}
+                    className={`p-1 h-auto hover:bg-transparent ${
+                      setRecord.is_completed
+                        ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                        : isTimerForThisSet
+                          ? "text-blue-600 dark:text-blue-400 animate-pulse"
+                          : isTimerRunningForOtherSet
+                            ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                            : "text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-300"
+                    }`}
+                    title={
+                      setRecord.is_completed
+                        ? t.workoutForm.completed
+                        : isTimerForThisSet
+                          ? t.restTimer?.restTimer || "Rest Timer"
+                          : isTimerRunningForOtherSet
+                            ? t.restTimer?.viewTimer || "View Timer"
+                            : t.restTimer?.startTimer || "Start timer"
+                    }
+                  >
+                    <Timer className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </div>
               </div>
-            ))}
+            )
+          })}
           </div>
           </div>
         </div>
