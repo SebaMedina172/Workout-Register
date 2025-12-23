@@ -15,6 +15,7 @@ import { es, enUS } from "date-fns/locale"
 import PRCard from "@/components/exercise-history/pr-card"
 import ProgressChart from "@/components/exercise-history/progress-chart"
 import HistoryList from "@/components/exercise-history/history-list"
+import Image from "next/image"
 
 interface ExerciseData {
   name: string
@@ -49,20 +50,29 @@ interface ExercisePerformanceProps {
   exercisesByMuscleGroup: Record<string, ExerciseData[]>
 }
 
-// Muscle group icons
-const MUSCLE_GROUP_ICONS: Record<string, string> = {
-  Chest: "🫁",
-  Back: "🔙",
-  Shoulders: "💪",
-  Biceps: "💪",
-  Triceps: "💪",
-  Legs: "🦵",
-  Core: "🎯",
-  Glutes: "🍑",
-  Forearms: "✊",
-  Calves: "🦶",
-  Cardio: "❤️",
-  "Full Body": "🏋️",
+// Mapeo de grupos musculares a imágenes SVG
+const MUSCLE_GROUP_IMAGES: Record<string, string> = {
+  // Español
+  Pecho: "/muscle_groups/chest.svg",
+  Espalda: "/muscle_groups/back.svg",
+  "Deltoides anterior": "/muscle_groups/front_deltoid.svg",
+  "Deltoides medio": "/muscle_groups/middle_deltoid.svg",
+  "Deltoides posterior": "/muscle_groups/rear_deltoid.svg",
+  Bíceps: "/muscle_groups/biceps.svg",
+  Tríceps: "/muscle_groups/triceps.svg",
+  Antebrazos: "/muscle_groups/forearms.svg",
+  Cuádriceps: "/muscle_groups/quadriceps.svg",
+  Isquiotibiales: "/muscle_groups/hamstrings.svg",
+  Glúteo: "/muscle_groups/glutes.svg",
+  Gemelos: "/muscle_groups/calves.svg",
+  Abductores: "/muscle_groups/abductors.svg",
+  Abdominales: "/muscle_groups/abs.svg",
+  Oblicuos: "/muscle_groups/obliques.svg",
+}
+
+// Función para obtener la imagen del grupo muscular
+const getMuscleGroupImage = (muscleGroupName: string): string => {
+  return MUSCLE_GROUP_IMAGES[muscleGroupName] || "/muscle_groups/chest.svg"
 }
 
 // Color palette
@@ -145,7 +155,6 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
         existing.bestReps = Math.max(existing.bestReps, exercise.reps)
         existing.allCompleted = existing.allCompleted && exercise.isCompleted
         existing.sessions.push(exercise)
-        // Keep the most recent date
         if (new Date(exercise.date) > new Date(existing.lastDate)) {
           existing.lastDate = exercise.date
         }
@@ -167,7 +176,6 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
     const result = Array.from(grouped.values()).sort(
       (a, b) => new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime(),
     )
-    // Sort by most recent date
     return result
   }
 
@@ -210,14 +218,12 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
         const hasWeightRecord = recordsData.max_weight?.value > 0
         const hasRepsRecord = recordsData.best_reps?.value > 0
 
-        // Also check history for weight data in case records don't exist yet
         const historyHasWeight = mappedHistory.some((h) => h.weight > 0)
         const historyHasReps = mappedHistory.some((h) => (h.bestReps || h.reps) > 0)
 
-        let mode: "weighted" | "bodyweight" | "mixed" = "bodyweight" // Default to bodyweight
+        let mode: "weighted" | "bodyweight" | "mixed" = "bodyweight"
 
         if (historyHasWeight && historyHasReps) {
-          // Has both weight and reps data
           const allHaveWeight = mappedHistory.every((h) => h.weight > 0)
           mode = allHaveWeight ? "weighted" : "mixed"
         } else if (historyHasWeight) {
@@ -226,7 +232,6 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
           mode = "bodyweight"
         }
 
-        // If no history, fallback to records data
         if (mappedHistory.length === 0) {
           if (hasWeightRecord && hasRepsRecord) {
             mode = "mixed"
@@ -387,7 +392,7 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                     const groupedExs = getGroupedExercises(mg.name)
                     const exerciseCount = groupedExs.length          
                     const lastExercise = groupedExs[0]              
-                    const icon = MUSCLE_GROUP_ICONS[mg.name] || "💪"
+                    const imageSrc = getMuscleGroupImage(mg.name)
 
                     return (
                       <motion.button
@@ -399,10 +404,15 @@ export default function ExercisePerformance({ muscleGroups, exercisesByMuscleGro
                       >
                         <div className="flex items-start gap-3">
                           <div
-                            className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0"
-                            style={{ backgroundColor: `${COLORS[index % COLORS.length]}20` }}
+                            className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 p-2 bg-white dark:bg-gray-800"
                           >
-                            {icon}
+                            <Image
+                              src={imageSrc}
+                              alt={mg.name}
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-contain dark:brightness-110 dark:contrast-125"
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
