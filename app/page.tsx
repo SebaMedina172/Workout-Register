@@ -10,7 +10,7 @@ import { useLanguage } from "@/lib/i18n/context"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ProfileDropdown } from "@/components/profile-dropdown"
-import Image from 'next/image'
+import Image from "next/image"
 
 export default function HomePage() {
   const { t } = useLanguage()
@@ -45,18 +45,18 @@ export default function HomePage() {
               <div className="p-2 rounded-lg">
                 <Image 
                   src="/icons/icon-512.png"
-                  alt="Mi Entrenamiento Logo" 
+                  alt="Liftbase Logo" 
                   width={48}
                   height={48}
                   className="h-12 w-12 object-contain"
                 />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Mi Entrenamiento</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 hidden md:block">Tracker de Entrenamientos</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Liftbase</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 hidden md:block">Fitness Progress Tracker</p>
               </div>
               <div className="sm:hidden">
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Mi Entrenamiento</h1>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">Liftbase</h1>
               </div>
             </div>
 

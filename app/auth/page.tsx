@@ -183,14 +183,14 @@ export default function AuthPage() {
         <div className="relative z-10 flex flex-col items-center text-white dark:text-slate-100 text-center max-w-md mx-auto">
           <div className="mb-8">
             <Image 
-              src="/icon-192.png" 
-              alt="Mi Entrenamiento Logo" 
+              src="/icons/icon-192.png" 
+              alt="Liftbase Logo" 
               width={192} 
               height={192}
               className="object-contain" 
             />
           </div>
-          <h1 className="text-4xl font-bold mb-4">{t.auth.appTitle}</h1>
+          <h1 className="text-4xl font-bold mb-4">Liftbase</h1>
           <p className="text-xl text-slate-300 dark:text-slate-400 leading-relaxed">{t.auth.appDescription}</p>
           <div className="mt-12 grid grid-cols-1 gap-6 max-w-sm mx-auto">
             <div className="flex items-center space-x-3">
@@ -220,10 +220,16 @@ export default function AuthPage() {
         <div className="w-full max-w-md">
           {/* Mobile header */}
           <div className="lg:hidden text-center mb-8 pt-12">
-            <div className="w-16 h-16 bg-slate-900 dark:bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Dumbbell className="w-8 h-8 text-white dark:text-slate-900" />
+            <div className="w-20 h-20 mx-auto mb-4">
+              <Image 
+                src="/icons/icon-192.png" 
+                alt="Liftbase Logo" 
+                width={80} 
+                height={80}
+                className="w-full h-full object-contain" 
+              />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{t.auth.appTitle}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Liftbase</h1>
             <p className="text-slate-600 dark:text-slate-400 mt-2">{t.auth.accessYourAccount}</p>
           </div>
 

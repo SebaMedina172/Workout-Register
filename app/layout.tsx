@@ -10,13 +10,13 @@ import { OfflineIndicator } from "@/components/offline-indicator"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "WorkoutRegister - Mi Entrenamiento",
-  description: "Tracker de Entrenamientos",
+  title: "Liftbase - Track Your Fitness Journey",
+  description: "Track your fitness journey with data-driven insights and personalized progress tracking",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Workout Register",
+    title: "Liftbase",
   },
   formatDetection: {
     telephone: false,
@@ -32,13 +32,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#3b82f6" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Workout Register" />
-        <link rel="apple-touch-icon" href="icons/icon-192.png" />
-        <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+        <meta name="apple-mobile-web-app-title" content="Liftbase" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};

@@ -1,54 +1,45 @@
 {
-  "name": "Workout Register",
-  "short_name": "WO Register",
-  "description": "Track your workout exercises and progress",
+  "name": "Liftbase - Workout Tracker",
+  "short_name": "Liftbase",
+  "description": "Track your fitness journey with data-driven insights",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
+      "src": "/icons/icon-192.png",
       "type": "image/png",
+      "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
       "sizes": "512x512",
-      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-192-maskable.png",
-      "sizes": "192x192",
+      "src": "/icons/icon-192-maskable-white.png",
       "type": "image/png",
+      "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "/icon-512-maskable.png",
-      "sizes": "512x512",
+      "src": "/icons/icon-512-maskable-white.png",
       "type": "image/png",
+      "sizes": "512x512",
       "purpose": "maskable"
     }
   ],
-  "categories": ["fitness", "health"],
-  "shortcuts": [
+  "screenshots": [
     {
-      "name": "New Workout",
-      "short_name": "Workout",
-      "description": "Start a new workout session",
-      "url": "/",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
-  ]
+  ],
+  "categories": ["fitness", "health"]
 }
-
-
