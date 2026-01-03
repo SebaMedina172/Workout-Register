@@ -1,6 +1,6 @@
 "use client"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowUp, ArrowDown, Minus, CheckCircle } from "lucide-react"
+import { ArrowUp, ArrowDown, Minus } from "lucide-react"
 import { useLanguage } from "@/lib/i18n/context"
 
 interface WorkoutEntry {
@@ -31,6 +31,7 @@ export default function LastWorkoutComparison({ current, previous }: LastWorkout
 
   const weightDiff = current.weight - previous.weight
   const repsDiff = current.reps - previous.reps
+  const setsDiff = current.sets - previous.sets
 
   const getIcon = (diff: number) => {
     if (diff > 0) return <ArrowUp className="w-4 h-4 text-green-500" />
@@ -43,8 +44,6 @@ export default function LastWorkoutComparison({ current, previous }: LastWorkout
     if (diff < 0) return "text-red-500"
     return "text-muted-foreground"
   }
-
-  const completedSets = current.completed ? current.sets : 0
 
   return (
     <Card className="border-secondary/50">
@@ -77,13 +76,13 @@ export default function LastWorkoutComparison({ current, previous }: LastWorkout
             </div>
           </div>
 
-          {/* Sets completed */}
+          {/* Sets comparison */}
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">{t.exerciseHistory.setsCompleted}</div>
             <div className="flex items-center gap-1">
-              <CheckCircle className={`w-4 h-4 ${current.completed ? "text-green-500" : "text-orange-500"}`} />
-              <span className="font-semibold">
-                {completedSets}/{current.sets}
+              {getIcon(setsDiff)}
+              <span className={`font-semibold ${getColorClass(setsDiff)}`}>
+                {setsDiff === 0 ? t.exerciseHistory.same : setsDiff > 0 ? `+${setsDiff}` : setsDiff}
               </span>
             </div>
           </div>
