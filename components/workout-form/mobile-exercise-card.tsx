@@ -230,8 +230,22 @@ export const MobileExerciseCard = ({
               <Input
                 type="number"
                 min="1"
-                value={exercise.sets}
-                onChange={(e) => onUpdateExercise(exercise.id, "sets", Number.parseInt(e.target.value) || 1)}
+                value={exercise.sets === 0 ? "" : exercise.sets || ""}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value === "") {
+                    onUpdateExercise(exercise.id, "sets", 0)
+                  } else {
+                    onUpdateExercise(exercise.id, "sets", Number.parseInt(value) || 0)
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = Number.parseInt(e.target.value)
+                  if (!value || value === 0) {
+                    onUpdateExercise(exercise.id, "sets", 3)
+                  }
+                }}
+                placeholder="3"
                 className="mt-1 text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-gray-200 dark:border-gray-600"
               />
             </div>
@@ -240,8 +254,22 @@ export const MobileExerciseCard = ({
               <Input
                 type="number"
                 min="1"
-                value={exercise.reps}
-                onChange={(e) => onUpdateExercise(exercise.id, "reps", Number.parseInt(e.target.value) || 1)}
+                value={exercise.reps === 0 ? "" : exercise.reps || ""}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value === "") {
+                    onUpdateExercise(exercise.id, "reps", 0)
+                  } else {
+                    onUpdateExercise(exercise.id, "reps", Number.parseInt(value) || 0)
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = Number.parseInt(e.target.value)
+                  if (!value || value === 0) {
+                    onUpdateExercise(exercise.id, "reps", 10)
+                  }
+                }}
+                placeholder="10"
                 className="mt-1 text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-gray-200 dark:border-gray-600"
               />
             </div>
@@ -524,10 +552,22 @@ export const MobileExerciseCard = ({
                     <Input
                       type="number"
                       min="1"
-                      value={setRecord.reps}
-                      onChange={(e) =>
-                        onUpdateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
-                      }
+                      value={setRecord.reps === 0 ? "" : setRecord.reps || ""}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (value === "") {
+                          onUpdateSetRecord(exercise.id, setRecord.id, "reps", 0)
+                        } else {
+                          onUpdateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(value) || 0)
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = Number.parseInt(e.target.value)
+                        if (!value || value === 0) {
+                          onUpdateSetRecord(exercise.id, setRecord.id, "reps", exercise.reps)
+                        }
+                      }}
+                      placeholder={exercise.reps.toString()}
                       className={`text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-gray-200 dark:border-gray-600 h-9 ${
                         setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                       }`}

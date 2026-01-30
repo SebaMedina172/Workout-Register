@@ -162,16 +162,44 @@ export const EditingExercise = ({
             <Input
               type="number"
               min="1"
-              value={exercise.sets}
-              onChange={(e) => onUpdateExercise(exercise.id, "sets", Number.parseInt(e.target.value) || 1)}
+              value={exercise.sets === 0 ? "" : exercise.sets || ""}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value === "") {
+                  onUpdateExercise(exercise.id, "sets", 0)
+                } else {
+                  onUpdateExercise(exercise.id, "sets", Number.parseInt(value) || 0)
+                }
+              }}
+              onBlur={(e) => {
+                const value = Number.parseInt(e.target.value)
+                if (!value || value === 0) {
+                  onUpdateExercise(exercise.id, "sets", 3)
+                }
+              }}
+              placeholder="3"
               className="text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
             />
 
             <Input
               type="number"
               min="1"
-              value={exercise.reps}
-              onChange={(e) => onUpdateExercise(exercise.id, "reps", Number.parseInt(e.target.value) || 1)}
+              value={exercise.reps === 0 ? "" : exercise.reps || ""}
+              onChange={(e) => {
+                const value = e.target.value
+                if (value === "") {
+                  onUpdateExercise(exercise.id, "reps", 0)
+                } else {
+                  onUpdateExercise(exercise.id, "reps", Number.parseInt(value) || 0)
+                }
+              }}
+              onBlur={(e) => {
+                const value = Number.parseInt(e.target.value)
+                if (!value || value === 0) {
+                  onUpdateExercise(exercise.id, "reps", 10)
+                }
+              }}
+              placeholder="10"
               className="text-center font-semibold bg-white dark:bg-gray-800 dark:text-white border-2 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10"
             />
 

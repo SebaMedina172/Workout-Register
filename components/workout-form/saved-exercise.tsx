@@ -398,10 +398,22 @@ export function SavedExercise({
                 <Input
                   type="number"
                   min="1"
-                  value={setRecord.reps}
-                  onChange={(e) =>
-                    onUpdateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(e.target.value) || 1)
-                  }
+                  value={setRecord.reps === 0 ? "" : setRecord.reps || ""}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (value === "") {
+                      onUpdateSetRecord(exercise.id, setRecord.id, "reps", 0)
+                    } else {
+                      onUpdateSetRecord(exercise.id, setRecord.id, "reps", Number.parseInt(value) || 0)
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const value = Number.parseInt(e.target.value)
+                    if (!value || value === 0) {
+                      onUpdateSetRecord(exercise.id, setRecord.id, "reps", exercise.reps)
+                    }
+                  }}
+                  placeholder={exercise.reps.toString()}
                   className={`text-center font-semibold bg-white dark:bg-gray-700 dark:text-white border-2 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 transition-colors text-xs sm:text-sm h-8 sm:h-10 ${
                     setRecord.is_completed ? "line-through text-green-700 dark:text-green-300" : ""
                   }`}
