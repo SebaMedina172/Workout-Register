@@ -106,7 +106,7 @@ export function LoadTemplateDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-full max-w-md max-h-[80vh] flex flex-col">
+        <DialogContent className="w-full max-w-md h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>{t.workoutForm.loadTemplate}</DialogTitle>
             <DialogDescription>
@@ -128,7 +128,7 @@ export function LoadTemplateDialog({
               </div>
             )}
 
-            <ScrollArea className="flex-1 border rounded-md">
+            <ScrollArea className="flex-1 min-h-0 border rounded-md">
               {filteredTemplates.length === 0 ? (
                 <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                   {templates.length === 0
